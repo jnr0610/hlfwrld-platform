@@ -1,0 +1,21 @@
+# Email Configuration
+# Choose ONE email service (Resend recommended for quick setup)
+
+# ===== RESEND (Recommended - Quick Setup) =====
+RESEND_API_KEY=re_your_resend_api_key_here
+RESEND_FROM_EMAIL=noreply@yourdomain.com
+
+# ===== AWS SES (Alternative - Requires Approval) =====
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=us-east-1
+AWS_SES_FROM_EMAIL=noreply@yourdomain.com
+AWS_SES_CONFIGURATION_SET=your_config_set_name
+
+# ===== OTHER CONFIGURATIONS =====
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+PORT=3000
+
+# ===== EMAIL SERVICE SELECTION =====
+# Set to 'resend' or 'ses' to choose which service to use
+EMAIL_SERVICE=resend 

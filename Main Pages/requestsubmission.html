@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - Request Submitted</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .thank-you-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .celebration-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .thank-you-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .thank-you-message {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .important-info {
+            background: #f8f9ff;
+            border: 2px solid #e1e5ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .important-info h3 {
+            color: #4c51bf;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .important-info p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .contact-info {
+            background: #fff8e1;
+            border: 2px solid #ffe082;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .contact-info strong {
+            color: #f57c00;
+            font-size: 18px;
+        }
+
+        .return-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .return-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .edit-button {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            margin-left: 15px;
+        }
+
+        .edit-button:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .submission-summary {
+            background: #f8f9ff;
+            border: 2px solid #e1e5ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .submission-summary h3 {
+            color: #4c51bf;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .summary-item {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e5ff;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item strong {
+            color: #333;
+            display: inline-block;
+            width: 140px;
+            margin-right: 10px;
+        }
+
+        .date-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 5px 5px 5px 0;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .date-item .time-badge {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .checkmark {
+            color: #4caf50;
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .thank-you-container {
+                padding: 40px 25px;
+                margin: 10px;
+            }
+
+            .celebration-icon {
+                font-size: 60px;
+            }
+
+            .thank-you-title {
+                font-size: 26px;
+            }
+
+            .thank-you-message {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="thank-you-container">
+        <div class="celebration-icon">🎉</div>
+        
+        <h1 class="thank-you-title">
+            <span class="checkmark">✅</span>
+            Thank You!
+        </h1>
+        
+        <p class="thank-you-message">
+            Thank you for submitting your request.
+        </p>
+
+        <div class="important-info">
+            <h3>🎯 You're on the Waitlist!</h3>
+            <p>
+                <strong>You are now on the waitlist for this service</strong> and we will email you once the salon accepts your request.
+            </p>
+            <p>
+                Once the salon approves your request, we'll send you location details that you may view before deciding on whether to confirm the service booking.
+            </p>
+        </div>
+
+        <div id="submissionSummary" class="submission-summary" style="display: none;">
+            <h3>📋 Your Submission</h3>
+            <div class="summary-item" id="summaryServiceNameRow" style="display: none;">
+                <strong>Service:</strong> <span id="summaryServiceName"></span>
+            </div>
+            <div class="summary-item">
+                <strong>Name:</strong> <span id="summaryName"></span>
+            </div>
+            <div class="summary-item">
+                <strong>Email:</strong> <span id="summaryEmail"></span>
+            </div>
+            <div class="summary-item">
+                <strong>Phone:</strong> <span id="summaryPhone"></span>
+            </div>
+            <div class="summary-item">
+                <strong>Zip Code:</strong> <span id="summaryZipCode"></span>
+            </div>
+            <div class="summary-item">
+                <strong>Requested Dates:</strong>
+                <div id="summaryDates"></div>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <p>
+                Please feel free to contact us at <strong>contact@hlfwrld.com</strong> with any questions.
+            </p>
+        </div>
+
+        <div class="button-group">
+            <a href="http://localhost:3000/digitalshop" class="return-button">
+                Return to Digital Shop
+            </a>
+            <button id="editSubmissionBtn" class="edit-button" style="display: none;">
+                📝 Edit Submission
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters and display submission summary
+        function displaySubmissionSummary() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check if we have submission data
+            if (urlParams.has('name')) {
+                // Show the summary section
+                document.getElementById('submissionSummary').style.display = 'block';
+                document.getElementById('editSubmissionBtn').style.display = 'inline-block';
+                
+                // Show service name if available
+                const serviceName = urlParams.get('serviceName');
+                if (serviceName) {
+                    document.getElementById('summaryServiceNameRow').style.display = 'block';
+                    document.getElementById('summaryServiceName').textContent = serviceName;
+                }
+                // Fill in the summary data
+                document.getElementById('summaryName').textContent = urlParams.get('name') || 'N/A';
+                document.getElementById('summaryEmail').textContent = urlParams.get('email') || 'N/A';
+                document.getElementById('summaryPhone').textContent = urlParams.get('phone') || 'N/A';
+                document.getElementById('summaryZipCode').textContent = urlParams.get('zipCode') || 'N/A';
+                
+                // Parse and display dates
+                try {
+                    const dates = JSON.parse(urlParams.get('dates') || '[]');
+                    const datesContainer = document.getElementById('summaryDates');
+                    datesContainer.innerHTML = '';
+                    
+                    if (dates.length > 0) {
+                        dates.forEach(dateObj => {
+                            const dateItem = document.createElement('div');
+                            dateItem.className = 'date-item';
+                            
+                            const formattedDate = new Date(dateObj.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                            
+                            dateItem.innerHTML = `
+                                ${formattedDate}
+                                <span class="time-badge">${dateObj.time}</span>
+                            `;
+                            datesContainer.appendChild(dateItem);
+                        });
+                    } else {
+                        datesContainer.innerHTML = '<span>No dates selected</span>';
+                    }
+                } catch (e) {
+                    document.getElementById('summaryDates').innerHTML = '<span>Error loading dates</span>';
+                }
+                
+                // Set up edit button functionality
+                document.getElementById('editSubmissionBtn').onclick = function() {
+                    // Go back to the public profile page with the service code
+                    const serviceCode = urlParams.get('serviceCode');
+                    const influencerHandle = urlParams.get('influencerHandle');
+                    
+                    if (serviceCode && influencerHandle) {
+                        // Store the data in sessionStorage so we can pre-fill the form
+                        sessionStorage.setItem('editSubmission', JSON.stringify({
+                            name: urlParams.get('name'),
+                            email: urlParams.get('email'),
+                            phone: urlParams.get('phone'),
+                            zipCode: urlParams.get('zipCode'),
+                            dates: urlParams.get('dates'),
+                            serviceCode: serviceCode,
+                            autoOpenModal: true  // Flag to auto-open the modal
+                        }));
+                        
+                        // Go back to public profile
+                        window.location.href = `public-profile.html?handle=${influencerHandle}`;
+                    } else {
+                        // Fallback - just go back
+                        window.history.back();
+                    }
+                };
+            }
+        }
+        
+        // Run when page loads
+        document.addEventListener('DOMContentLoaded', displaySubmissionSummary);
+        
+        // Optional: Auto-redirect after a long time (like 2 minutes) if user doesn't click
+        // setTimeout(() => {
+        //     window.history.back();
+        // }, 120000); // 2 minutes
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Influencer Dashboard - Service Requests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #262626;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            background: #f2f2f2;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #262626;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        .nav-btn.active {
+            background: #262626;
+            color: #fff;
+        }
+
+        .nav-btn.logout-btn {
+            background: #f2f2f2;
+            color: #262626;
+            margin-left: 8px;
+        }
+
+        .nav-btn.logout-btn:hover {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            text-align: center;
+            opacity: 0.75;
+        }
+
+        .dashboard-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filters h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .requests-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .requests-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .requests-header h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .requests-header p {
+            color: #666;
+            margin: 0;
+        }
+
+        .requests-grid {
+            display: grid;
+            grid-template-columns: 80px 120px 100px 120px 100px 120px 120px;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .request-row {
+            display: grid;
+            grid-template-columns: 80px 120px 100px 120px 100px 120px 120px;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .request-row:hover {
+            background-color: #f8f9ff;
+        }
+
+        .request-row:last-child {
+            border-bottom: none;
+        }
+
+        .request-id {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .service-code {
+            font-family: monospace;
+            background: #f1f3f4;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+
+        .service-fee {
+            font-weight: 700;
+            color: #059669;
+            font-size: 1rem;
+            background: #f0fdf4;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .zip-code {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .date-count {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .payment-amount {
+            font-weight: 600;
+            color: #16a34a;
+            font-size: 0.95rem;
+            background: #f0fdf4;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 16px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pagination-info label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .pagination-info select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .pagination-info select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+
+        .pagination-text {
+            font-size: 14px;
+            color: #666;
+            margin: 0 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .requests-grid,
+            .request-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .requests-grid {
+                display: none; /* Hide headers on mobile */
+            }
+
+            .request-row {
+                display: block;
+                padding: 1rem;
+            }
+
+            .request-row > div {
+                margin-bottom: 0.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .request-row > div:before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #555;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="company-name">hlfwrld</a>
+            <nav class="nav-buttons">
+                <button class="nav-btn" onclick="window.goToAccount()">Account</button>
+                <button class="nav-btn" onclick="window.goToDigitalShop()">Digital Shop</button>
+                <button class="nav-btn active" onclick="window.goToInfluencerDashboard()">Dashboard</button>
+                <button class="nav-btn" onclick="window.goToContact()">Contact Us</button>
+                <button class="nav-btn logout-btn" onclick="window.logOut()">Log Out</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="dashboard-header">
+        <h1>Hlfwrld Creator Dashboard</h1>
+        <p>View all of the beauty services requested from your digital shop.</p>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRequests">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingRequests">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="confirmedRequests">0</div>
+                <div class="stat-label">Confirmed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="estimatedCommission">$0</div>
+                <div class="stat-label">Estimated Expected Commission</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <h3>🔍 Filter Requests</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="confirmed">Confirmed & Paid</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="zipFilter">Zip Code</label>
+                    <input type="text" id="zipFilter" placeholder="Enter zip code">
+                </div>
+                <div class="filter-group">
+                    <label for="serviceFilter">Service Code</label>
+                    <input type="text" id="serviceFilter" placeholder="Enter service code">
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-confirm" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="requests-container">
+            <div class="requests-header">
+                <h3>📋 Beauty Service Requests</h3>
+            </div>
+
+            <div class="requests-grid">
+                <div>ID</div>
+                <div>Service Code</div>
+                <div>Zip Code</div>
+                <div># of Dates</div>
+                <div>Status</div>
+                <div>Service Name</div>
+                <div>Service Fee</div>
+            </div>
+
+            <div id="requestsList">
+                <div class="loading">
+                    <div>🔄 Loading requests...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-controls">
+            <div class="pagination-info">
+                <label for="itemsPerPage">Show:</label>
+                <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                    <option value="5">5 per page</option>
+                    <option value="10" selected>10 per page</option>
+                    <option value="20">20 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </select>
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevBtn" onclick="previousPage()" disabled>Previous</button>
+                <span class="pagination-text" id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextBtn" onclick="nextPage()" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let influencerHandle = 'influencer_name'; // Will be updated dynamically
+        let allRequests = [];
+        
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredRequests = [];
+
+        // Service data mapping - this would normally come from the database
+        const serviceData = {
+            '5320': { name: 'Luxury Manicure', fee: 85 },
+            '5709': { name: 'Premium Facial', fee: 120 },
+            '4JTH1OS3': { name: 'Hair Styling & Cut', fee: 95 },
+            'TEST123': { name: 'Consultation', fee: 50 }
+        };
+
+        // Get creator username from URL parameters or localStorage
+        function getCreatorUsername() {
+            // Try to get from URL parameter first
+            const urlParams = new URLSearchParams(window.location.search);
+            const creatorParam = urlParams.get('creator');
+            
+            if (creatorParam) {
+                return creatorParam;
+            }
+            
+            // Try to get from localStorage
+            const creatorData = JSON.parse(localStorage.getItem('creatorData') || '{}');
+            if (creatorData.username) {
+                return creatorData.username;
+            }
+            
+            // Fallback to default
+            return 'influencer_name';
+        }
+
+        // Load requests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set the influencer handle dynamically
+            influencerHandle = getCreatorUsername();
+            console.log('🎯 Using influencer handle:', influencerHandle);
+            
+            loadRequests();
+            setupFilters();
+        });
+
+        async function loadRequests() {
+            try {
+                console.log('=== LOADING REQUESTS ===');
+                console.log('API Base:', API_BASE);
+                console.log('Influencer Handle:', influencerHandle);
+                console.log('Full URL:', `${API_BASE}/service-requests/${influencerHandle}`);
+                
+                // Add cache busting and timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(`${API_BASE}/service-requests/${influencerHandle}?t=${Date.now()}`, {
+                    signal: controller.signal,
+                    cache: 'no-cache'
+                });
+                
+                clearTimeout(timeoutId);
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                console.log('Response content-type:', response.headers.get('content-type'));
+                
+                if (response.ok) {
+                    allRequests = await response.json();
+                    console.log('✅ Successfully loaded requests:', allRequests.length);
+                    if (allRequests.length > 0) {
+                        console.log('First request sample:', allRequests[0]);
+                    }
+                    updateStats();
+                    displayRequests(allRequests);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('❌ FETCH ERROR:', error);
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timeout - server took too long to respond';
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Network error - cannot connect to server. Make sure backend is running on port 3000';
+                }
+                
+                document.getElementById('requestsList').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error Loading Requests</h3>
+                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        <p><strong>API URL:</strong> ${API_BASE}/service-requests/${influencerHandle}</p>
+                        <p><strong>Error Type:</strong> ${error.name}</p>
+                        <p>Check browser console (F12) for detailed logs.</p>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="loadRequests()" style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">
+                                🔄 Retry
+                            </button>
+                            <button onclick="testConnection()" style="padding: 0.5rem 1rem; background: #f56565; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                🔍 Test Connection
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testConnection() {
+            console.log('=== TESTING CONNECTION ===');
+            try {
+                const response = await fetch(`${API_BASE}/service-requests/influencer_name?t=${Date.now()}`);
+                console.log('Test response status:', response.status);
+                const text = await response.text();
+                console.log('Test response text (first 200 chars):', text.substring(0, 200));
+                alert(`Connection test: Status ${response.status}\nResponse length: ${text.length} characters\nSee console for details.`);
+            } catch (error) {
+                console.error('Test connection failed:', error);
+                alert(`Connection test failed: ${error.message}`);
+            }
+        }
+
+        function updateStats() {
+            const total = allRequests.length;
+            const pending = allRequests.filter(r => r.status === 'pending').length;
+            const confirmed = allRequests.filter(r => r.status === 'confirmed').length;
+            const confirmedRequests = allRequests.filter(r => r.status === 'confirmed' || r.status === 'completed');
+        const totalConfirmedRevenue = confirmedRequests.reduce((total, request) => {
+            const service = serviceData[request.serviceCode] || { fee: 0 };
+            return total + service.fee;
+        }, 0);
+        const estimatedCommission = totalConfirmedRevenue * 0.15; // 15% commission
+
+            document.getElementById('totalRequests').textContent = total;
+            document.getElementById('pendingRequests').textContent = pending;
+            document.getElementById('confirmedRequests').textContent = confirmed;
+            document.getElementById('estimatedCommission').textContent = `$${estimatedCommission.toFixed(2)}`;
+        }
+
+        function displayRequests(requests) {
+            const requestsList = document.getElementById('requestsList');
+            
+            // Update filtered requests and reset to first page
+            filteredRequests = requests;
+            currentPage = 1;
+            
+            if (requests.length === 0) {
+                requestsList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No Requests Found</h3>
+                        <p>No service requests match your current filters.</p>
+                    </div>
+                `;
+                updatePagination();
+                return;
+            }
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentRequests = filteredRequests.slice(startIndex, endIndex);
+
+            requestsList.innerHTML = currentRequests.map(request => {
+                // selectedDates is already parsed as an object from the API
+                const dates = Array.isArray(request.selectedDates) ? request.selectedDates : [];
+                const dateCount = dates.length;
+                
+                // Get service information
+                const service = serviceData[request.serviceCode] || { name: 'Unknown Service', fee: 0 };
+                
+                return `
+                    <div class="request-row">
+                        <div class="request-id" data-label="ID:">#${request.id}</div>
+                        <div class="service-code" data-label="Service Code:">${request.serviceCode || 'N/A'}</div>
+                        <div class="zip-code" data-label="Zip:">${request.clientZipCode || 'N/A'}</div>
+                        <div class="date-count" data-label="Dates:">${dateCount} date${dateCount !== 1 ? 's' : ''}</div>
+                        <div class="status-badge status-${request.status}" data-label="Status:">${request.status}</div>
+                        <div class="service-name" data-label="Service Name:">${service.name}</div>
+                        <div class="service-fee" data-label="Service Fee:">$${service.fee}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            updatePagination();
+        }
+
+        async function updateRequestStatus(requestId, status) {
+            try {
+                const response = await fetch(`${API_BASE}/service-requests/${requestId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    // Update local data
+                    const requestIndex = allRequests.findIndex(r => r.id === requestId);
+                    if (requestIndex !== -1) {
+                        allRequests[requestIndex].status = status;
+                        updateStats();
+                        applyFilters();
+                    }
+                    
+                    // Show success message
+                    const action = status === 'confirmed' ? 'confirmed' : 'rejected';
+                    alert(`✅ Request #${requestId} has been ${action} successfully!`);
+                } else {
+                    throw new Error('Failed to update request status');
+                }
+            } catch (error) {
+                console.error('Error updating request status:', error);
+                alert('❌ Failed to update request status. Please try again.');
+            }
+        }
+
+        function setupFilters() {
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('zipFilter').addEventListener('input', applyFilters);
+            document.getElementById('serviceFilter').addEventListener('input', applyFilters);
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const zipFilter = document.getElementById('zipFilter').value.toLowerCase();
+            const serviceFilter = document.getElementById('serviceFilter').value.toLowerCase();
+
+            const filteredRequests = allRequests.filter(request => {
+                const matchesStatus = !statusFilter || request.status === statusFilter;
+                const matchesZip = !zipFilter || (request.clientZipCode && request.clientZipCode.toLowerCase().includes(zipFilter));
+                const matchesService = !serviceFilter || (request.serviceCode && request.serviceCode.toLowerCase().includes(serviceFilter));
+
+                return matchesStatus && matchesZip && matchesService;
+            });
+
+            displayRequests(filteredRequests);
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('zipFilter').value = '';
+            document.getElementById('serviceFilter').value = '';
+            displayRequests(allRequests);
+        }
+
+        // Pagination functions
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            // Update page info
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            
+            // Update button states
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function changeItemsPerPage() {
+            const select = document.getElementById('itemsPerPage');
+            itemsPerPage = parseInt(select.value);
+            currentPage = 1; // Reset to first page
+            displayRequests(filteredRequests);
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayCurrentPage();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayCurrentPage();
+            }
+        }
+
+        function displayCurrentPage() {
+            const requestsList = document.getElementById('requestsList');
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentRequests = filteredRequests.slice(startIndex, endIndex);
+
+            requestsList.innerHTML = currentRequests.map(request => {
+                const dates = Array.isArray(request.selectedDates) ? request.selectedDates : [];
+                const dateCount = dates.length;
+                const service = serviceData[request.serviceCode] || { name: 'Unknown Service', fee: 0 };
+                
+                return `
+                    <div class="request-row">
+                        <div class="request-id" data-label="ID:">#${request.id}</div>
+                        <div class="service-code" data-label="Service Code:">${request.serviceCode || 'N/A'}</div>
+                        <div class="zip-code" data-label="Zip:">${request.clientZipCode || 'N/A'}</div>
+                        <div class="date-count" data-label="Dates:">${dateCount} date${dateCount !== 1 ? 's' : ''}</div>
+                        <div class="status-badge status-${request.status}" data-label="Status:">${request.status}</div>
+                        <div class="service-name" data-label="Service Name:">${service.name}</div>
+                        <div class="service-fee" data-label="Service Fee:">$${service.fee}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            updatePagination();
+        }
+
+        // Navigation functions
+        window.goToAccount = () => {
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Navigate to Account page');
+            
+            // Navigate to account page with absolute URL
+            window.location.href = 'http://localhost:3000/account';
+        };
+
+        window.goToDigitalShop = () => {
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Navigate to Digital Shop page');
+            
+            // Navigate to digital shop page with absolute URL
+            window.location.href = 'http://localhost:3000/digitalshop';
+        };
+
+        window.goToInfluencerDashboard = () => {
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Navigate to Influencer Dashboard page');
+            
+            // Already on dashboard page
+        };
+
+        window.goToContact = () => {
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Navigate to Contact page');
+            
+            // Navigate to contact page with absolute URL
+            console.log('Redirecting to:', 'http://localhost:3000/contact-us');
+            try {
+                window.location.href = 'http://localhost:3000/contact-us';
+            } catch (error) {
+                console.error('Navigation error:', error);
+                // Fallback: try direct navigation
+                window.location.replace('http://localhost:3000/contact-us');
+            }
+        };
+
+        window.logOut = () => {
+            // Clear any stored data
+            localStorage.removeItem('influencerProfile');
+            localStorage.removeItem('creatorToken');
+            localStorage.removeItem('creatorData');
+            
+            // Redirect to creator login page with absolute URL
+            console.log('User logged out, redirecting to creator login page');
+            window.location.href = 'http://localhost:3000/creator-auth';
+        };
+    </script>
+</body>
+</html> 

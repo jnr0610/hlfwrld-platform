@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Management - Booking Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .appointment-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #6366f1;
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .appointment-info h2 {
+            color: #1f2937;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .appointment-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-cancelled {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .service-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .influencer-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .influencer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .influencer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+
+        .influencer-info h3 {
+            color: #1f2937;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .influencer-handle {
+            color: #6366f1;
+            font-weight: 500;
+        }
+
+        .service-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .actions-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .payment-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-status {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .payment-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        @media (max-width: 768px) {
+            .appointment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .service-details {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Your Appointment</h1>
+            <p>Manage your booking details and preferences</p>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                <h3>Loading your appointment...</h3>
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <div id="appointment-content" style="display: none;">
+                <!-- Appointment details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let appointmentData = null;
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('requestId');
+        const clientToken = urlParams.get('token');
+
+        if (!requestId || !clientToken) {
+            showError('Invalid appointment link. Please check your email for the correct link.');
+            return;
+        }
+
+        // Load appointment data
+        async function loadAppointment() {
+            try {
+                const response = await fetch(`${API_BASE}/appointments/${requestId}?token=${clientToken}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load appointment');
+                }
+
+                appointmentData = data;
+                displayAppointment();
+                
+            } catch (error) {
+                console.error('Error loading appointment:', error);
+                showError('Failed to load your appointment. Please try again or contact support.');
+            }
+        }
+
+        function displayAppointment() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('appointment-content').style.display = 'block';
+
+            const content = document.getElementById('appointment-content');
+            
+            content.innerHTML = `
+                <div class="appointment-card">
+                    <div class="appointment-header">
+                        <div class="appointment-info">
+                            <h2>${appointmentData.serviceName || 'Service'}</h2>
+                            <p>Booked by: ${appointmentData.influencerName || appointmentData.influencerHandle}</p>
+                        </div>
+                        <div class="appointment-status status-${appointmentData.status}">
+                            ${appointmentData.status}
+                        </div>
+                    </div>
+
+                    <div class="service-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Appointment Date</div>
+                            <div class="detail-value">${formatDate(appointmentData.confirmedAppointment.date)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Appointment Time</div>
+                            <div class="detail-value">${formatTime(appointmentData.confirmedAppointment.time)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Service Fee</div>
+                            <div class="detail-value">$${appointmentData.fee || '0'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Booking ID</div>
+                            <div class="detail-value">#${appointmentData.id}</div>
+                        </div>
+                    </div>
+
+                    ${appointmentData.paymentAmount ? `
+                        <div class="payment-info">
+                            <div class="payment-status">Payment Status: ${appointmentData.paymentStatus}</div>
+                            <div class="payment-amount">Amount Paid: $${appointmentData.paymentAmount}</div>
+                            <div>Payment Method: ${appointmentData.paymentMethod}</div>
+                            <div>Payment Date: ${formatDate(appointmentData.paymentDate)}</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="influencer-section">
+                        <div class="influencer-header">
+                            <div class="influencer-avatar">
+                                ${(appointmentData.influencerName || appointmentData.influencerHandle || 'S').charAt(0).toUpperCase()}
+                            </div>
+                            <div class="influencer-info">
+                                                            <h3>${appointmentData.influencerName || 'Salon'}</h3>
+                            <div class="influencer-handle">@${appointmentData.influencerName || 'salon'}</div>
+                            </div>
+                        </div>
+                        ${appointmentData.coverPhoto ? `
+                            <img src="${appointmentData.coverPhoto}" alt="Service Cover" class="service-cover">
+                        ` : ''}
+                    </div>
+
+                    <div class="actions-section">
+                        ${appointmentData.status === 'confirmed' ? `
+                            <button class="action-button btn-primary" onclick="rescheduleAppointment()">
+                                📅 Reschedule Appointment
+                            </button>
+                            <button class="action-button btn-danger" onclick="cancelAppointment()">
+                                ❌ Cancel Appointment
+                            </button>
+                        ` : ''}
+                        
+                        ${appointmentData.status === 'completed' ? `
+                            <button class="action-button btn-success" onclick="bookAgain()">
+                                🔄 Book Again
+                            </button>
+                        ` : ''}
+                        
+                        <a href="mailto:${appointmentData.influencerEmail || 'support@example.com'}" class="action-button btn-secondary">
+                            📧 Contact Salon
+                        </a>
+                        
+                        <button class="action-button btn-secondary" onclick="downloadReceipt()">
+                            📄 Download Receipt
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour12 = parseInt(hours) > 12 ? parseInt(hours) - 12 : parseInt(hours);
+            const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+            const displayHour = hour12 === 0 ? 12 : hour12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        async function rescheduleAppointment() {
+            if (confirm('Would you like to request a reschedule? The salon will be notified and will contact you with new time options.')) {
+                try {
+                    const response = await fetch(`${API_BASE}/appointments/${requestId}/reschedule`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token: clientToken
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to request reschedule');
+                    }
+
+                    showSuccess('Reschedule request sent! The salon will contact you with new time options.');
+                    
+                } catch (error) {
+                    console.error('Error requesting reschedule:', error);
+                    showError('Failed to request reschedule. Please try again.');
+                }
+            }
+        }
+
+        async function cancelAppointment() {
+            if (confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`${API_BASE}/appointments/${requestId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token: clientToken
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to cancel appointment');
+                    }
+
+                    showSuccess('Appointment cancelled successfully.');
+                    // Reload the appointment data to show updated status
+                    loadAppointment();
+                    
+                } catch (error) {
+                    console.error('Error cancelling appointment:', error);
+                    showError('Failed to cancel appointment. Please try again.');
+                }
+            }
+        }
+
+        function bookAgain() {
+            // Redirect to the public profile to book the same service again
+            window.location.href = `public-profile.html?influencer=${appointmentData.influencerName || 'salon'}`;
+        }
+
+        function downloadReceipt() {
+            // Create a simple receipt for download
+            const receipt = `
+                RECEIPT
+                =======
+                
+                Booking ID: #${appointmentData.id}
+                Date: ${formatDate(appointmentData.confirmedAppointment.date)}
+                Time: ${formatTime(appointmentData.confirmedAppointment.time)}
+                
+                Service: ${appointmentData.serviceName}
+                Salon: ${appointmentData.influencerName || appointmentData.influencerHandle}
+                
+                Amount: $${appointmentData.paymentAmount || appointmentData.fee || '0'}
+                Payment Status: ${appointmentData.paymentStatus || 'Pending'}
+                
+                Thank you for your booking!
+            `;
+            
+            const blob = new Blob([receipt], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `receipt-${appointmentData.id}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-message').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('success-message').style.display = 'none';
+            }, 5000);
+        }
+
+        // Load the appointment when page loads
+        loadAppointment();
+    </script>
+</body>
+</html> 

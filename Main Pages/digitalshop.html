@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  🚨 CRITICAL WARNING FOR DEVELOPERS 🚨
+  
+  This page MUST load posts from the database on startup!
+  
+  The loadPosts() function MUST be called in the DOMContentLoaded event.
+  If you remove or modify this, previous posts will not show up.
+  
+  Search for "CRITICAL: Load posts when page loads" in the JavaScript section.
+  DO NOT REMOVE OR MODIFY THAT SECTION!
+  
+  Last fixed: Multiple times - this keeps breaking!
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hlfwrld Digital Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #fafafa;
+      margin: 0;
+      padding: 0;
+      color: #262626;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 24px;
+    }
+    .post-square, .add-square {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      cursor: pointer;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .post-square:hover, .add-square:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+    .add-square {
+      color: #888;
+      font-size: 3rem;
+      justify-content: center;
+      border: 2px dashed #bbb;
+    }
+    .post-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 12px;
+      text-align: center;
+    }
+    .post-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .post-meta {
+      font-size: 0.78rem;
+      color: #666;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    .post-notes {
+      font-size: 0.97rem;
+      color: #444;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    .post-code {
+      font-size: 1.05rem;
+      color: #2d7a2d;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    .signup-count {
+      font-size: 0.97rem;
+      color: #888;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    .cover-img {
+      width: 320px;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .post-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+    .post-actions button {
+      background: #f2f2f2;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 0.97rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .post-actions button:hover {
+      background: #e0e0e0;
+    }
+    .edit-btn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: #f2f2f2;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      opacity: 0.7;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      z-index: 2;
+    }
+    .edit-btn:hover {
+      background: #e0e0e0;
+      opacity: 1;
+    }
+    /* Modal styles */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-bg.active {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+      padding: 32px 24px 24px 24px;
+      min-width: 320px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal h2 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 1.3rem;
+    }
+    .modal label {
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .modal input, .modal textarea {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .modal .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: #888;
+      cursor: pointer;
+    }
+    .carousel-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 10px;
+      min-height: 160px;
+    }
+    .carousel-btn {
+      background: #fff;
+      border: 1px solid #bbb;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #888;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      transition: background 0.2s, color 0.2s;
+      opacity: 0.8;
+      outline: none;
+    }
+    .carousel-btn:hover {
+      background: #eee;
+      color: #333;
+      opacity: 1;
+    }
+    .carousel-btn.left {
+      left: 0;
+    }
+    .carousel-btn.right {
+      right: 0;
+    }
+    .carousel-photo {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      display: block;
+      margin: 0 24px;
+    }
+    .carousel-placeholder {
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      margin: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bbb;
+      font-size: 2rem;
+    }
+    .cover-select-section {
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .cover-select-label {
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .cover-thumbnails {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .cover-thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 2px solid #ccc;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+    .cover-thumb.selected {
+      border: 2.5px solid #2d7a2d;
+    }
+    .search-bar-container {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .search-bar {
+      width: 110%;
+      max-width: 450px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .sort-dropdown {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.67rem;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+      height: 28px;
+      min-width: 90px;
+      max-width: 120px;
+    }
+    .profile-section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .profile-pic-container {
+      position: relative;
+      display: inline-block;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #dbdbdb;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+    .profile-pic-overlay {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      color: #666;
+      transition: background 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .profile-pic-overlay:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+    .profile-pic-input {
+      display: none;
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-handle {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #262626;
+    }
+    .profile-bio {
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.4;
+    }
+    .profile-edit-btn {
+      background: #f2f2f2;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .profile-edit-btn:hover {
+      background: #e0e0e0;
+    }
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #dbdbdb;
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .company-name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #262626;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 16px;
+    }
+    .nav-btn {
+      background: #f2f2f2;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #262626;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .nav-btn:hover {
+      background: #e0e0e0;
+      color: #000;
+    }
+    .nav-btn.active {
+      background: #262626;
+      color: #fff;
+    }
+    .nav-btn.logout-btn {
+      background: #f2f2f2;
+      color: #262626;
+      margin-left: 8px;
+    }
+    .nav-btn.logout-btn:hover {
+      background: #e0e0e0;
+      color: #000;
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 12px auto;
+      }
+      .modal {
+        padding: 16px 6px 16px 6px;
+      }
+    }
+
+    /* Account Tab Styles */
+    .account-section {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .account-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .account-card h2 {
+      margin-bottom: 20px;
+      color: #262626;
+      font-size: 1.3rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-row label {
+      font-weight: 600;
+      color: #666;
+      min-width: 120px;
+    }
+
+    .info-row span {
+      color: #262626;
+      text-align: right;
+    }
+
+    .stripe-section {
+      margin-top: 16px;
+    }
+
+    .stripe-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .status-indicator {
+      font-size: 1.2rem;
+    }
+
+    .status-indicator.connected {
+      color: #28a745;
+    }
+
+    .status-indicator.disconnected {
+      color: #dc3545;
+    }
+
+    .stripe-connect-btn {
+      background: #6772e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-right: 12px;
+    }
+
+    .stripe-connect-btn:hover {
+      background: #5469d4;
+    }
+
+    .stripe-disconnect-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .stripe-disconnect-btn:hover {
+      background: #5a6268;
+    }
+
+    .stripe-info {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .danger-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .danger-btn:hover {
+      background: #c82333;
+    }
+
+    .edit-account-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    .edit-account-btn:hover {
+      background: #0056b3;
+    }
+
+    /* Dashboard Tab Styles */
+    .dashboard-section {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .dashboard-section h1 {
+      margin-bottom: 8px;
+      color: #262626;
+    }
+
+    .dashboard-section p {
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .dashboard-embed {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .dashboard-embed iframe {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="#" class="company-name">hlfwrld</a>
+      <nav class="nav-buttons">
+        <button class="nav-btn" onclick="window.goToAccount()">Account</button>
+        <button class="nav-btn active" onclick="window.goToDigitalShop()">Digital Shop</button>
+        <button class="nav-btn" onclick="window.goToInfluencerDashboard()">Dashboard</button>
+        <button class="nav-btn" onclick="window.sharePublicProfile()">Share Profile</button>
+        <button class="nav-btn" onclick="window.goToContact()">Contact Us</button>
+        <button class="nav-btn logout-btn" onclick="window.logOut()">Log Out</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Digital Shop Tab Content -->
+  <div class="container" id="digitalShopTab">
+    <div class="profile-section" id="profileSection">
+      <div class="profile-pic-container">
+        <img class="profile-pic" id="profilePic" src="https://via.placeholder.com/120x120/f0f0f0/999.png?text=📷" alt="Profile Picture">
+        <div class="profile-pic-overlay" id="profilePicOverlay" title="Change photo">
+          ↑
+        </div>
+        <input type="file" id="quickProfilePhotoInput" class="profile-pic-input" accept="image/*">
+      </div>
+      <div class="profile-info">
+        <div class="profile-handle" id="profileHandle">@your_handle</div>
+        <div class="profile-bio" id="profileBio">Your bio will appear here. Click edit to add your information.</div>
+      </div>
+      <button class="profile-edit-btn" onclick="window.editProfile()">Edit Profile</button>
+    </div>
+    <h1>Your Posts</h1>
+    <div class="search-bar-container">
+      <input type="text" id="searchBar" class="search-bar" placeholder="Search by title or beauty service name...">
+      <select id="sortDropdown" class="sort-dropdown">
+        <option value="">Display Results</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="price-low">Price: Low to High</option>
+      </select>
+    </div>
+    <div class="posts-grid" id="postsGrid">
+      <!-- Post squares and add square will be rendered here -->
+    </div>
+  </div>
+
+  <!-- Account Tab Content -->
+  <div class="container" id="accountTab" style="display: none;">
+    <div class="account-section">
+      <h1>Account Settings</h1>
+      
+      <div class="account-card">
+        <h2>Personal Information</h2>
+        <div class="info-row">
+          <label>Name:</label>
+          <span id="accountName">Loading...</span>
+        </div>
+        <div class="info-row">
+          <label>Email:</label>
+          <span id="accountEmail">Loading...</span>
+        </div>
+        <div class="info-row">
+          <label>Phone:</label>
+          <span id="accountPhone">Loading...</span>
+        </div>
+        <div class="info-row">
+          <label>Zip Code:</label>
+          <span id="accountZipCode">Loading...</span>
+        </div>
+        <div class="info-row">
+          <label>Instagram:</label>
+          <span id="accountInstagram">Loading...</span>
+        </div>
+        <button class="edit-account-btn" onclick="window.editAccountInfo()">Edit Account Information</button>
+      </div>
+
+      <div class="account-card">
+        <h2>Payment Settings</h2>
+        <div class="stripe-section">
+          <div class="stripe-status" id="stripeStatus">
+            <div class="status-indicator" id="stripeStatusIndicator">⚪</div>
+            <span id="stripeStatusText">Checking Stripe connection...</span>
+          </div>
+          <button class="stripe-connect-btn" id="stripeConnectBtn" onclick="window.connectStripe()">
+            Connect Stripe Account
+          </button>
+          <button class="stripe-disconnect-btn" id="stripeDisconnectBtn" onclick="window.disconnectStripe()" style="display: none;">
+            Disconnect Stripe Account
+          </button>
+          <p class="stripe-info">
+            Connect your Stripe account to receive commissions from your beauty service bookings.
+          </p>
+        </div>
+      </div>
+
+      <div class="account-card">
+        <h2>Account Actions</h2>
+        <button class="danger-btn" onclick="window.deleteAccount()">Delete Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Tab Content -->
+  <div class="container" id="dashboardTab" style="display: none;">
+    <div class="dashboard-section">
+      <h1>Influencer Dashboard</h1>
+      <p>View your service requests and earnings analytics.</p>
+      
+      <div class="dashboard-embed">
+        <iframe id="dashboardFrame" src="influencer-dashboard.html" width="100%" height="800px" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for new post -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <button class="close-btn" id="closeModalBtn">&times;</button>
+      <h2>Add New Post</h2>
+      <form id="newPostForm">
+        <h3 id="modalTitle">Add New Post</h3>
+        <label>Title</label>
+        <input type="text" id="title" required>
+        <label>City</label>
+        <input type="text" id="city" required>
+        <label>State</label>
+        <input type="text" id="state" required>
+        <label>Fee</label>
+        <input type="text" id="fee" required>
+        <label>Service Name</label>
+        <input type="text" id="serviceName" required>
+        <label>Salon Name (Private - not shown to public)</label>
+        <input type="text" id="salonName" placeholder="Enter your salon/business name">
+        <label>Notes</label>
+        <textarea id="notes" rows="2"></textarea>
+        <label>Frequency</label>
+        <input type="text" id="frequency" placeholder="e.g. Weekly, Monthly, On request" />
+        <label>Cover Photo</label>
+        <input type="file" id="coverPhoto" accept="image/*">
+        <label>Other Photos (you can select multiple)</label>
+        <input type="file" id="photos" accept="image/*" multiple>
+        <div class="photos-preview" id="photosPreview"></div>
+        <div class="cover-select-section" id="coverSelectSection" style="display:none;">
+          <span class="cover-select-label">Select Cover Photo:</span>
+          <div class="cover-thumbnails" id="coverThumbnails"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="submit">Submit</button>
+          <button type="button" id="cancelBtn">Cancel</button>
+          <button type="button" id="deleteModalBtn" style="display:none;background:#ffdddd;color:#a00;">Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for profile edit -->
+  <div class="modal-bg" id="profileModalBg">
+    <div class="modal">
+      <button class="close-btn" id="closeProfileModalBtn">&times;</button>
+      <h2>Edit Profile</h2>
+      <form id="profileForm">
+        <label>Handle (e.g., @your_handle)</label>
+        <input type="text" id="profileHandleInput" required>
+        <label>Bio</label>
+        <textarea id="profileBioInput" rows="3" placeholder="Tell people about yourself..."></textarea>
+        <label>Profile Photo</label>
+        <input type="file" id="profilePhotoInput" accept="image/*">
+        <div class="modal-actions">
+          <button type="submit">Save Profile</button>
+          <button type="button" id="cancelProfileBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for account edit -->
+  <div class="modal-bg" id="accountModalBg">
+    <div class="modal">
+      <button class="close-btn" id="closeAccountModalBtn">&times;</button>
+      <h2>Edit Account Information</h2>
+      <form id="accountForm">
+        <label>Name</label>
+        <input type="text" id="accountNameInput" required>
+        <label>Email</label>
+        <input type="email" id="accountEmailInput" required>
+        <label>Phone</label>
+        <input type="tel" id="accountPhoneInput" required placeholder="(555) 123-4567">
+        <label>Zip Code</label>
+        <input type="text" id="accountZipCodeInput" required placeholder="12345" maxlength="5">
+        <label>Instagram Handle</label>
+        <input type="text" id="accountInstagramInput" placeholder="@username">
+        <div class="modal-actions">
+          <button type="submit">Save Changes</button>
+          <button type="button" id="cancelAccountBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+    let influencerName = 'your_handle'; // Will be updated from profile
+    let profileData = {
+      handle: '@your_handle',
+      bio: 'Your bio will appear here. Click edit to add your information.',
+      photo: null
+    };
+    const postsGrid = document.getElementById('postsGrid');
+    const modalBg = document.getElementById('modalBg');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const newPostForm = document.getElementById('newPostForm');
+    const coverPhotoInput = document.getElementById('coverPhoto');
+    let coverPhotoBase64 = null;
+    let photosBase64 = [];
+    const photosInput = document.getElementById('photos');
+    const photosPreview = document.getElementById('photosPreview');
+    let editingPost = null;
+    const deleteModalBtn = document.getElementById('deleteModalBtn');
+    const coverSelectSection = document.getElementById('coverSelectSection');
+    const coverThumbnails = document.getElementById('coverThumbnails');
+
+    // Helper: file to base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Show modal
+    function showModal() {
+      modalBg.classList.add('active');
+    }
+    // Hide modal
+    function hideModal() {
+      modalBg.classList.remove('active');
+      newPostForm.reset();
+      coverPhotoBase64 = null;
+      editingPost = null;
+      deleteModalBtn.style.display = 'none';
+      photosBase64 = [];
+      photosPreview.innerHTML = '';
+      coverThumbnails.innerHTML = '';
+      coverSelectSection.style.display = 'none';
+      document.getElementById('modalTitle').textContent = 'Add New Post';
+      // Clear all form fields explicitly
+      document.getElementById('title').value = '';
+      document.getElementById('city').value = '';
+      document.getElementById('state').value = '';
+      document.getElementById('fee').value = '';
+      document.getElementById('serviceName').value = '';
+      document.getElementById('salonName').value = '';
+      document.getElementById('notes').value = '';
+      document.getElementById('frequency').value = '';
+    }
+
+    closeModalBtn.onclick = hideModal;
+    cancelBtn.onclick = hideModal;
+    modalBg.onclick = (e) => { if (e.target === modalBg) hideModal(); };
+
+    // Handle cover photo input
+    coverPhotoInput.addEventListener('change', async (e) => {
+      if (e.target.files[0]) {
+        coverPhotoBase64 = await fileToBase64(e.target.files[0]);
+      } else {
+        coverPhotoBase64 = null;
+      }
+      updateCoverThumbnails();
+    });
+
+    // Handle new post form submit
+    newPostForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const post = {
+        influencerName,
+        title: document.getElementById('title').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        fee: document.getElementById('fee').value,
+        serviceName: document.getElementById('serviceName').value,
+        salonName: document.getElementById('salonName').value,
+        notes: document.getElementById('notes').value,
+        frequency: document.getElementById('frequency').value,
+        coverPhoto: coverPhotoBase64,
+        photos: photosBase64
+      };
+      console.log('Submitting post:', post);
+      console.log('Editing post?', !!editingPost);
+      try {
+        let response;
+        if (editingPost) {
+          console.log('Updating post ID:', editingPost.id);
+          response = await fetch(`${API_BASE}/posts/${editingPost.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(post)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const result = await response.json();
+          console.log('Update response:', result);
+        } else {
+          console.log('Creating new post');
+          response = await fetch(`${API_BASE}/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(post)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const result = await response.json();
+          console.log('Create response:', result);
+        }
+        hideModal();
+        console.log('Reloading posts...');
+        // Force reload all posts data
+        allLoadedPosts = [];
+        allLoadedSignupCounts = {};
+        await loadPosts();
+        console.log('Posts reloaded');
+      } catch (err) {
+        console.error('Error saving post:', err);
+        alert('Error saving post.');
+      } finally {
+        editingPost = null;
+        photosBase64 = [];
+        updateCoverThumbnails();
+        document.getElementById('frequency').value = '';
+      }
+    });
+
+    let allLoadedPosts = [];
+    let allLoadedSignupCounts = {};
+
+    async function loadPosts() {
+      console.log('🔄 Loading posts for influencer:', influencerName);
+      postsGrid.innerHTML = '';
+      
+      // Add loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.style.gridColumn = '1 / -1';
+      loadingDiv.style.textAlign = 'center';
+      loadingDiv.style.color = '#666';
+      loadingDiv.style.padding = '20px';
+      loadingDiv.textContent = 'Loading posts...';
+      postsGrid.appendChild(loadingDiv);
+      
+      // Add the plus square first
+      const addDiv = document.createElement('div');
+      addDiv.className = 'add-square';
+      addDiv.innerHTML = '<span>+</span>';
+      addDiv.onclick = showModal;
+      postsGrid.appendChild(addDiv);
+      // Load posts
+      try {
+        const res = await fetch(`${API_BASE}/posts/${influencerName}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const posts = await res.json();
+        console.log('✅ Successfully loaded', posts.length, 'posts:', posts);
+        allLoadedPosts = posts;
+        allLoadedSignupCounts = {};
+        
+        // Remove loading indicator
+        const loadingDiv = postsGrid.querySelector('div[style*="Loading posts"]');
+        if (loadingDiv) loadingDiv.remove();
+        
+        for (const post of posts) {
+          const signupCount = await getSignupCount(post.code);
+          allLoadedSignupCounts[post.id] = signupCount;
+        }
+        renderFilteredPosts();
+        
+        if (posts.length === 0) {
+          console.log('ℹ️ No posts found for this influencer');
+        } else {
+          console.log('🎉 Successfully rendered', posts.length, 'posts in the grid');
+        }
+      } catch (error) {
+        console.error('❌ Error loading posts:', error);
+        
+        // Remove loading indicator
+        const loadingDiv = postsGrid.querySelector('div[style*="Loading posts"]');
+        if (loadingDiv) loadingDiv.remove();
+        
+        // Show error message with retry button
+        const errorDiv = document.createElement('div');
+        errorDiv.style.gridColumn = '1 / -1';
+        errorDiv.style.textAlign = 'center';
+        errorDiv.style.color = '#999';
+        errorDiv.style.padding = '20px';
+        errorDiv.innerHTML = `
+          <p>Unable to load posts. Please check your connection.</p>
+          <button onclick="loadPosts()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🔄 Retry Loading Posts
+          </button>
+        `;
+        postsGrid.appendChild(errorDiv);
+      }
+    }
+
+    async function getSignupCount(code) {
+      try {
+        const res = await fetch(`${API_BASE}/signup-count/${code}`);
+        const data = await res.json();
+        return data.signupCount || 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    function renderPostSquare(post, signupCount) {
+      const div = document.createElement('div');
+      div.className = 'post-square';
+      // Prepare all photos (cover first, then others)
+      const allPhotos = [post.coverPhoto, ...(post.photos || [])].filter(Boolean);
+      let currentPhotoIdx = 0;
+      // Carousel HTML
+      div.innerHTML = `
+        <button class="edit-btn" onclick="window.editPost('${post.id}')">Edit</button>
+        <div class="carousel-container">
+          <button class="carousel-btn left" style="display:none" aria-label="Previous photo">&#60;</button>
+          ${allPhotos.length > 0
+            ? `<img class="carousel-photo" src="${allPhotos[0]}" alt="Photo">`
+            : `<div class='carousel-placeholder'>No Photo</div>`}
+          <button class="carousel-btn right" ${allPhotos.length <= 1 ? 'style=\"display:none\"' : ''} aria-label="Next photo">&#62;</button>
+        </div>
+        <div class="post-info">
+          <div class="post-title">${post.title}</div>
+          <div class="post-meta">${post.city}, ${post.state} &bull; $${post.fee} &bull; ${post.serviceName}</div>
+          <div class="post-notes">${post.notes ? post.notes : ''}</div>
+          <div class="post-meta"><b>Frequency:</b> ${post.frequency ? post.frequency : 'N/A'}</div>
+          <div class="post-code">Code: <b>${post.code}</b></div>
+          <div class="signup-count">Signups: <b>${signupCount}</b></div>
+        </div>
+      `;
+      // Carousel logic
+      if (allPhotos.length > 0) {
+        const carousel = div.querySelector('.carousel-container');
+        const img = carousel.querySelector('.carousel-photo');
+        const leftBtn = carousel.querySelector('.carousel-btn.left');
+        const rightBtn = carousel.querySelector('.carousel-btn.right');
+        function updatePhoto() {
+          img.src = allPhotos[currentPhotoIdx];
+          leftBtn.style.display = currentPhotoIdx === 0 ? 'none' : 'flex';
+          rightBtn.style.display = currentPhotoIdx === allPhotos.length - 1 ? 'none' : 'flex';
+        }
+        leftBtn.onclick = () => {
+          if (currentPhotoIdx > 0) {
+            currentPhotoIdx--;
+            updatePhoto();
+          }
+        };
+        rightBtn.onclick = () => {
+          if (currentPhotoIdx < allPhotos.length - 1) {
+            currentPhotoIdx++;
+            updatePhoto();
+          }
+        };
+      }
+      return div;
+    }
+
+    // Edit and Delete Handlers
+    window.editPost = async (id) => {
+      try {
+        // Find the post by id from our loaded posts
+        const post = allLoadedPosts.find(p => p.id == id);
+        if (!post) {
+          alert('Post not found');
+          return;
+        }
+        
+        editingPost = post;
+        
+        // Pre-fill modal fields
+        document.getElementById('modalTitle').textContent = 'Edit Post';
+        document.getElementById('title').value = post.title || '';
+        document.getElementById('city').value = post.city || '';
+        document.getElementById('state').value = post.state || '';
+        document.getElementById('fee').value = post.fee || '';
+        document.getElementById('serviceName').value = post.serviceName || '';
+        document.getElementById('salonName').value = post.salonName || '';
+        document.getElementById('notes').value = post.notes || '';
+        document.getElementById('frequency').value = post.frequency || '';
+        
+        // Set photos without clearing
+        coverPhotoBase64 = post.coverPhoto || null;
+        photosBase64 = [...(post.photos || [])];
+        updatePhotosPreview();
+        updateCoverThumbnails();
+        
+        deleteModalBtn.style.display = 'inline-block';
+        showModal();
+      } catch (error) {
+        console.error('Error in editPost:', error);
+        alert('Error loading post for edit.');
+      }
+    };
+
+    deleteModalBtn.onclick = async () => {
+      if (!editingPost) return;
+      if (!confirm('Delete this post?')) return;
+      try {
+        await fetch(`${API_BASE}/posts/${editingPost.id}`, { method: 'DELETE' });
+        hideModal();
+        loadPosts();
+      } catch {
+        alert('Error deleting post.');
+      } finally {
+        editingPost = null;
+        photosBase64 = [];
+        updateCoverThumbnails();
+        document.getElementById('frequency').value = '';
+      }
+    };
+
+    function updateCoverThumbnails() {
+      // Only show if there are any photos
+      const all = [coverPhotoBase64, ...photosBase64].filter(Boolean);
+      if (all.length === 0) {
+        coverSelectSection.style.display = 'none';
+        coverThumbnails.innerHTML = '';
+        return;
+      }
+      coverSelectSection.style.display = 'block';
+      coverThumbnails.innerHTML = '';
+      all.forEach((imgSrc, idx) => {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'cover-thumb' + (imgSrc === coverPhotoBase64 ? ' selected' : '');
+        img.title = idx === 0 ? 'Current Cover' : 'Photo';
+        img.onclick = () => {
+          // Move selected photo to coverPhotoBase64, and the old cover to photosBase64
+          if (imgSrc !== coverPhotoBase64) {
+            // Remove from photosBase64 if present
+            photosBase64 = photosBase64.filter(p => p !== imgSrc);
+            // Add old cover to photosBase64 if not already present
+            if (coverPhotoBase64 && !photosBase64.includes(coverPhotoBase64)) {
+              photosBase64.unshift(coverPhotoBase64);
+            }
+            coverPhotoBase64 = imgSrc;
+            updateCoverThumbnails();
+            updatePhotosPreview();
+          }
+        };
+        coverThumbnails.appendChild(img);
+      });
+    }
+
+    function updatePhotosPreview() {
+      photosPreview.innerHTML = '';
+      for (const base64 of photosBase64) {
+        const img = document.createElement('img');
+        img.src = base64;
+        photosPreview.appendChild(img);
+      }
+      updateCoverThumbnails();
+    }
+
+    function renderFilteredPosts() {
+      const searchValue = (document.getElementById('searchBar')?.value || '').toLowerCase();
+      const sortValue = document.getElementById('sortDropdown')?.value || '';
+      console.log('Rendering filtered posts. Total posts:', allLoadedPosts.length);
+      
+      // Remove all except the addDiv
+      postsGrid.innerHTML = '';
+      const addDiv = document.createElement('div');
+      addDiv.className = 'add-square';
+      addDiv.innerHTML = '<span>+</span>';
+      addDiv.onclick = showModal;
+      postsGrid.appendChild(addDiv);
+      
+      let filtered = allLoadedPosts || [];
+      if (searchValue) {
+        filtered = allLoadedPosts.filter(post =>
+          (post.title && post.title.toLowerCase().includes(searchValue)) ||
+          (post.serviceName && post.serviceName.toLowerCase().includes(searchValue))
+        );
+        console.log('Filtered posts by search:', filtered.length);
+      }
+      // Sort by price if selected
+      if (sortValue === 'price-high') {
+        filtered = [...filtered].sort((a, b) => parseFloat(b.fee || 0) - parseFloat(a.fee || 0));
+      } else if (sortValue === 'price-low') {
+        filtered = [...filtered].sort((a, b) => parseFloat(a.fee || 0) - parseFloat(b.fee || 0));
+      }
+      
+      console.log('Final filtered posts to render:', filtered.length);
+      for (const post of filtered) {
+        const postElement = renderPostSquare(post, allLoadedSignupCounts[post.id] || 0);
+        postsGrid.appendChild(postElement);
+      }
+      
+      // Show message if no posts
+      if (filtered.length === 0 && allLoadedPosts.length > 0) {
+        const noResultsDiv = document.createElement('div');
+        noResultsDiv.style.gridColumn = '1 / -1';
+        noResultsDiv.style.textAlign = 'center';
+        noResultsDiv.style.color = '#999';
+        noResultsDiv.style.padding = '20px';
+        noResultsDiv.textContent = 'No posts match your search criteria.';
+        postsGrid.appendChild(noResultsDiv);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check for creator parameter in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const creatorParam = urlParams.get('creator');
+      const tabParam = urlParams.get('tab');
+      
+      if (creatorParam) {
+        console.log('🎯 Loading creator-specific digital shop for:', creatorParam);
+        // Set the influencer name to the creator's username
+        influencerName = creatorParam;
+        
+        // Update the profile data with the creator's username
+        profileData.handle = `@${creatorParam}`;
+        
+        // Update the profile handle display immediately
+        const profileHandleElement = document.getElementById('profileHandle');
+        if (profileHandleElement) {
+          profileHandleElement.textContent = `@${creatorParam}`;
+        }
+        
+        // Update the profile bio if we have creator data
+        const creatorData = localStorage.getItem('creatorData');
+        if (creatorData) {
+          const creator = JSON.parse(creatorData);
+          if (creator.username === creatorParam) {
+            console.log('✅ Authenticated creator accessing their digital shop');
+            // Update profile bio with creator's name
+            const profileBioElement = document.getElementById('profileBio');
+            if (profileBioElement) {
+              profileBioElement.textContent = `Welcome to ${creator.name}'s digital shop!`;
+            }
+          } else {
+            console.log('⚠️ Different creator accessing this shop');
+          }
+        } else {
+          console.log('⚠️ No authentication found');
+        }
+      }
+      
+      // Check for tab parameter in URL and show appropriate tab
+      if (tabParam === 'account') {
+        console.log('📋 Showing account tab from URL parameter');
+        // Wait a bit for the page to fully load, then show account tab
+        setTimeout(() => {
+          showTab('accountTab');
+          loadAccountData();
+          // Update active button state
+          document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+          const accountBtn = document.querySelector('button[onclick="window.goToAccount()"]');
+          if (accountBtn) accountBtn.classList.add('active');
+        }, 500);
+      }
+      
+      const searchBar = document.getElementById('searchBar');
+      const sortDropdown = document.getElementById('sortDropdown');
+      if (searchBar) {
+        searchBar.addEventListener('input', renderFilteredPosts);
+      }
+      if (sortDropdown) {
+        sortDropdown.addEventListener('change', renderFilteredPosts);
+      }
+      
+      // Handle multiple photo uploads
+      if (photosInput) {
+        photosInput.addEventListener('change', async (e) => {
+          const files = Array.from(e.target.files);
+          
+          // Add new photos to existing ones instead of replacing
+          for (const file of files) {
+            try {
+              const base64 = await fileToBase64(file);
+              photosBase64.push(base64);
+            } catch (error) {
+              console.error('Error converting file to base64:', error);
+            }
+          }
+          
+          // Clear the input so the same files can be selected again if needed
+          e.target.value = '';
+          
+          updatePhotosPreview();
+          updateCoverThumbnails();
+        });
+      }
+      
+      // CRITICAL: Load posts when page loads - DO NOT REMOVE THIS!
+      console.log('🚨 CRITICAL: Loading posts on page load...');
+      loadPosts().then(() => {
+        console.log('✅ Posts loaded successfully on page load');
+      }).catch(err => {
+        console.error('❌ Failed to load posts on page load:', err);
+        // Try again after a short delay
+        setTimeout(() => {
+          console.log('🔄 Retrying post load...');
+          loadPosts();
+        }, 1000);
+      });
+      
+      // Load profile data from database
+      loadProfileFromDatabase();
+    });
+
+    // BACKUP SYSTEM: Multiple ways to ensure posts load
+    window.addEventListener('load', () => {
+      console.log('🔍 Window load event - checking if posts are loaded...');
+      setTimeout(() => {
+        if (!allLoadedPosts || allLoadedPosts.length === 0) {
+          console.log('⚠️ No posts found after page load, attempting backup load...');
+          loadPosts();
+        }
+      }, 500);
+    });
+
+    // Profile management
+    const profileModalBg = document.getElementById('profileModalBg');
+    const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+    const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+    const profileForm = document.getElementById('profileForm');
+    const profilePhotoInput = document.getElementById('profilePhotoInput');
+    let profilePhotoBase64 = null;
+
+    function showProfileModal() {
+      profileModalBg.classList.add('active');
+    }
+
+    function hideProfileModal() {
+      profileModalBg.classList.remove('active');
+      profileForm.reset();
+      profilePhotoBase64 = null;
+    }
+
+    closeProfileModalBtn.onclick = hideProfileModal;
+    cancelProfileBtn.onclick = hideProfileModal;
+    profileModalBg.onclick = (e) => { if (e.target === profileModalBg) hideProfileModal(); };
+
+    // Handle profile photo input
+    profilePhotoInput.addEventListener('change', async (e) => {
+      if (e.target.files[0]) {
+        profilePhotoBase64 = await fileToBase64(e.target.files[0]);
+      } else {
+        profilePhotoBase64 = null;
+      }
+    });
+
+    // Profile form submit
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      profileData = {
+        handle: document.getElementById('profileHandleInput').value,
+        bio: document.getElementById('profileBioInput').value,
+        photo: profilePhotoBase64 || profileData.photo
+      };
+      
+      // Update influencer name from handle (remove @ if present)
+      influencerName = profileData.handle.replace('@', '');
+      
+      // Save to database
+      await saveProfileToDatabase();
+      
+      updateProfileDisplay();
+      hideProfileModal();
+      loadPosts(); // Reload posts with new influencer name
+    });
+
+    function updateProfileDisplay() {
+      document.getElementById('profileHandle').textContent = profileData.handle;
+      document.getElementById('profileBio').textContent = profileData.bio;
+      if (profileData.photo) {
+        document.getElementById('profilePic').src = profileData.photo;
+      }
+    }
+
+    window.editProfile = () => {
+      document.getElementById('profileHandleInput').value = profileData.handle;
+      document.getElementById('profileBioInput').value = profileData.bio;
+      profilePhotoBase64 = profileData.photo;
+      showProfileModal();
+    };
+
+    // Quick profile photo upload
+    const quickProfilePhotoInput = document.getElementById('quickProfilePhotoInput');
+    const profilePicOverlay = document.getElementById('profilePicOverlay');
+
+    profilePicOverlay.onclick = () => {
+      quickProfilePhotoInput.click();
+    };
+
+    quickProfilePhotoInput.addEventListener('change', async (e) => {
+      if (e.target.files[0]) {
+        const newPhotoBase64 = await fileToBase64(e.target.files[0]);
+        profileData.photo = newPhotoBase64;
+        document.getElementById('profilePic').src = newPhotoBase64;
+        
+        // Save to database
+        await saveProfileToDatabase();
+      }
+    });
+
+    // Save profile to database
+    async function saveProfileToDatabase() {
+      try {
+        console.log('💾 Saving profile to database...', profileData);
+        const response = await fetch(`${API_BASE}/profile/${influencerName}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            profilePhoto: profileData.photo,
+            handle: profileData.handle,
+            bio: profileData.bio
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Profile saved to database successfully');
+          // Also keep in localStorage as backup
+          localStorage.setItem('influencerProfile', JSON.stringify(profileData));
+        } else {
+          console.error('❌ Failed to save profile to database');
+          // Fall back to localStorage
+          localStorage.setItem('influencerProfile', JSON.stringify(profileData));
+        }
+      } catch (error) {
+        console.error('❌ Error saving profile to database:', error);
+        // Fall back to localStorage
+        localStorage.setItem('influencerProfile', JSON.stringify(profileData));
+      }
+    }
+
+    // Load profile from database (with localStorage fallback)
+    async function loadProfileFromDatabase() {
+      try {
+        console.log('🔄 Loading profile from database...');
+        const response = await fetch(`${API_BASE}/profile/${influencerName}`);
+        
+        if (response.ok) {
+          const dbProfile = await response.json();
+          console.log('✅ Profile loaded from database:', dbProfile);
+          
+          if (dbProfile.profilePhoto || dbProfile.handle || dbProfile.bio) {
+            // Preserve the creator's handle if it was set from URL parameter
+            const currentHandle = profileData.handle;
+            profileData = {
+              photo: dbProfile.profilePhoto,
+              handle: currentHandle || dbProfile.handle || profileData.handle,
+              bio: dbProfile.bio || profileData.bio
+            };
+            updateProfileDisplay();
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading profile from database:', error);
+      }
+      
+      // Fall back to localStorage if database fails
+      loadProfileFromLocalStorage();
+    }
+
+    // Load profile from localStorage on page load
+    function loadProfileFromLocalStorage() {
+      const saved = localStorage.getItem('influencerProfile');
+      if (saved) {
+        const savedProfile = JSON.parse(saved);
+        // Preserve the creator's handle if it was set from URL parameter
+        const currentHandle = profileData.handle;
+        profileData = {
+          ...savedProfile,
+          handle: currentHandle || savedProfile.handle
+        };
+        influencerName = profileData.handle.replace('@', '');
+        updateProfileDisplay();
+      }
+    }
+
+    // Initial load (handled in DOMContentLoaded event above)
+
+    // Tab switching functions
+    function showTab(tabId) {
+      // Hide all tabs
+      document.getElementById('digitalShopTab').style.display = 'none';
+      document.getElementById('accountTab').style.display = 'none';
+      document.getElementById('dashboardTab').style.display = 'none';
+      
+      // Show selected tab
+      document.getElementById(tabId).style.display = 'block';
+    }
+
+    // Navigation functions
+    window.goToAccount = () => {
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      console.log('Navigate to Account page');
+      
+      // Show account tab and load account data
+      showTab('accountTab');
+      loadAccountData();
+    };
+
+    window.goToDigitalShop = () => {
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      console.log('Navigate to Digital Shop page');
+      
+      // Show digital shop tab
+      showTab('digitalShopTab');
+    };
+
+    window.goToInfluencerDashboard = () => {
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      console.log('Navigate to Influencer Dashboard page');
+      
+      // Navigate to influencer dashboard page
+      window.location.href = 'http://localhost:3000/influencer-dashboard';
+    };
+
+    window.goToContact = () => {
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      console.log('Navigate to Contact page');
+      
+      // Navigate to contact page
+              window.location.href = 'http://localhost:3000/contact-us';
+    };
+
+    window.goToSalonLanding = () => {
+      // Update active button
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      console.log('Navigate to Salon Landing page');
+      
+      // Navigate to salon landing page
+              window.location.href = 'http://localhost:3000/salon-landing';
+    };
+
+    // Account functions
+    async function loadAccountData() {
+      try {
+        const creatorData = JSON.parse(localStorage.getItem('creatorData') || '{}');
+        
+        // Load creator data from database
+        const response = await fetch(`${API_BASE}/creators/profile`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('creatorToken')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const creator = data.creator;
+          
+          // Update account information
+          document.getElementById('accountName').textContent = creator.name || 'Not set';
+          document.getElementById('accountEmail').textContent = creator.email || 'Not set';
+          document.getElementById('accountPhone').textContent = creator.phone || 'Not set';
+          document.getElementById('accountZipCode').textContent = creator.zipCode || 'Not set';
+          document.getElementById('accountInstagram').textContent = creator.instagram || 'Not set';
+          
+          // Check Stripe connection status
+          checkStripeStatus();
+        } else {
+          console.error('Failed to load creator data');
+        }
+      } catch (error) {
+        console.error('Error loading account data:', error);
+      }
+    }
+
+    async function checkStripeStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/creator/stripe-status`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('creatorToken')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          updateStripeStatus(data.connected);
+        } else {
+          updateStripeStatus(false);
+        }
+      } catch (error) {
+        console.error('Error checking Stripe status:', error);
+        updateStripeStatus(false);
+      }
+    }
+
+    function updateStripeStatus(connected) {
+      const statusIndicator = document.getElementById('stripeStatusIndicator');
+      const statusText = document.getElementById('stripeStatusText');
+      const connectBtn = document.getElementById('stripeConnectBtn');
+      const disconnectBtn = document.getElementById('stripeDisconnectBtn');
+
+      if (connected) {
+        statusIndicator.textContent = '✅';
+        statusIndicator.className = 'status-indicator connected';
+        statusText.textContent = 'Stripe account connected';
+        connectBtn.style.display = 'none';
+        disconnectBtn.style.display = 'inline-block';
+      } else {
+        statusIndicator.textContent = '❌';
+        statusIndicator.className = 'status-indicator disconnected';
+        statusText.textContent = 'Stripe account not connected';
+        connectBtn.style.display = 'inline-block';
+        disconnectBtn.style.display = 'none';
+      }
+    }
+
+    window.connectStripe = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/creator/stripe-connect`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('creatorToken')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Redirect to Stripe Connect onboarding
+          window.open(data.url, '_blank');
+          
+          // Check status after a delay
+          setTimeout(() => {
+            checkStripeStatus();
+          }, 5000);
+        } else {
+          alert('Failed to initiate Stripe connection. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error connecting Stripe:', error);
+        alert('Error connecting Stripe account. Please try again.');
+      }
+    };
+
+    window.disconnectStripe = async () => {
+      if (confirm('Are you sure you want to disconnect your Stripe account? This will stop commission payments.')) {
+        try {
+          const response = await fetch(`${API_BASE}/creator/stripe-disconnect`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('creatorToken')}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            updateStripeStatus(false);
+            alert('Stripe account disconnected successfully.');
+          } else {
+            alert('Failed to disconnect Stripe account. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error disconnecting Stripe:', error);
+          alert('Error disconnecting Stripe account. Please try again.');
+        }
+      }
+    };
+
+    window.deleteAccount = () => {
+      // Redirect to the influencer account cancellation page
+      window.location.href = 'http://localhost:3000/influencer-account-cancellation';
+    };
+
+    // Account edit modal functions
+    window.editAccountInfo = () => {
+      // Pre-fill the form with current account data
+      document.getElementById('accountNameInput').value = document.getElementById('accountName').textContent === 'Loading...' ? '' : document.getElementById('accountName').textContent;
+      document.getElementById('accountEmailInput').value = document.getElementById('accountEmail').textContent === 'Loading...' ? '' : document.getElementById('accountEmail').textContent;
+      document.getElementById('accountPhoneInput').value = document.getElementById('accountPhone').textContent === 'Loading...' ? '' : document.getElementById('accountPhone').textContent;
+      document.getElementById('accountZipCodeInput').value = document.getElementById('accountZipCode').textContent === 'Loading...' ? '' : document.getElementById('accountZipCode').textContent;
+      document.getElementById('accountInstagramInput').value = document.getElementById('accountInstagram').textContent === 'Loading...' ? '' : document.getElementById('accountInstagram').textContent;
+      
+      // Show the modal
+      document.getElementById('accountModalBg').style.display = 'flex';
+    };
+
+    // Account modal event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      const accountModalBg = document.getElementById('accountModalBg');
+      const closeAccountModalBtn = document.getElementById('closeAccountModalBtn');
+      const cancelAccountBtn = document.getElementById('cancelAccountBtn');
+      const accountForm = document.getElementById('accountForm');
+
+      // Close modal functions
+      function hideAccountModal() {
+        console.log('🔒 Hiding account modal...');
+        accountModalBg.style.display = 'none';
+        accountForm.reset();
+      }
+
+      closeAccountModalBtn.onclick = hideAccountModal;
+      cancelAccountBtn.onclick = hideAccountModal;
+      accountModalBg.onclick = (e) => {
+        if (e.target === accountModalBg) hideAccountModal();
+      };
+
+      // Handle form submission
+      accountForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log('📝 Account form submitted...');
+        
+        const formData = {
+          name: document.getElementById('accountNameInput').value.trim(),
+          email: document.getElementById('accountEmailInput').value.trim(),
+          phone: document.getElementById('accountPhoneInput').value.trim(),
+          zipCode: document.getElementById('accountZipCodeInput').value.trim(),
+          instagram: document.getElementById('accountInstagramInput').value.trim()
+        };
+        
+        console.log('📋 Form data:', formData);
+
+        // Validate required fields
+        if (!formData.name || !formData.email || !formData.phone || !formData.zipCode) {
+          alert('Please fill in all required fields.');
+          return;
+        }
+
+        // Validate email format
+        if (!isValidEmail(formData.email)) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+
+        // Validate phone format
+        if (!isValidPhone(formData.phone)) {
+          alert('Please enter a valid phone number in format (555) 123-4567.');
+          return;
+        }
+
+        // Validate zip code format
+        if (!isValidZipCode(formData.zipCode)) {
+          alert('Please enter a valid 5-digit zip code.');
+          return;
+        }
+
+        try {
+          // Update account in database
+          const response = await fetch(`${API_BASE}/creators/profile`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('creatorToken')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+
+          if (response.ok) {
+            console.log('✅ Database update successful');
+            
+            // Update display
+            document.getElementById('accountName').textContent = formData.name;
+            document.getElementById('accountEmail').textContent = formData.email;
+            document.getElementById('accountPhone').textContent = formData.phone;
+            document.getElementById('accountZipCode').textContent = formData.zipCode;
+            document.getElementById('accountInstagram').textContent = formData.instagram || 'Not set';
+            
+            // Update localStorage
+            const creatorData = JSON.parse(localStorage.getItem('creatorData') || '{}');
+            Object.assign(creatorData, formData);
+            localStorage.setItem('creatorData', JSON.stringify(creatorData));
+            
+            // Hide modal first
+            console.log('🔒 Hiding modal...');
+            hideAccountModal();
+            
+            // Force a small delay to ensure modal is hidden
+            setTimeout(() => {
+              console.log('🔄 Switching back to Account tab...');
+              
+              // Force show account tab
+              const digitalShopTab = document.getElementById('digitalShopTab');
+              const accountTab = document.getElementById('accountTab');
+              const dashboardTab = document.getElementById('dashboardTab');
+              
+              if (digitalShopTab) digitalShopTab.style.display = 'none';
+              if (accountTab) accountTab.style.display = 'block';
+              if (dashboardTab) dashboardTab.style.display = 'none';
+              
+              console.log('📱 Tab display states:', {
+                digitalShop: digitalShopTab?.style.display,
+                account: accountTab?.style.display,
+                dashboard: dashboardTab?.style.display
+              });
+              
+              // Update active navigation button
+              document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                console.log('🔘 Removed active from:', btn.textContent);
+              });
+              
+              const accountBtn = document.querySelector('button[onclick="window.goToAccount()"]');
+              if (accountBtn) {
+                accountBtn.classList.add('active');
+                console.log('🔘 Set active on Account button');
+              } else {
+                console.log('❌ Could not find Account button');
+              }
+              
+              console.log('✅ Successfully switched to Account tab');
+              
+              // Show success message
+              alert('Account information updated successfully!');
+            }, 200);
+            
+            console.log('✅ Account information updated successfully');
+          } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update account');
+          }
+        } catch (error) {
+          console.error('❌ Error updating account information:', error);
+          alert('Failed to update account information. Please try again.');
+        }
+      });
+
+      // Add input validation and formatting
+      const phoneInput = document.getElementById('accountPhoneInput');
+      const zipInput = document.getElementById('accountZipCodeInput');
+      const instagramInput = document.getElementById('accountInstagramInput');
+
+      // Phone number formatting
+      phoneInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 6) {
+          value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+        } else if (value.length >= 3) {
+          value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
+        }
+        e.target.value = value;
+      });
+
+      // Zip code validation
+      zipInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+      });
+
+      // Instagram handle formatting
+      instagramInput.addEventListener('input', (e) => {
+        if (e.target.value && !e.target.value.startsWith('@')) {
+          e.target.value = '@' + e.target.value.replace('@', '');
+        }
+      });
+    });
+
+    window.sharePublicProfile = () => {
+      // Get the current influencer handle
+      const handle = influencerName || 'influencer_name';
+      const publicUrl = `http://localhost:8000/public-profile.html?handle=${handle}`;
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(publicUrl).then(() => {
+        alert(`Public profile link copied to clipboard!\n\n${publicUrl}\n\nShare this link so others can view your posts.`);
+      }).catch(() => {
+        // Fallback if clipboard API not available
+        prompt('Copy this public profile link:', publicUrl);
+      });
+    };
+
+    window.logOut = () => {
+      // Clear any stored data
+      localStorage.removeItem('influencerProfile');
+      localStorage.removeItem('creatorToken');
+      localStorage.removeItem('creatorData');
+      
+      // Redirect to creator login page
+      console.log('User logged out, redirecting to creator login page');
+      window.location.href = 'http://localhost:3000/creator-auth';
+    };
+  </script>
+</body>
+</html> 

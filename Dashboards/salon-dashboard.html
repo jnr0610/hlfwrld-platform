@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Dashboard - Service Requests</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Main Header with Hlfwrld Branding */
+        .main-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+            padding: 1rem 2rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            opacity: 0.75;
+    }
+
+    .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+        }
+
+        .brand-section {
+      display: flex;
+      align-items: center;
+    }
+
+        .brand-title {
+      font-size: 1.8rem;
+            font-weight: 700;
+      margin: 0;
+            color: white;
+        }
+
+        .nav-section {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+      color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+      border-radius: 6px;
+            transition: all 0.2s ease;
+            background: none;
+            border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn {
+            color: #fecaca;
+    }
+
+    .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Dashboard Title Section */
+        .dashboard-title-section {
+            text-align: center;
+            margin-bottom: 2rem;
+      padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-description {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-card {
+      background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filters-section {
+            padding: 1.5rem 2rem;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-select, .filter-input {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .requests-section {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .requests-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .request-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .request-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .request-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .request-id {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .service-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .service-name {
+      font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .service-fee {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+
+
+        .request-details {
+      display: grid;
+            grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+        .detail-section {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #f3f4f6;
+        }
+
+        .detail-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .client-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .client-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .client-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .client-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .requested-dates {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .date-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+      background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .date-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .time-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .response-section {
+            background: #f0f9ff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e0f2fe;
+        }
+
+        .response-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+            gap: 0.5rem;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+        .time-slot {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .slot-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .slot-input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .slot-time {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .time-select {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            width: 80px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+      display: flex;
+      align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #059669;
+      color: white;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+        }
+
+        .btn-secondary {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.25rem;
+      font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .modal-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-description {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .time-options-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .time-option-row {
+      display: grid;
+            grid-template-columns: 80px 1fr 1fr;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .option-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .modal-date-input,
+        .modal-time-select {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .modal-date-input:focus,
+        .modal-time-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Pagination Styles */
+        .pagination-section {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1.5rem 2rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+      gap: 1rem;
+        }
+
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .pagination-info select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .pagination-navigation {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+      font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .sent-options {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sent-option {
+            background: white;
+            border: 1px solid #d1fae5;
+      border-radius: 8px;
+      padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sent-option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sent-date {
+            font-weight: 600;
+            color: #065f46;
+        }
+
+        .sent-time {
+            font-size: 0.9rem;
+            color: #047857;
+        }
+
+        .sent-badge {
+            background: #065f46;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .payment-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .payment-info {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dcfce7;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-label {
+            font-weight: 500;
+            color: #166534;
+        }
+
+        .payment-value {
+            color: #15803d;
+            font-weight: 500;
+        }
+
+        .payment-amount {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        .empty-state {
+      text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+      }
+      
+            .request-details {
+                grid-template-columns: 1fr;
+        gap: 1rem;
+            }
+
+            .request-header {
+                grid-template-columns: 1fr;
+        text-align: center;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .filters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Main Header with Hlfwrld Branding -->
+        <div class="main-header">
+    <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">Hlfwrld</h1>
+      </div>
+                <div class="nav-section">
+                    <a href="http://localhost:3000/salon-dashboard" class="nav-link">Dashboard</a>
+                    <a href="http://localhost:3000/salon-account-settings" class="nav-link">Account</a>
+                    <a href="http://localhost:3000/contact-us" class="nav-link">Contact Us</a>
+                    <button onclick="logOut()" class="nav-link logout-btn">Log Out</button>
+    </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Title Section -->
+        <div class="dashboard-title-section">
+            <h1 class="dashboard-title">Hlfwrld Salon Dashboard</h1>
+            <p class="dashboard-description">View all of the services requested and send appointment options.</p>
+    </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRequests">0</div>
+                <div class="stat-label">Total Requests</div>
+        </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingRequests">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="confirmedRequests">0</div>
+                <div class="stat-label">Confirmed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPayments">$0</div>
+                <div class="stat-label">💳 Total Payments</div>
+          </div>
+
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Filter by Status</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Filter by Service</label>
+                    <select class="filter-select" id="serviceFilter">
+                        <option value="">All Services</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Filter by Zip Code</label>
+                    <input type="text" class="filter-input" id="zipFilter" placeholder="Enter zip code">
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-outline" onclick="clearFilters()">Clear Filters</button>
+                </div>
+        </div>
+      </div>
+
+        <div class="requests-section">
+            <h2 class="section-title">
+                📋 Service Requests
+                <span id="requestCount" style="font-size: 1rem; color: #6b7280;">(0)</span>
+            </h2>
+            <div class="requests-grid" id="requestsList">
+                <div class="empty-state">
+                    <h3>Loading requests...</h3>
+                    <p>Please wait while we fetch your service requests.</p>
+        </div>
+            </div>
+            </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-section">
+            <div class="pagination-controls">
+                <div class="pagination-info">
+                    <span>Show</span>
+                    <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>requests per page</span>
+                </div>
+                <div class="pagination-navigation">
+                    <button id="prevPage" onclick="previousPage()" class="pagination-btn" disabled>← Previous</button>
+                    <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                    <button id="nextPage" onclick="nextPage()" class="pagination-btn" disabled>Next →</button>
+                </div>
+          </div>
+        </div>
+      </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        const salonHandle = 'influencer_name'; // This would be dynamic based on logged-in salon
+        let allRequests = [];
+        let services = {}; // Store service details
+
+        // Service data - this would normally come from the database
+        const serviceData = {
+            '5320': { name: 'Luxury Manicure', fee: 85 },
+            '5709': { name: 'Premium Facial', fee: 120 },
+            '4JTH1OS3': { name: 'Hair Styling & Cut', fee: 95 },
+            'TEST123': { name: 'Consultation', fee: 50 }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏪 Salon Dashboard Initialized');
+            loadRequests();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('serviceFilter').addEventListener('change', applyFilters);
+            document.getElementById('zipFilter').addEventListener('input', applyFilters);
+        }
+
+        async function loadRequests() {
+            try {
+                console.log('=== LOADING SALON REQUESTS ===');
+                console.log('API Base:', API_BASE);
+                console.log('Salon Handle:', salonHandle);
+                console.log('Full URL:', `${API_BASE}/service-requests/${salonHandle}`);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(`${API_BASE}/service-requests/${salonHandle}?t=${Date.now()}`, {
+                    signal: controller.signal,
+                    cache: 'no-cache'
+                });
+                
+                clearTimeout(timeoutId);
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    allRequests = await response.json();
+                    console.log('✅ Successfully loaded requests:', allRequests.length);
+                    
+                    if (allRequests.length > 0) {
+                        console.log('First request sample:', allRequests[0]);
+                    }
+                    
+                    populateServiceFilter();
+                    updateStats();
+                    displayRequests(allRequests);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('❌ FETCH ERROR:', error);
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                
+                let errorMessage = error.message;
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timeout - server took too long to respond';
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Network error - cannot connect to server. Make sure backend is running on port 3000';
+                }
+                
+                document.getElementById('requestsList').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error Loading Requests</h3>
+                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        <p><strong>API URL:</strong> ${API_BASE}/service-requests/${salonHandle}</p>
+                        <p><strong>Error Type:</strong> ${error.name}</p>
+                        <p>Check browser console (F12) for detailed logs.</p>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="loadRequests()" style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">
+                                🔄 Retry
+                            </button>
+        </div>
+          </div>
+                `;
+            }
+        }
+
+        function populateServiceFilter() {
+            const serviceFilter = document.getElementById('serviceFilter');
+            const services = [...new Set(allRequests.map(req => req.serviceCode).filter(Boolean))];
+            
+            // Clear existing options except "All Services"
+            serviceFilter.innerHTML = '<option value="">All Services</option>';
+            
+            services.forEach(serviceCode => {
+                const service = serviceData[serviceCode];
+                const option = document.createElement('option');
+                option.value = serviceCode;
+                option.textContent = service ? `${service.name} (${serviceCode})` : serviceCode;
+                serviceFilter.appendChild(option);
+            });
+        }
+
+        function updateStats() {
+            const total = allRequests.length;
+            const pending = allRequests.filter(req => req.status === 'pending').length;
+            const confirmed = allRequests.filter(req => req.status === 'confirmed').length;
+            
+            // Calculate total payments from confirmed requests
+            const totalPayments = allRequests
+                .filter(req => req.status === 'confirmed' && req.paymentAmount)
+                .reduce((sum, req) => sum + parseFloat(req.paymentAmount || 0), 0);
+
+            document.getElementById('totalRequests').textContent = total;
+            document.getElementById('pendingRequests').textContent = pending;
+            document.getElementById('confirmedRequests').textContent = confirmed;
+            document.getElementById('totalPayments').textContent = `$${totalPayments.toFixed(2)}`;
+        }
+
+        function displayRequests(requests) {
+            const requestsList = document.getElementById('requestsList');
+            const requestCount = document.getElementById('requestCount');
+            
+            // Store filtered requests for pagination
+            filteredRequests = requests;
+            
+            requestCount.textContent = `(${requests.length})`;
+
+            if (requests.length === 0) {
+                requestsList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No Requests Found</h3>
+                        <p>No service requests match your current filters.</p>
+        </div>
+                `;
+                updatePagination();
+                return;
+            }
+
+            // Apply pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedRequests = requests.slice(startIndex, endIndex);
+
+            requestsList.innerHTML = paginatedRequests.map(request => {
+                const dates = Array.isArray(request.selectedDates) ? request.selectedDates : [];
+                const service = serviceData[request.serviceCode] || { name: 'Unknown Service', fee: 0 };
+                
+                return `
+                    <div class="request-card">
+                        <div class="request-header">
+                            <div class="request-id">#${request.id}</div>
+                            <div class="service-info">
+                                <div class="service-name">${service.name}</div>
+                                <div class="service-fee">$${service.fee}</div>
+                            </div>
+                            <div class="status-badge status-${request.status}">${request.status}</div>
+      </div>
+
+                        <div class="request-details">
+                            <div class="detail-section">
+                                <div class="detail-title">
+                                    📋 Request Information
+        </div>
+                                <div class="client-info">
+                                    <div class="client-item">
+                                        <span class="client-label">Client Name:</span>
+                                        <span class="client-value">${request.clientName}</span>
+          </div>
+                                    <div class="client-item">
+                                        <span class="client-label">Location:</span>
+                                        <span class="client-value">${request.clientZipCode || 'Not provided'}</span>
+        </div>
+                                    <div class="client-item">
+                                        <span class="client-label">Request Date:</span>
+                                        <span class="client-value">${new Date(request.timestamp).toLocaleDateString('en-US', { 
+                                            month: 'short', 
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })}</span>
+      </div>
+
+    </div>
+  </div>
+
+                            <div class="detail-section">
+                                <div class="detail-title">
+                                    📅 Requested Dates & Times
+                                </div>
+                                <div class="requested-dates">
+                                    ${dates.map(dateItem => `
+                                        <div class="date-item">
+                                            <span class="date-value">${new Date(dateItem.date).toLocaleDateString('en-US', { 
+                                                weekday: 'short', 
+                                                month: 'short', 
+                                                day: 'numeric' 
+                                            })}</span>
+                                            <span class="time-badge">${dateItem.time}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            ${request.paymentAmount && (request.status === 'confirmed' || request.status === 'completed') ? `
+                                <div class="detail-section payment-section">
+                                    <div class="detail-title">
+                                        💳 Payment Information
+                                    </div>
+                                    <div class="payment-info">
+                                        <div class="payment-item">
+                                            <span class="payment-label">Amount Paid:</span>
+                                            <span class="payment-value payment-amount">$${request.paymentAmount}</span>
+                                        </div>
+                                        <div class="payment-item">
+                                            <span class="payment-label">Payment Method:</span>
+                                            <span class="payment-value">${request.paymentMethod || 'Not specified'}</span>
+                                        </div>
+                                        <div class="payment-item">
+                                            <span class="payment-label">Payment Date:</span>
+                                            <span class="payment-value">${request.paymentDate ? new Date(request.paymentDate).toLocaleDateString('en-US', { 
+                                                month: 'short', 
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit'
+                                            }) : 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        ${request.status === 'pending' ? `
+                            <div class="response-section">
+                                <div class="response-title">
+                                    ⏰ Provide Available Time Slots
+                                </div>
+                                <div class="time-slots-grid">
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 1:</span>
+                                        <input type="date" class="slot-input" id="date1-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 1)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time1-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 2:</span>
+                                        <input type="date" class="slot-input" id="date2-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 2)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time2-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 3:</span>
+                                        <input type="date" class="slot-input" id="date3-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 3)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time3-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary" onclick="sendTimeOptions(${request.id})">
+                                        ✅ Send Time Options
+                                    </button>
+
+                                </div>
+                            </div>
+                        ` : request.status === 'responded' ? `
+                            <div class="response-section" style="background: #ecfdf5; border-color: #a7f3d0;">
+                                <div class="response-title" style="color: #065f46;">
+                                    ✅ Time Options Sent & Client Notified
+                                </div>
+                                <div class="notification-status" style="margin-bottom: 1rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #16a34a; font-size: 0.9rem;">
+                                        <span>📧</span>
+                                        <span>Email notification sent to client</span>
+                                    </div>
+                                </div>
+                                <div class="sent-options" id="sentOptions-${request.id}">
+                                    ${parseSentTimeOptions(request.notes)}
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline" onclick="updateTimeOptions(${request.id})">
+                                        📝 Update Options
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Update pagination controls
+            updatePagination();
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const serviceFilter = document.getElementById('serviceFilter').value;
+            const zipFilter = document.getElementById('zipFilter').value.toLowerCase();
+
+            let filteredRequests = allRequests.filter(request => {
+                const matchesStatus = !statusFilter || request.status === statusFilter;
+                const matchesService = !serviceFilter || request.serviceCode === serviceFilter;
+                const matchesZip = !zipFilter || (request.clientZipCode && request.clientZipCode.toLowerCase().includes(zipFilter));
+                
+                return matchesStatus && matchesService && matchesZip;
+            });
+
+            // Reset to first page when applying filters
+            currentPage = 1;
+            displayRequests(filteredRequests);
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('serviceFilter').value = '';
+            document.getElementById('zipFilter').value = '';
+            currentPage = 1; // Reset to first page
+            displayRequests(allRequests);
+        }
+
+        function parseSentTimeOptions(notes) {
+            if (!notes || !notes.includes('Salon time options:')) {
+                return '<p style="color: #6b7280; font-style: italic;">No time options found</p>';
+            }
+
+            try {
+                // Extract JSON from notes
+                const jsonStart = notes.indexOf('[');
+                const jsonEnd = notes.lastIndexOf(']') + 1;
+                const timeOptionsJson = notes.substring(jsonStart, jsonEnd);
+                const timeOptions = JSON.parse(timeOptionsJson);
+
+                return timeOptions.map((option, index) => {
+                    const date = new Date(option.date);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    const time = formatTime24to12(option.time);
+
+                    return `
+                        <div class="sent-option">
+                            <div class="sent-option-info">
+                                <div class="sent-date">${formattedDate}</div>
+                                <div class="sent-time">${time}</div>
+                            </div>
+                            <div class="sent-badge">Option ${index + 1}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error parsing time options:', error);
+                return '<p style="color: #ef4444;">Error parsing time options</p>';
+            }
+        }
+
+        function formatTime24to12(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour12 = parseInt(hours) > 12 ? parseInt(hours) - 12 : parseInt(hours);
+            const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+            const displayHour = hour12 === 0 ? 12 : hour12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        function updateTimeOptions(requestId) {
+            // Find the request data
+            const request = allRequests.find(req => req.id === requestId);
+            if (!request) {
+                alert('Request not found');
+        return;
+      }
+      
+            // Parse existing time options from notes
+            let existingTimeOptions = [];
+            if (request.notes && request.notes.includes('Salon time options:')) {
+                try {
+                    const jsonStart = request.notes.indexOf('[');
+                    const jsonEnd = request.notes.lastIndexOf(']') + 1;
+                    const timeOptionsJson = request.notes.substring(jsonStart, jsonEnd);
+                    existingTimeOptions = JSON.parse(timeOptionsJson);
+                } catch (error) {
+                    console.error('Error parsing existing time options:', error);
+                }
+            }
+
+            // Show the modal
+            showTimeOptionsModal(requestId, existingTimeOptions);
+        }
+
+        function showTimeOptionsModal(requestId, existingTimeOptions = []) {
+            // Create modal HTML
+            const modalHTML = `
+                <div id="timeOptionsModal" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>📝 Edit Time Options</h3>
+                            <button class="modal-close" onclick="closeTimeOptionsModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="modal-description">Update the available time slots for this request. The client will be notified of the changes.</p>
+                            
+                            <div class="time-options-form">
+                                <div class="time-option-row">
+                                    <span class="option-label">Option 1:</span>
+                                    <input type="date" class="modal-date-input" id="modal-date1" min="${new Date().toISOString().split('T')[0]}" onchange="updateModalTimeOptions(1)">
+                                    <select class="modal-time-select" id="modal-time1">
+                                        <option value="">Time</option>
+                                        <option value="09:00">9:00 AM</option>
+                                        <option value="09:30">9:30 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="10:30">10:30 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="11:30">11:30 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="12:30">12:30 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="14:30">2:30 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="15:30">3:30 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="16:30">4:30 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="time-option-row">
+                                    <span class="option-label">Option 2:</span>
+                                    <input type="date" class="modal-date-input" id="modal-date2" min="${new Date().toISOString().split('T')[0]}" onchange="updateModalTimeOptions(2)">
+                                    <select class="modal-time-select" id="modal-time2">
+                                        <option value="">Time</option>
+                                        <option value="09:00">9:00 AM</option>
+                                        <option value="09:30">9:30 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="10:30">10:30 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="11:30">11:30 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="12:30">12:30 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="14:30">2:30 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="15:30">3:30 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="16:30">4:30 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="time-option-row">
+                                    <span class="option-label">Option 3:</span>
+                                    <input type="date" class="modal-date-input" id="modal-date3" min="${new Date().toISOString().split('T')[0]}" onchange="updateModalTimeOptions(3)">
+                                    <select class="modal-time-select" id="modal-time3">
+                                        <option value="">Time</option>
+                                        <option value="09:00">9:00 AM</option>
+                                        <option value="09:30">9:30 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="10:30">10:30 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="11:30">11:30 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="12:30">12:30 PM</option>
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="14:30">2:30 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="15:30">3:30 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="16:30">4:30 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="closeTimeOptionsModal()">Cancel</button>
+                            <button class="btn btn-primary" onclick="saveTimeOptions(${requestId})">💾 Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Populate with existing data if available
+            if (existingTimeOptions.length > 0) {
+                existingTimeOptions.forEach((option, index) => {
+                    const optionNum = index + 1;
+                    if (optionNum <= 3) {
+                        document.getElementById(`modal-date${optionNum}`).value = option.date;
+                        document.getElementById(`modal-time${optionNum}`).value = option.time;
+                    }
+                });
+            }
+
+            // Show modal
+            document.getElementById('timeOptionsModal').style.display = 'flex';
+        }
+
+        function closeTimeOptionsModal() {
+            const modal = document.getElementById('timeOptionsModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function updateModalTimeOptions(optionNumber) {
+            const dateInput = document.getElementById(`modal-date${optionNumber}`);
+            const timeSelect = document.getElementById(`modal-time${optionNumber}`);
+            const selectedDate = dateInput.value;
+            const today = new Date().toISOString().split('T')[0];
+            const currentHour = new Date().getHours();
+            
+            // Reset time selection
+            timeSelect.value = '';
+            
+            if (selectedDate === today) {
+                // For today, only show future times with 30-minute increments
+                const futureTimes = [];
+                const currentMinute = new Date().getMinutes();
+                
+                for (let hour = currentHour; hour <= 17; hour++) {
+                    const startMinute = hour === currentHour ? Math.ceil(currentMinute / 30) * 30 : 0;
+                    
+                    for (let minute = startMinute; minute < 60; minute += 30) {
+                        if (hour === currentHour && minute <= currentMinute) continue;
+                        if (hour === 17 && minute > 0) break; // Stop at 5:00 PM
+                        
+                        const timeString = hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+                        const displayHour = hour > 12 ? hour - 12 : hour;
+                        const displayMinute = minute === 0 ? '00' : minute.toString();
+                        const ampm = hour >= 12 ? 'PM' : 'AM';
+                        futureTimes.push(`<option value="${timeString}">${displayHour}:${displayMinute} ${ampm}</option>`);
+                    }
+                }
+                timeSelect.innerHTML = '<option value="">Time</option>' + futureTimes.join('');
+            } else {
+                // For future dates, show all times
+                timeSelect.innerHTML = `
+                    <option value="">Time</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="09:30">9:30 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="10:30">10:30 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="12:30">12:30 PM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="13:30">1:30 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="14:30">2:30 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="15:30">3:30 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="16:30">4:30 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                `;
+            }
+        }
+
+        async function saveTimeOptions(requestId) {
+            try {
+                // Collect time options from modal
+                const timeOptions = [];
+                for (let i = 1; i <= 3; i++) {
+                    const date = document.getElementById(`modal-date${i}`).value;
+                    const time = document.getElementById(`modal-time${i}`).value;
+                    
+                    if (date && time) {
+                        // Validate that the date and time are in the future
+                        const now = new Date();
+                        const currentDate = now.toISOString().split('T')[0];
+                        const currentTime = now.toTimeString().split(' ')[0];
+                        
+                        if (date < currentDate) {
+                            alert(`Option ${i}: Date must be today or in the future.`);
+                            return;
+                        }
+                        
+                        if (date === currentDate && time <= currentTime) {
+                            alert(`Option ${i}: Time must be in the future for today's date.`);
+                            return;
+                        }
+                        
+                        timeOptions.push({ date, time });
+                    }
+                }
+
+                if (timeOptions.length === 0) {
+                    alert('Please provide at least one time option.');
+                    return;
+                }
+
+                console.log('Saving updated time options for request:', requestId, timeOptions);
+
+                const response = await fetch(`${API_BASE}/service-requests/${requestId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'responded',
+                        timeOptions: timeOptions,
+                        salonHandle: salonHandle
+                    }),
+        });
+
+        if (response.ok) {
+                    alert('✅ Time options updated successfully!');
+                    closeTimeOptionsModal();
+                    loadRequests(); // Reload to update the display
+        } else {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+      } catch (error) {
+                console.error('Error saving time options:', error);
+                alert('❌ Error saving time options. Please try again.');
+            }
+        }
+
+        // Function to update time options based on selected date
+        function updateTimeOptionsForDate(requestId, optionNumber) {
+            const dateInput = document.getElementById(`date${optionNumber}-${requestId}`);
+            const timeSelect = document.getElementById(`time${optionNumber}-${requestId}`);
+            const selectedDate = dateInput.value;
+            const today = new Date().toISOString().split('T')[0];
+            const currentHour = new Date().getHours();
+            
+            // Reset time selection
+            timeSelect.value = '';
+            
+            if (selectedDate === today) {
+                // For today, only show future times with 30-minute increments
+                const futureTimes = [];
+                const currentMinute = new Date().getMinutes();
+                
+                for (let hour = currentHour; hour <= 17; hour++) {
+                    const startMinute = hour === currentHour ? Math.ceil(currentMinute / 30) * 30 : 0;
+                    
+                    for (let minute = startMinute; minute < 60; minute += 30) {
+                        if (hour === currentHour && minute <= currentMinute) continue;
+                        if (hour === 17 && minute > 0) break; // Stop at 5:00 PM
+                        
+                        const timeString = hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+                        const displayHour = hour > 12 ? hour - 12 : hour;
+                        const displayMinute = minute === 0 ? '00' : minute.toString();
+                        const ampm = hour >= 12 ? 'PM' : 'AM';
+                        futureTimes.push(`<option value="${timeString}">${displayHour}:${displayMinute} ${ampm}</option>`);
+                    }
+                }
+                timeSelect.innerHTML = '<option value="">Time</option>' + futureTimes.join('');
+            } else {
+                // For future dates, show all times
+                timeSelect.innerHTML = `
+                    <option value="">Time</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="09:30">9:30 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="10:30">10:30 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="12:30">12:30 PM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="13:30">1:30 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="14:30">2:30 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="15:30">3:30 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="16:30">4:30 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                `;
+            }
+        }
+
+        async function sendTimeOptions(requestId) {
+            try {
+                // Collect time options
+                const timeOptions = [];
+                const now = new Date();
+                const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS format
+                
+                for (let i = 1; i <= 3; i++) {
+                    const date = document.getElementById(`date${i}-${requestId}`).value;
+                    const time = document.getElementById(`time${i}-${requestId}`).value;
+                    
+                    if (date && time) {
+                        // Validate that the date and time are in the future
+                        if (date < currentDate) {
+                            alert(`Option ${i}: Date must be today or in the future.`);
+                            return;
+                        }
+                        
+                        if (date === currentDate && time <= currentTime) {
+                            alert(`Option ${i}: Time must be in the future for today's date.`);
+                            return;
+                        }
+                        
+                        timeOptions.push({ date, time });
+                    }
+                }
+
+                if (timeOptions.length === 0) {
+                    alert('Please provide at least one time option.');
+                    return;
+                }
+
+                console.log('Sending time options for request:', requestId, timeOptions);
+
+                const response = await fetch(`${API_BASE}/service-requests/${requestId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'responded',
+                        timeOptions: timeOptions,
+                        salonHandle: salonHandle
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('✅ Time options sent successfully!');
+                    loadRequests(); // Reload to update the display
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error sending time options:', error);
+                alert('❌ Error sending time options. Please try again.');
+            }
+        }
+
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredRequests = [];
+
+        // Pagination functions
+        function changeItemsPerPage() {
+            itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
+            currentPage = 1; // Reset to first page
+            displayRequests(filteredRequests);
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayRequests(filteredRequests);
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayRequests(filteredRequests);
+            }
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, filteredRequests.length);
+            
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        // Logout function
+        function logOut() {
+            // Clear any stored data
+            localStorage.removeItem('salonProfile');
+            localStorage.removeItem('salonToken');
+            localStorage.removeItem('salonData');
+            
+            // Redirect to salon login page
+            console.log('Salon logged out, redirecting to salon login page');
+            window.location.href = 'http://localhost:3000/salon-login';
+        }
+
+
+  </script>
+</body>
+</html> 

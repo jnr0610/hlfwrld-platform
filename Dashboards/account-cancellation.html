@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Cancellation - Hlfwrld</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .cancellation-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .warning-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .warning-section {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .warning-title {
+            color: #dc2626;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .warning-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .warning-list li {
+            color: #7f1d1d;
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 1.5rem;
+            font-weight: 500;
+        }
+
+        .warning-list li::before {
+            content: '⚠️';
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .impact-section {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .impact-title {
+            color: #0369a1;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .impact-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .impact-list li {
+            color: #0c4a6e;
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .impact-list li::before {
+            content: '💔';
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+
+        .confirmation-section {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .confirmation-title {
+            color: #475569;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .confirmation-text {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin-top: 0.25rem;
+            transform: scale(1.2);
+        }
+
+        .checkbox-container label {
+            color: #374151;
+            font-weight: 500;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-delete:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .final-warning {
+            background: #dc2626;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .cancellation-container {
+                margin: 1rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cancellation-container">
+        <div class="header">
+            <span class="warning-icon">⚠️</span>
+            <h1>Account Cancellation</h1>
+            <p>This action is permanent and irreversible</p>
+        </div>
+
+        <div class="content">
+            <div class="warning-section">
+                <div class="warning-title">
+                    <span>🚨</span>
+                    Immediate Consequences
+                </div>
+                <ul class="warning-list">
+                    <li>Your salon account will be permanently deleted</li>
+                    <li>All service requests and booking data will be lost</li>
+                    <li>Your salon profile will be removed from the platform</li>
+                    <li>All payment and billing information will be erased</li>
+                    <li>You will lose access to all salon management tools</li>
+                </ul>
+            </div>
+
+            <div class="impact-section">
+                <div class="impact-title">
+                    <span>💔</span>
+                    Impact on Influencers
+                </div>
+                <ul class="impact-list">
+                    <li>Influencers will no longer be able to promote your salon</li>
+                    <li>All existing partnerships will be terminated</li>
+                    <li>Your salon will disappear from influencer referral networks</li>
+                    <li>Future influencers won't be able to find or recommend your salon</li>
+                </ul>
+            </div>
+
+            <div class="confirmation-section">
+                <div class="confirmation-title">
+                    <span>📋</span>
+                    Final Confirmation
+                </div>
+                <p class="confirmation-text">
+                    By proceeding with account cancellation, you acknowledge that this action is:
+                </p>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="confirm1" onchange="updateDeleteButton()">
+                    <label for="confirm1">Permanent and cannot be undone</label>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="confirm2" onchange="updateDeleteButton()">
+                    <label for="confirm2">Will delete all my salon data and history</label>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="confirm3" onchange="updateDeleteButton()">
+                    <label for="confirm3">Will prevent influencers from promoting my salon</label>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="confirm4" onchange="updateDeleteButton()">
+                    <label for="confirm4">I understand this is my final decision</label>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="javascript:history.back()" class="btn btn-cancel">← Go Back</a>
+                <button id="deleteBtn" class="btn btn-delete" onclick="deleteAccount()" disabled>
+                    🗑️ Permanently Delete Account
+                </button>
+            </div>
+
+            <div class="final-warning">
+                ⚠️ WARNING: This action is final and irreversible! ⚠️
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateDeleteButton() {
+            const checkboxes = [
+                document.getElementById('confirm1'),
+                document.getElementById('confirm2'),
+                document.getElementById('confirm3'),
+                document.getElementById('confirm4')
+            ];
+            
+            const allChecked = checkboxes.every(checkbox => checkbox.checked);
+            const deleteBtn = document.getElementById('deleteBtn');
+            
+            deleteBtn.disabled = !allChecked;
+            
+            if (allChecked) {
+                deleteBtn.style.background = '#dc2626';
+                deleteBtn.style.cursor = 'pointer';
+            } else {
+                deleteBtn.style.background = '#9ca3af';
+                deleteBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function deleteAccount() {
+            const checkboxes = [
+                document.getElementById('confirm1'),
+                document.getElementById('confirm2'),
+                document.getElementById('confirm3'),
+                document.getElementById('confirm4')
+            ];
+            
+            const allChecked = checkboxes.every(checkbox => checkbox.checked);
+            
+            if (!allChecked) {
+                alert('Please check all confirmation boxes before proceeding.');
+                return;
+            }
+
+            const finalConfirmation = confirm(
+                '🚨 FINAL WARNING 🚨\n\n' +
+                'You are about to PERMANENTLY DELETE your salon account.\n\n' +
+                'This will:\n' +
+                '• Delete all your salon data\n' +
+                '• Remove your salon from the platform\n' +
+                '• Prevent influencers from promoting your salon\n' +
+                '• Cancel all active subscriptions\n\n' +
+                'This action CANNOT be undone.\n\n' +
+                'Are you absolutely sure you want to proceed?'
+            );
+
+            if (finalConfirmation) {
+                // Here you would typically make an API call to delete the account
+                alert('🗑️ Account deletion initiated. You will be logged out immediately.');
+                
+                // Clear any stored data
+                localStorage.removeItem('salonProfile');
+                localStorage.removeItem('salonToken');
+                localStorage.removeItem('salonData');
+                
+                // Redirect to salon login page
+                window.location.href = 'http://localhost:3000/salon-login';
+            }
+        }
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault();
+            e.returnValue = 'Are you sure you want to leave? Your account deletion process will be lost.';
+        });
+
+        // Remove the warning when user confirms they want to leave
+        window.addEventListener('unload', function() {
+            // Clean up
+        });
+    </script>
+</body>
+</html> 

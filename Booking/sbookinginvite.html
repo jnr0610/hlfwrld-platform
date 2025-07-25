@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Invite - Salon Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .summary-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 80px;
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .summary-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .summary-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .client-info {
+            background: #f8f9ff;
+            border: 2px solid #e1e5ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .client-info h3 {
+            color: #4c51bf;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .time-options-section {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-options-title {
+            color: #065f46;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .time-option {
+            background: white;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .option-date {
+            font-weight: 600;
+            color: #065f46;
+            font-size: 1rem;
+        }
+
+        .option-time {
+            color: #047857;
+            font-size: 0.9rem;
+        }
+
+        .option-badge {
+            background: #065f46;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .notification-status {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification-status .icon {
+            font-size: 1.2rem;
+        }
+
+        .notification-text {
+            color: #065f46;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-edit {
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #fcd34d;
+        }
+
+        .btn-edit:hover {
+            background: #fde68a;
+            border-color: #f59e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-description {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-slot {
+            background: #f8f9ff;
+            border: 1px solid #e1e5ff;
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slot-label {
+            font-size: 1rem;
+            color: #4c51bf;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .slot-input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d1d1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .slot-time {
+            flex-grow: 1;
+        }
+
+        .time-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d1d1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #333;
+            background-color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        /* Success Modal Specific Styles */
+        .success-modal {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .success-icon-large {
+            font-size: 120px;
+            margin-bottom: 1.5rem;
+            color: #4caf50; /* A green color for success */
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .success-details {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .success-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .success-label {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .success-value {
+            font-weight: 600;
+            color: #065f46; /* Darker green for values */
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .success-actions .btn {
+            min-width: 180px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .summary-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            .success-icon {
+                font-size: 60px;
+            }
+
+            .summary-title {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="summary-container">
+        <div class="success-icon">✅</div>
+        
+        <h1 class="summary-title">Time Options Sent Successfully!</h1>
+        <p class="summary-subtitle">
+            Your available time slots have been sent to the client and they have been notified via email.
+        </p>
+
+        <div class="client-info">
+            <h3>📋 Request Details</h3>
+            <div class="info-item">
+                <span class="info-label">Request ID:</span>
+                <span class="info-value" id="requestId">#--</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Client Name:</span>
+                <span class="info-value" id="clientName">--</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Service:</span>
+                <span class="info-value" id="serviceName">--</span>
+            </div>
+        </div>
+
+        <div class="time-options-section">
+            <div class="time-options-title">
+                ⏰ Time Options Sent
+            </div>
+            <div id="timeOptionsList">
+                <!-- Time options will be populated here -->
+            </div>
+        </div>
+
+        <div class="notification-status">
+            <span class="icon">📧</span>
+            <span class="notification-text">Email notification sent to client successfully</span>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-edit" onclick="editTimeOptions()">
+                📝 Edit Time Options
+            </button>
+            <a href="http://localhost:3000/salon-dashboard" class="btn btn-primary">
+                🏠 Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Edit Time Options Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Edit Time Options</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="modal-description">Update the available time slots for this client. The client will be notified of any changes.</p>
+                
+                <div class="time-slots-grid">
+                    <div class="time-slot">
+                        <span class="slot-label">Option 1:</span>
+                        <input type="date" class="slot-input" id="editDate1">
+                        <div class="slot-time">
+                            <select class="time-select" id="editTime1">
+                                <option value="">Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="time-slot">
+                        <span class="slot-label">Option 2:</span>
+                        <input type="date" class="slot-input" id="editDate2">
+                        <div class="slot-time">
+                            <select class="time-select" id="editTime2">
+                                <option value="">Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="time-slot">
+                        <span class="slot-label">Option 3:</span>
+                        <input type="date" class="slot-input" id="editDate3">
+                        <div class="slot-time">
+                            <select class="time-select" id="editTime3">
+                                <option value="">Time</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveTimeOptions()">
+                        ✅ Update Time Options
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-content success-modal">
+            <div class="success-icon-large">✅</div>
+            <h2 class="success-title">Time Options Updated!</h2>
+            <p class="success-message">
+                Your time options have been successfully updated and the client has been notified of the changes via email.
+            </p>
+            <div class="success-details">
+                <div class="success-item">
+                    <span class="success-label">📧 Email Sent:</span>
+                    <span class="success-value">Client notified automatically</span>
+                </div>
+            </div>
+            <div class="success-actions">
+                <button class="btn btn-secondary" onclick="editTimeOptionsAgain()">
+                    📝 Edit Time Options Again
+                </button>
+                <button class="btn btn-primary" onclick="returnToDashboard()">
+                    🏠 Return to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let requestData = {};
+        let successModalOpen = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRequestData();
+        });
+
+        function loadRequestData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const requestId = urlParams.get('requestId');
+            
+            if (requestId) {
+                // If we have a requestId, fetch fresh data from backend
+                console.log('Fetching fresh data from backend for request:', requestId);
+                fetchUpdatedRequestData(requestId).then(success => {
+                    if (!success) {
+                        // Fallback to URL parameters if backend fetch fails
+                        console.log('Backend fetch failed, using URL parameters as fallback');
+                        loadFromURLParams(urlParams);
+                    }
+                });
+            } else {
+                // No requestId, load from URL parameters (for backward compatibility)
+                loadFromURLParams(urlParams);
+            }
+        }
+
+        function loadFromURLParams(urlParams) {
+            // Parse time options from URL
+            const timeOptions = JSON.parse(urlParams.get('timeOptions') || '[]');
+            
+            requestData = {
+                requestId: urlParams.get('requestId') || '--',
+                clientName: urlParams.get('clientName') || '--',
+                serviceName: urlParams.get('serviceName') || '--',
+                timeOptions: timeOptions
+            };
+
+            console.log('Loaded request data from URL:', requestData);
+            
+            // Populate the page with request data
+            document.getElementById('requestId').textContent = '#' + requestData.requestId;
+            document.getElementById('clientName').textContent = requestData.clientName;
+            document.getElementById('serviceName').textContent = requestData.serviceName;
+
+            // Populate time options
+            displayTimeOptions();
+        }
+
+        async function fetchUpdatedRequestData(requestId) {
+            try {
+                console.log('Fetching updated request data from backend...');
+                const response = await fetch(`http://localhost:3000/service-requests/influencer_name`);
+                
+                if (response.ok) {
+                    const allRequests = await response.json();
+                    const currentRequest = allRequests.find(req => req.id == requestId);
+                    
+                    if (currentRequest) {
+                        console.log('Found updated request data:', currentRequest);
+                        console.log('Notes field:', currentRequest.notes);
+                        
+                        // Initialize requestData if it doesn't exist
+                        if (!requestData) {
+                            requestData = {};
+                        }
+                        
+                        // Parse time options from notes field
+                        let timeOptions = [];
+                        if (currentRequest.notes) {
+                            try {
+                                // Look for time options in the notes field
+                                const timeOptionsMatch = currentRequest.notes.match(/Salon time options: (\[.*?\])/);
+                                console.log('Time options regex match:', timeOptionsMatch);
+                                if (timeOptionsMatch) {
+                                    timeOptions = JSON.parse(timeOptionsMatch[1]);
+                                    console.log('Parsed time options from notes:', timeOptions);
+                                }
+                            } catch (error) {
+                                console.error('Error parsing time options from notes:', error);
+                                timeOptions = [];
+                            }
+                        }
+                        console.log('Final time options:', timeOptions);
+                        requestData.timeOptions = timeOptions;
+                        requestData.clientName = currentRequest.clientName || requestData.clientName;
+                        requestData.serviceName = currentRequest.postServiceName || currentRequest.serviceName || requestData.serviceName;
+                        requestData.requestId = requestId;
+                        
+                        console.log('Updated requestData with backend data:', requestData);
+                        
+                        // Refresh the display
+                        document.getElementById('requestId').textContent = '#' + requestData.requestId;
+                        document.getElementById('clientName').textContent = requestData.clientName;
+                        document.getElementById('serviceName').textContent = requestData.serviceName;
+                        displayTimeOptions();
+                        
+                        return true;
+                    } else {
+                        console.log('Could not find current request in backend data');
+                        return false;
+                    }
+                } else {
+                    console.error('Failed to fetch updated request data');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error fetching updated request data:', error);
+                return false;
+            }
+        }
+
+        function displayTimeOptions() {
+            console.log('displayTimeOptions called with:', requestData.timeOptions);
+            const timeOptionsList = document.getElementById('timeOptionsList');
+            
+            if (requestData.timeOptions.length === 0) {
+                console.log('No time options, showing empty message');
+                timeOptionsList.innerHTML = '<p style="color: #666; text-align: center;">No time options available</p>';
+                return;
+            }
+
+            console.log('Rendering', requestData.timeOptions.length, 'time options');
+            timeOptionsList.innerHTML = requestData.timeOptions.map((option, index) => {
+                const date = new Date(option.date);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const formattedTime = formatTime24to12(option.time);
+                console.log(`Option ${index + 1}: ${formattedDate} at ${formattedTime}`);
+
+                return `
+                    <div class="time-option">
+                        <div class="option-info">
+                            <div class="option-date">${formattedDate}</div>
+                            <div class="option-time">${formattedTime}</div>
+                        </div>
+                        <div class="option-badge">Option ${index + 1}</div>
+                    </div>
+                `;
+            }).join('');
+            console.log('Time options display updated');
+        }
+
+        function formatTime24to12(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour12 = parseInt(hours) > 12 ? parseInt(hours) - 12 : parseInt(hours);
+            const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+            const displayHour = hour12 === 0 ? 12 : hour12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        function editTimeOptions() {
+            openEditModal();
+        }
+
+        function openEditModal() {
+            // Set minimum date and time for inputs
+            const now = new Date();
+            const currentDate = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+            
+            // Pre-fill the modal with current time options
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`editDate${i}`).value = '';
+                document.getElementById(`editTime${i}`).value = '';
+                document.getElementById(`editDate${i}`).min = currentDate;
+                
+                // Generate 30-minute time options
+                const timeSelect = document.getElementById(`editTime${i}`);
+                timeSelect.innerHTML = '<option value="">Time</option>';
+                
+                const startTime = '09:00'; // Start from 9 AM
+                const endTime = '17:00'; // End at 5 PM
+                const interval = 30; // 30 minutes
+                
+                const startHour = parseInt(startTime.split(':')[0]);
+                const startMinute = parseInt(startTime.split(':')[1]);
+                const endHour = parseInt(endTime.split(':')[0]);
+                const endMinute = parseInt(endTime.split(':')[1]);
+                
+                let currentHour = startHour;
+                let currentMinute = startMinute;
+                
+                while (currentHour <= endHour) {
+                    const currentTime24 = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+                    
+                    // Add all time options - they will be filtered by date selection
+                    const option = document.createElement('option');
+                    option.value = currentTime24;
+                    option.textContent = formatTime24to12(currentTime24);
+                    timeSelect.appendChild(option);
+                    
+                    currentMinute += interval;
+                    if (currentMinute >= 60) {
+                        currentMinute = 0;
+                        currentHour++;
+                    }
+                }
+                
+                // Setup date change listener for this time select
+                setupEditModalDateListener(i, currentDate, currentTime);
+            }
+
+            // Fill in existing time options
+            requestData.timeOptions.forEach((option, index) => {
+                if (index < 3) {
+                    const dateInput = document.getElementById(`editDate${index + 1}`);
+                    const timeSelect = document.getElementById(`editTime${index + 1}`);
+                    
+                    // Set the date
+                    dateInput.value = option.date;
+                    dateInput.min = currentDate;
+                    
+                    // Validate the time option before setting it
+                    const selectedDate = option.date;
+                    const selectedTime = option.time;
+                    
+                    // Check if the selected date/time has already passed
+                    if (selectedDate < currentDate) {
+                        // Past date - don't pre-fill the time
+                        timeSelect.value = '';
+                    } else if (selectedDate === currentDate && selectedTime <= currentTime) {
+                        // Past time for today - don't pre-fill the time
+                        timeSelect.value = '';
+                    } else {
+                        // Valid time - pre-fill it
+                        timeSelect.value = selectedTime;
+                    }
+                    
+                    // Trigger the date change event to filter time options
+                    const event = new Event('change');
+                    dateInput.dispatchEvent(event);
+                }
+            });
+
+            // Show the modal
+            document.getElementById('editModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setupEditModalDateListener(slotIndex, currentDate, currentTime) {
+            const dateInput = document.getElementById(`editDate${slotIndex}`);
+            const timeSelect = document.getElementById(`editTime${slotIndex}`);
+            
+            dateInput.addEventListener('change', function() {
+                const selectedDate = this.value;
+                const timeOptions = timeSelect.querySelectorAll('option');
+                
+                timeOptions.forEach(option => {
+                    if (option.value) { // Skip the "Time" placeholder
+                        // Check if the selected date/time has already passed
+                        if (selectedDate < currentDate) {
+                            // Past date - hide and disable all times
+                            option.style.display = 'none';
+                            option.disabled = true;
+                        } else if (selectedDate === currentDate) {
+                            // Today - only show future times
+                            if (option.value > currentTime) {
+                                option.style.display = '';
+                                option.disabled = false;
+                            } else {
+                                option.style.display = 'none';
+                                option.disabled = true;
+                            }
+                        } else {
+                            // Future date - show all times
+                            option.style.display = '';
+                            option.disabled = false;
+                        }
+                    }
+                });
+            });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function saveTimeOptions() {
+            try {
+                // Collect the updated time options
+                const updatedTimeOptions = [];
+                const now = new Date();
+                const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS format
+                
+                for (let i = 1; i <= 3; i++) {
+                    const date = document.getElementById(`editDate${i}`).value;
+                    const time = document.getElementById(`editTime${i}`).value;
+                    
+                    if (date && time) {
+                        // Check if the selected date/time has already passed
+                        if (date < currentDate) {
+                            alert(`❌ Option ${i}: Cannot select a date that has already passed (${date})`);
+                            return;
+                        }
+                        
+                        if (date === currentDate && time <= currentTime.substring(0, 5)) {
+                            alert(`❌ Option ${i}: Cannot select a time that has already passed (${time})`);
+                            return;
+                        }
+                        
+                        updatedTimeOptions.push({ date, time });
+                    }
+                }
+
+                if (updatedTimeOptions.length === 0) {
+                    alert('Please provide at least one time option.');
+                    return;
+                }
+
+                console.log('Updating time options:', updatedTimeOptions);
+
+                // Send updated time options to backend
+                const response = await fetch(`http://localhost:3000/service-requests/${requestData.requestId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'responded',
+                        timeOptions: updatedTimeOptions,
+                        salonHandle: 'influencer_name' // This could be dynamic
+                    }),
+                });
+
+                if (response.ok) {
+                    // Close the modal
+                    closeEditModal();
+                    
+                    // Fetch fresh data from backend to ensure we have the latest
+                    console.log('Fetching updated data from backend...');
+                    const fetchSuccess = await fetchUpdatedRequestData(requestData.requestId);
+                    
+                    if (!fetchSuccess) {
+                        // Fallback to local update if backend fetch fails
+                        console.log('Backend fetch failed, using local update');
+                        requestData.timeOptions = updatedTimeOptions;
+                        displayTimeOptions();
+                    }
+                    
+                    // Show success message
+                    console.log('Showing success modal...');
+                    successModalOpen = true;
+                    showSuccessModal();
+                    
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error updating time options:', error);
+                alert('❌ Error updating time options. Please try again.');
+            }
+        }
+
+        function showSuccessModal() {
+            console.log('showSuccessModal called');
+            const modal = document.getElementById('successModal');
+            
+            // Force show the modal
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+            modal.style.opacity = '1';
+            modal.style.visibility = 'visible';
+            document.body.style.overflow = 'hidden';
+            
+            console.log('Success modal should now be visible');
+            
+            // Keep checking and forcing it to stay visible
+            const keepModalVisible = setInterval(() => {
+                if (!successModalOpen) {
+                    clearInterval(keepModalVisible);
+                    return;
+                }
+                
+                if (!modal.classList.contains('active') || 
+                    modal.style.display === 'none' || 
+                    modal.style.opacity === '0' || 
+                    modal.style.visibility === 'hidden') {
+                    
+                    console.log('Modal was hidden, forcing it back visible');
+                    modal.classList.add('active');
+                    modal.style.display = 'flex';
+                    modal.style.opacity = '1';
+                    modal.style.visibility = 'visible';
+                }
+            }, 100);
+        }
+
+        function closeSuccessModal() {
+            successModalOpen = false;
+            const modal = document.getElementById('successModal');
+            modal.classList.remove('active');
+            modal.style.display = '';
+            modal.style.opacity = '';
+            modal.style.visibility = '';
+            document.body.style.overflow = 'auto';
+            console.log('Success modal closed');
+        }
+
+        function editTimeOptionsAgain() {
+            console.log('Edit time options again clicked');
+            closeSuccessModal(); // Close the success modal first
+            // Ensure the display is up to date before opening edit modal
+            displayTimeOptions();
+            openEditModal();
+        }
+
+        function returnToDashboard() {
+            console.log('Return to dashboard clicked');
+            window.location.href = 'salon-dashboard.html';
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('editModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeEditModal();
+            }
+            });
+        });
+
+        // Test function to verify time options parsing works correctly
+        function testTimeOptionsParsing() {
+            const testNotes = 'Salon time options: [{"date":"2025-07-22","time":"12:00"},{"date":"2025-07-23","time":"14:30"}]';
+            const timeOptionsMatch = testNotes.match(/Salon time options: (\[.*?\])/);
+            if (timeOptionsMatch) {
+                const timeOptions = JSON.parse(timeOptionsMatch[1]);
+                console.log('✅ Test parsing successful:', timeOptions);
+                return timeOptions;
+            }
+            console.log('❌ Test parsing failed');
+            return [];
+        }
+
+        // Run test on page load
+        testTimeOptionsParsing();
+
+    </script>
+</body>
+</html> 

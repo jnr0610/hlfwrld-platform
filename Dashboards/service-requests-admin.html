@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Requests Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .requests-container {
+            padding: 30px;
+        }
+
+        .request-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .request-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .request-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .request-id {
+            font-weight: 700;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .service-code {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .request-body {
+            padding: 20px;
+        }
+
+        .client-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .dates-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .dates-title {
+            font-size: 1.1rem;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .dates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .date-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .date-text {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .time-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .actions {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-contact {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-contact:hover {
+            background: #0056b3;
+        }
+
+        .timestamp {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .refresh-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .refresh-btn:hover {
+            background: #138496;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Service Requests Admin</h1>
+            <p>Manage and view all service requests from your public profile</p>
+        </div>
+
+        <div class="stats" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRequests">-</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingRequests">-</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="approvedRequests">-</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="rejectedRequests">-</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Influencer</label>
+                <select id="influencerFilter">
+                    <option value="">All Influencers</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Service Code</label>
+                <input type="text" id="serviceCodeFilter" placeholder="Enter service code...">
+            </div>
+            <button class="refresh-btn" onclick="loadRequests()">🔄 Refresh</button>
+        </div>
+
+        <div class="requests-container">
+            <div class="loading" id="loadingState">
+                Loading service requests...
+            </div>
+            <div id="requestsContainer" style="display: none;">
+                <!-- Requests will be loaded here -->
+            </div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;">📋</div>
+                <h3>No Service Requests Found</h3>
+                <p>No service requests match your current filters.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let allRequests = [];
+
+        // Load all service requests
+        async function loadRequests() {
+            try {
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('requestsContainer').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'none';
+
+                const response = await fetch(`${API_BASE}/service-requests/all`);
+                if (response.ok) {
+                    allRequests = await response.json();
+                    updateStats();
+                    updateInfluencerFilter();
+                    filterAndDisplayRequests();
+                } else {
+                    throw new Error('Failed to load requests');
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                document.getElementById('loadingState').innerHTML = 
+                    '<div style="color: #dc3545;">❌ Failed to load service requests. Please check if the backend server is running.</div>';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allRequests.length;
+            const pending = allRequests.filter(r => r.status === 'pending').length;
+            const approved = allRequests.filter(r => r.status === 'approved').length;
+            const rejected = allRequests.filter(r => r.status === 'rejected').length;
+
+            document.getElementById('totalRequests').textContent = total;
+            document.getElementById('pendingRequests').textContent = pending;
+            document.getElementById('approvedRequests').textContent = approved;
+            document.getElementById('rejectedRequests').textContent = rejected;
+        }
+
+        // Update influencer filter options
+        function updateInfluencerFilter() {
+            const influencers = [...new Set(allRequests.map(r => r.influencerHandle))];
+            const select = document.getElementById('influencerFilter');
+            
+            // Clear existing options except "All Influencers"
+            select.innerHTML = '<option value="">All Influencers</option>';
+            
+            influencers.forEach(influencer => {
+                const option = document.createElement('option');
+                option.value = influencer;
+                option.textContent = `@${influencer}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Filter and display requests
+        function filterAndDisplayRequests() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const influencerFilter = document.getElementById('influencerFilter').value;
+            const serviceCodeFilter = document.getElementById('serviceCodeFilter').value.toLowerCase();
+
+            let filteredRequests = allRequests.filter(request => {
+                const matchesStatus = !statusFilter || request.status === statusFilter;
+                const matchesInfluencer = !influencerFilter || request.influencerHandle === influencerFilter;
+                const matchesServiceCode = !serviceCodeFilter || 
+                    (request.serviceCode && request.serviceCode.toLowerCase().includes(serviceCodeFilter));
+
+                return matchesStatus && matchesInfluencer && matchesServiceCode;
+            });
+
+            displayRequests(filteredRequests);
+        }
+
+        // Display requests
+        function displayRequests(requests) {
+            const container = document.getElementById('requestsContainer');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingState.style.display = 'none';
+
+            if (requests.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.style.display = 'block';
+
+            container.innerHTML = requests.map(request => {
+                const selectedDates = JSON.parse(request.selectedDates || '[]');
+                const timestamp = new Date(request.timestamp).toLocaleString();
+
+                return `
+                    <div class="request-card">
+                        <div class="request-header">
+                            <div class="request-info">
+                                <div class="request-id">Request #${request.id}</div>
+                                ${request.serviceCode ? `<div class="service-code">${request.serviceCode}</div>` : ''}
+                                <div style="color: #6c757d;">@${request.influencerHandle}</div>
+                            </div>
+                            <div class="status-badge status-${request.status}">
+                                ${request.status}
+                            </div>
+                        </div>
+                        
+                        <div class="request-body">
+                            <div class="client-info">
+                                <div class="info-item">
+                                    <div class="info-label">Client Name</div>
+                                    <div class="info-value">${request.clientName || 'N/A'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">${request.clientEmail || 'N/A'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Phone</div>
+                                    <div class="info-value">${request.clientPhone || 'N/A'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Zip Code</div>
+                                    <div class="info-value">${request.clientZipCode || 'N/A'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Submitted</div>
+                                    <div class="info-value">${timestamp}</div>
+                                </div>
+                            </div>
+
+                            ${selectedDates.length > 0 ? `
+                                <div class="dates-section">
+                                    <div class="dates-title">Requested Dates & Times</div>
+                                    <div class="dates-grid">
+                                        ${selectedDates.map(dateObj => `
+                                            <div class="date-item">
+                                                <div class="date-text">${new Date(dateObj.date + 'T00:00:00').toLocaleDateString()}</div>
+                                                <div class="time-text">${dateObj.time || 'No time specified'}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="actions">
+                            ${request.status === 'pending' ? `
+                                <button class="btn btn-approve" onclick="updateRequestStatus(${request.id}, 'approved')">
+                                    ✅ Approve
+                                </button>
+                                <button class="btn btn-reject" onclick="updateRequestStatus(${request.id}, 'rejected')">
+                                    ❌ Reject
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-contact" onclick="contactClient('${request.clientEmail}', '${request.clientName}', '${request.serviceCode || 'General'}')">
+                                📧 Contact Client
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update request status
+        async function updateRequestStatus(requestId, status) {
+            try {
+                const response = await fetch(`${API_BASE}/service-requests/${requestId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    // Update local data
+                    const request = allRequests.find(r => r.id === requestId);
+                    if (request) {
+                        request.status = status;
+                    }
+                    
+                    // Refresh display
+                    updateStats();
+                    filterAndDisplayRequests();
+                    
+                    alert(`✅ Request #${requestId} has been ${status}!`);
+                } else {
+                    throw new Error('Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('❌ Failed to update request status. Please try again.');
+            }
+        }
+
+        // Contact client via email
+        function contactClient(email, name, serviceCode) {
+            const subject = `Re: Your Service Request - ${serviceCode}`;
+            const body = encodeURIComponent(`Dear ${name},\n\nThank you for your service request regarding "${serviceCode}".\n\nBest regards`);
+            
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        }
+
+        // Add event listeners for filters
+        document.getElementById('statusFilter').addEventListener('change', filterAndDisplayRequests);
+        document.getElementById('influencerFilter').addEventListener('change', filterAndDisplayRequests);
+        document.getElementById('serviceCodeFilter').addEventListener('input', filterAndDisplayRequests);
+
+        // Load requests on page load
+        document.addEventListener('DOMContentLoaded', loadRequests);
+    </script>
+</body>
+</html> 

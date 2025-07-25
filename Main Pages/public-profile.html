@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  PUBLIC PROFILE PAGE
+  
+  This page displays an influencer's posts publicly without edit capabilities.
+  Anyone can view this page to see the influencer's available services.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Influencer Profile - Public</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e1e5e9;
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: #262626;
+    }
+
+         .header-info {
+       color: #666;
+       font-size: 14px;
+     }
+
+     /* AI Chat Bot Icon */
+     .chat-bot-icon {
+       position: fixed;
+       bottom: 24px;
+       right: 24px;
+       width: 60px;
+       height: 60px;
+       background: #28a745;
+       border-radius: 50%;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       cursor: pointer;
+       box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+       transition: all 0.3s ease;
+       z-index: 1000;
+       border: none;
+     }
+
+     .chat-bot-icon:hover {
+       background: #218838;
+       transform: scale(1.1);
+       box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+     }
+
+     .chat-bot-icon svg {
+       width: 24px;
+       height: 24px;
+       fill: white;
+     }
+
+     /* Service Request Modal */
+     .modal-overlay {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.5);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       z-index: 2000;
+       opacity: 0;
+       visibility: hidden;
+       transition: all 0.3s ease;
+     }
+
+     .modal-overlay.active {
+       opacity: 1;
+       visibility: visible;
+     }
+
+     .modal-content {
+       background: white;
+       border-radius: 12px;
+       padding: 32px;
+       max-width: 500px;
+       width: 90%;
+       max-height: 90vh;
+       overflow-y: auto;
+       transform: scale(0.9);
+       transition: transform 0.3s ease;
+     }
+
+     .modal-overlay.active .modal-content {
+       transform: scale(1);
+     }
+
+     .modal-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       margin-bottom: 24px;
+     }
+
+     .modal-title {
+       font-size: 24px;
+       font-weight: 700;
+       color: #262626;
+       margin: 0;
+     }
+
+     .modal-close {
+       background: none;
+       border: none;
+       font-size: 24px;
+       cursor: pointer;
+       color: #666;
+       padding: 0;
+       width: 32px;
+       height: 32px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 50%;
+       transition: background 0.2s;
+     }
+
+     .modal-close:hover {
+       background: #f0f0f0;
+     }
+
+     .form-group {
+       margin-bottom: 20px;
+     }
+
+     .form-label {
+       display: block;
+       font-size: 14px;
+       font-weight: 600;
+       color: #262626;
+       margin-bottom: 8px;
+     }
+
+     .form-input {
+       width: 100%;
+       padding: 12px 16px;
+       border: 1px solid #e1e5e9;
+       border-radius: 8px;
+       font-size: 16px;
+       transition: border-color 0.2s;
+     }
+
+     .form-input:focus {
+       outline: none;
+       border-color: #007bff;
+     }
+
+     .form-helper-text {
+       font-size: 12px;
+       color: #666;
+       margin-bottom: 8px;
+       line-height: 1.4;
+     }
+
+     .calendar-container {
+       border: 1px solid #e1e5e9;
+       border-radius: 8px;
+       padding: 16px;
+       background: #f8f9fa;
+     }
+
+     .calendar-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       margin-bottom: 16px;
+     }
+
+     .calendar-nav {
+       background: none;
+       border: none;
+       font-size: 18px;
+       cursor: pointer;
+       padding: 8px;
+       border-radius: 4px;
+       transition: background 0.2s;
+     }
+
+     .calendar-nav:hover {
+       background: #e9ecef;
+     }
+
+     .calendar-month {
+       font-size: 16px;
+       font-weight: 600;
+       color: #262626;
+     }
+
+     .calendar-grid {
+       display: grid;
+       grid-template-columns: repeat(7, 1fr);
+       gap: 4px;
+     }
+
+     .calendar-day-header {
+       text-align: center;
+       font-size: 12px;
+       font-weight: 600;
+       color: #666;
+       padding: 8px 4px;
+     }
+
+     .calendar-day {
+       text-align: center;
+       padding: 8px 4px;
+       cursor: pointer;
+       border-radius: 4px;
+       font-size: 14px;
+       transition: all 0.2s;
+       min-height: 32px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+     }
+
+     .calendar-day:hover {
+       background: #e9ecef;
+     }
+
+     .calendar-day.selected {
+       background: #007bff;
+       color: white;
+     }
+
+     .calendar-day.disabled {
+       color: #ccc;
+       cursor: not-allowed;
+     }
+
+     .calendar-day.other-month {
+       color: #999;
+     }
+
+     .time-selection {
+       display: flex;
+       gap: 12px;
+       margin-top: 16px;
+     }
+
+     .time-option {
+       flex: 1;
+       padding: 12px;
+       border: 1px solid #e1e5e9;
+       border-radius: 8px;
+       background: white;
+       cursor: pointer;
+       text-align: center;
+       font-weight: 500;
+       transition: all 0.2s;
+     }
+
+     .time-option:hover {
+       border-color: #007bff;
+     }
+
+     .time-option.selected {
+       background: #007bff;
+       color: white;
+       border-color: #007bff;
+     }
+
+     .selected-dates {
+       margin-top: 16px;
+       padding: 12px;
+       background: white;
+       border-radius: 8px;
+       border: 1px solid #e1e5e9;
+     }
+
+     .selected-dates-title {
+       font-size: 14px;
+       font-weight: 600;
+       color: #262626;
+       margin-bottom: 8px;
+     }
+
+     .date-item {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       padding: 8px 12px;
+       margin: 4px 0;
+       background: #f8f9fa;
+       border-radius: 6px;
+       border: 1px solid #e1e5e9;
+     }
+
+     .date-text {
+       font-size: 14px;
+       font-weight: 500;
+       color: #262626;
+     }
+
+     .time-buttons {
+       display: flex;
+       gap: 8px;
+     }
+
+     .time-btn {
+       padding: 4px 12px;
+       border: 1px solid #e1e5e9;
+       background: white;
+       border-radius: 4px;
+       cursor: pointer;
+       font-size: 12px;
+       font-weight: 500;
+       transition: all 0.2s;
+       min-width: 35px;
+       text-align: center;
+     }
+
+     .time-btn:hover {
+       border-color: #007bff;
+     }
+
+     .time-btn.selected {
+       background: #007bff;
+       color: white;
+       border-color: #007bff;
+     }
+
+     .remove-date {
+       background: none;
+       border: none;
+       color: #dc3545;
+       cursor: pointer;
+       font-size: 16px;
+       padding: 4px;
+       border-radius: 4px;
+       transition: background 0.2s;
+       margin-left: 8px;
+     }
+
+     .remove-date:hover {
+       background: #f8d7da;
+     }
+
+     .modal-buttons {
+       display: flex;
+       gap: 12px;
+       margin-top: 24px;
+     }
+
+     .btn-cancel {
+       flex: 1;
+       padding: 12px 24px;
+       border: 1px solid #e1e5e9;
+       background: white;
+       color: #666;
+       border-radius: 8px;
+       font-size: 16px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.2s;
+     }
+
+     .btn-cancel:hover {
+       background: #f8f9fa;
+     }
+
+     .btn-submit {
+       flex: 2;
+       padding: 12px 24px;
+       border: none;
+       background: #007bff;
+       color: white;
+       border-radius: 8px;
+       font-size: 16px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: background 0.2s;
+     }
+
+     .btn-submit:hover {
+       background: #0056b3;
+     }
+
+     /* Service Info Section */
+     .service-info {
+       margin-bottom: 24px;
+       padding-bottom: 24px;
+       border-bottom: 1px solid #e1e5e9;
+     }
+
+     .service-location {
+       font-size: 16px;
+       font-weight: 600;
+       color: #007bff;
+       margin-bottom: 12px;
+     }
+
+     .approval-notice {
+       font-size: 14px;
+       color: #666;
+       line-height: 1.5;
+       background: #f8f9fa;
+       padding: 12px 16px;
+       border-radius: 8px;
+       border-left: 3px solid #007bff;
+     }
+
+
+
+     /* Header Message Button */
+     .header-message-btn {
+       background: #f8f9fa;
+       border: 1px solid #e1e5e9;
+       border-radius: 8px;
+       padding: 8px 16px;
+       cursor: pointer;
+       transition: all 0.2s;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 8px;
+       font-size: 14px;
+       color: #495057;
+       font-weight: 500;
+       margin-top: 16px;
+       width: 120px;
+     }
+
+     .header-message-btn:hover {
+       background: #e9ecef;
+       border-color: #ced4da;
+     }
+
+     .header-message-btn svg {
+       width: 16px;
+       height: 16px;
+       fill: #6c757d;
+     }
+
+    /* Profile Section */
+    .profile-section {
+      background: #fff;
+      margin: 24px auto;
+      max-width: 1200px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 32px;
+    }
+
+         .profile-header {
+       display: flex;
+       align-items: center;
+       gap: 24px;
+       margin-bottom: 24px;
+     }
+
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e1e5e9;
+      background: #f0f0f0;
+    }
+
+    .profile-info h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #262626;
+      margin-bottom: 8px;
+    }
+
+    .profile-info p {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 32px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #262626;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Search and Filter */
+    .controls {
+      background: #fff;
+      margin: 0 auto 24px;
+      max-width: 1200px;
+      padding: 20px 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .search-container {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f8f9fa;
+    }
+
+    .search-bar:focus {
+      outline: none;
+      border-color: #007bff;
+      background: #fff;
+    }
+
+    .sort-dropdown {
+      padding: 12px 16px;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f8f9fa;
+      min-width: 200px;
+    }
+
+    .sort-dropdown:focus {
+      outline: none;
+      border-color: #007bff;
+      background: #fff;
+    }
+
+    /* Posts Grid */
+    .posts-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      padding: 0 32px 32px;
+    }
+
+    .post-square {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .post-square:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+         .post-photo {
+       width: 100%;
+       height: 200px;
+       object-fit: contain;
+       object-position: center;
+       background: #f0f0f0;
+       display: block;
+     }
+
+     .post-photo-placeholder {
+       width: 100%;
+       height: 200px;
+       background: #f0f0f0;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       color: #999;
+       font-size: 14px;
+     }
+
+    .post-content {
+      padding: 20px;
+    }
+
+    .post-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #262626;
+      margin-bottom: 8px;
+    }
+
+    .post-location {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+         .post-service {
+       font-size: 16px;
+       color: #262626;
+       font-weight: 500;
+       margin-bottom: 8px;
+     }
+
+    .post-fee {
+      font-size: 20px;
+      font-weight: 700;
+      color: #28a745;
+      margin-bottom: 12px;
+    }
+
+    .post-meta {
+      font-size: 0.78rem;
+      color: #666;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+
+    .post-notes {
+      font-size: 0.97rem;
+      color: #444;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+
+    .post-code {
+      display: inline-block;
+      background: #e9ecef;
+      color: #495057;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    .signup-count {
+      color: #28a745;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    /* Photo Carousel */
+    .post-photo-container {
+      position: relative;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .carousel-nav:hover {
+      background: rgba(0,0,0,0.7);
+    }
+
+    .carousel-prev {
+      left: 8px;
+    }
+
+    .carousel-next {
+      right: 8px;
+    }
+
+         /* Request Service Button */
+     .contact-btn {
+       background: #b3d9ff;
+       color: #0056b3;
+       border: none;
+       padding: 12px 24px;
+       border-radius: 8px;
+       font-size: 16px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: background 0.2s;
+       width: 100%;
+       margin-top: 16px;
+     }
+
+     .contact-btn:hover {
+       background: #99ccff;
+     }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 64px 32px;
+      color: #666;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: 64px 32px;
+      color: #666;
+    }
+
+    /* Responsive */
+           @media (max-width: 768px) {
+         .header-content {
+           flex-direction: column;
+           gap: 16px;
+           text-align: center;
+         }
+
+         .profile-header {
+           flex-direction: column;
+           text-align: center;
+         }
+
+         .stats {
+           justify-content: center;
+         }
+
+         .controls {
+           flex-direction: column;
+           align-items: stretch;
+         }
+
+         .posts-grid {
+           grid-template-columns: 1fr;
+           padding: 0 16px 32px;
+         }
+
+         .profile-section,
+         .controls {
+           margin-left: 16px;
+           margin-right: 16px;
+           padding: 24px;
+         }
+       }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">hlfwrld</div>
+      <div class="header-info">Public Profile</div>
+    </div>
+  </div>
+
+    <!-- Profile Section -->
+  <div class="profile-section">
+    <div class="profile-header">
+      <img id="profilePic" class="profile-pic" src="" alt="Profile Picture">
+      <div class="profile-info">
+        <h1 id="profileHandle">@influencer</h1>
+        <p id="profileBio">Influencer bio will appear here</p>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-number" id="totalPosts">0</div>
+            <div class="stat-label">Posts</div>
+          </div>
+        </div>
+        <button class="header-message-btn" onclick="messageInfluencerFromHeader()" title="Send a message to this influencer">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+          </svg>
+          Message
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Controls -->
+  <div class="controls">
+    <div class="search-container">
+      <input 
+        type="text" 
+        id="searchBar" 
+        class="search-bar" 
+        placeholder="Search posts by title or service..."
+      >
+    </div>
+    <select id="sortDropdown" class="sort-dropdown">
+      <option value="">Sort by...</option>
+      <option value="price-high">Price: High to Low</option>
+      <option value="price-low">Price: Low to High</option>
+      <option value="newest">Newest First</option>
+      <option value="oldest">Oldest First</option>
+    </select>
+  </div>
+
+  <!-- Posts Container -->
+  <div class="posts-container">
+    <div id="postsGrid" class="posts-grid">
+      <div class="loading">
+        <h3>Loading posts...</h3>
+        <p>Please wait while we fetch the latest posts.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating AI Chat Bot Icon -->
+  <button class="chat-bot-icon" onclick="openChatBot()" title="Chat with AI booking assistant">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      <circle cx="9" cy="9" r="1"/>
+      <circle cx="15" cy="9" r="1"/>
+      <path d="M8 13.5c0 .83.67 1.5 1.5 1.5h5c.83 0 1.5-.67 1.5-1.5"/>
+    </svg>
+  </button>
+
+  <!-- Service Request Modal -->
+  <div id="serviceModal" class="modal-overlay">
+    <div class="modal-content">
+             <div class="modal-header">
+         <h2 class="modal-title">Request Service</h2>
+         <button class="modal-close" onclick="closeServiceModal()">&times;</button>
+       </div>
+       
+       <div class="service-info">
+         <div class="service-location" id="serviceLocation"></div>
+         <div class="approval-notice">
+           Once salon approves your request, we will send you location details that you may view before deciding on whether to confirm the service booking.
+         </div>
+       </div>
+      
+      <form id="serviceRequestForm">
+        <div class="form-group">
+          <label class="form-label" for="clientName">Full Name *</label>
+          <input type="text" id="clientName" class="form-input" required placeholder="Enter your full name">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="clientEmail">Email Address *</label>
+          <input type="email" id="clientEmail" class="form-input" required placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="clientPhone">Phone Number *</label>
+          <input type="tel" id="clientPhone" class="form-input" required placeholder="Enter your phone number">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="clientZipCode">Zip Code *</label>
+          <input type="text" id="clientZipCode" class="form-input" required placeholder="12345" pattern="[0-9]{5}(-[0-9]{4})?" title="Please enter a valid zip code (12345 or 12345-6789)">
+        </div>
+        
+                 <div class="form-group">
+           <label class="form-label">Select Date(s) *</label>
+           <p class="form-helper-text">You may select multiple dates</p>
+           <div class="calendar-container">
+            <div class="calendar-header">
+              <button type="button" class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+              <div class="calendar-month" id="calendarMonth"></div>
+              <button type="button" class="calendar-nav" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="selected-dates" id="selectedDatesContainer" style="display: none;">
+              <div class="selected-dates-title">Selected Dates:</div>
+              <div id="selectedDatesList"></div>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+                 <div class="modal-buttons">
+           <button type="button" class="btn-cancel" onclick="closeServiceModal()">Cancel</button>
+           <button type="submit" class="btn-submit">Submit Request (free-no card required)</button>
+         </div>
+      </form>
+    </div>
+  </div>
+
+
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+    const postsGrid = document.getElementById('postsGrid');
+    
+    // Input validation and auto-correction functions
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function validatePhone(phone) {
+        const digits = phone.replace(/\D/g, '');
+        return digits.length === 10;
+    }
+
+    function formatPhone(phone) {
+        const digits = phone.replace(/\D/g, '');
+        
+        if (digits.length === 10) {
+            return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+        }
+        
+        if (digits.length === 7) {
+            return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        }
+        
+        return phone;
+    }
+
+    function validateZipCode(zipCode) {
+        const digits = zipCode.replace(/\D/g, '');
+        return digits.length === 5;
+    }
+
+    function formatZipCode(zipCode) {
+        const digits = zipCode.replace(/\D/g, '').slice(0, 5);
+        return digits;
+    }
+
+    function showFieldError(input, message) {
+        clearFieldError(input);
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'form-error';
+        errorDiv.textContent = message;
+        errorDiv.style.color = '#ef4444';
+        errorDiv.style.fontSize = '0.875rem';
+        errorDiv.style.marginTop = '0.25rem';
+        
+        input.parentNode.appendChild(errorDiv);
+    }
+
+    function clearFieldError(input) {
+        const existingError = input.parentNode.querySelector('.form-error');
+        if (existingError) {
+            existingError.remove();
+        }
+    }
+    
+    // Get influencer handle from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const influencerHandle = urlParams.get('handle') || 'influencer_name';
+    
+    let allPosts = [];
+    let allSignupCounts = {};
+
+    // Load posts from API
+    async function loadPosts() {
+      try {
+        console.log('🔄 Loading posts for:', influencerHandle);
+        
+        const response = await fetch(`${API_BASE}/posts/${influencerHandle}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const posts = await response.json();
+        console.log('✅ Loaded posts:', posts.length);
+        
+        allPosts = posts;
+        allSignupCounts = {};
+        
+        // Load signup counts for each post
+        for (const post of posts) {
+          try {
+            const signupResponse = await fetch(`${API_BASE}/signup-count/${post.code}`);
+            if (signupResponse.ok) {
+              const signupData = await signupResponse.json();
+              allSignupCounts[post.id] = signupData.signupCount || 0;
+            }
+          } catch (error) {
+            console.warn('Failed to load signup count for post:', post.code);
+            allSignupCounts[post.id] = 0;
+          }
+        }
+        
+        // Update stats
+        updateStats();
+        
+        // Render posts
+        renderPosts(posts);
+        
+      } catch (error) {
+        console.error('❌ Error loading posts:', error);
+        postsGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>Unable to load posts</h3>
+            <p>Please check your connection and try again.</p>
+          </div>
+        `;
+      }
+    }
+
+         // Update profile stats
+     function updateStats() {
+       const totalPosts = allPosts.length;
+       
+       document.getElementById('totalPosts').textContent = totalPosts;
+     }
+
+    // Render posts in grid
+    function renderPosts(posts) {
+      if (posts.length === 0) {
+        postsGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>No posts found</h3>
+            <p>This influencer hasn't posted any services yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      postsGrid.innerHTML = posts.map(post => createPostHTML(post)).join('');
+      
+      // Add carousel functionality
+      addCarouselListeners();
+    }
+
+
+
+    // Create HTML for a single post
+    function createPostHTML(post) {
+      const signupCount = allSignupCounts[post.id] || 0;
+      const photos = post.photos && post.photos.length > 0 ? post.photos : [];
+      const coverPhoto = post.coverPhoto || (photos.length > 0 ? photos[0] : null);
+      
+             const photoHTML = coverPhoto ? 
+         `<img class="post-photo" src="${coverPhoto}" alt="Post photo" data-post-id="${post.id}" data-photo-index="0">` :
+         `<div class="post-photo-placeholder">No photo available</div>`;
+      
+      const carouselNav = photos.length > 1 ? `
+        <button class="carousel-nav carousel-prev" data-post-id="${post.id}">◀</button>
+        <button class="carousel-nav carousel-next" data-post-id="${post.id}">▶</button>
+      ` : '';
+
+      return `
+        <div class="post-square" data-post-id="${post.id}">
+          <div class="post-photo-container">
+            ${photoHTML}
+            ${carouselNav}
+          </div>
+          <div class="post-content">
+            <div class="post-title">${escapeHtml(post.title || 'Untitled')}</div>
+            <div class="post-location">${escapeHtml(post.city || '')}, ${escapeHtml(post.state || '')}</div>
+            <div class="post-service">${escapeHtml(post.serviceName || '')}</div>
+                         <div class="post-fee">$${escapeHtml(post.fee || '0')}</div>
+             ${post.frequency ? `<div class="post-meta">Frequency: ${escapeHtml(post.frequency)}</div>` : ''}
+             ${post.notes ? `<div class="post-notes">${escapeHtml(post.notes)}</div>` : ''}
+             <button class="contact-btn" onclick="contactInfluencer('${escapeHtml(post.code)}')">
+              Request this service
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Add carousel navigation listeners
+    function addCarouselListeners() {
+      document.querySelectorAll('.carousel-prev').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigateCarousel(btn.dataset.postId, -1);
+        });
+      });
+
+      document.querySelectorAll('.carousel-next').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigateCarousel(btn.dataset.postId, 1);
+        });
+      });
+    }
+
+    // Navigate photo carousel
+    function navigateCarousel(postId, direction) {
+      const post = allPosts.find(p => p.id == postId);
+      if (!post || !post.photos || post.photos.length <= 1) return;
+
+      const img = document.querySelector(`img[data-post-id="${postId}"]`);
+      if (!img) return;
+
+      let currentIndex = parseInt(img.dataset.photoIndex) || 0;
+      currentIndex += direction;
+
+      if (currentIndex < 0) currentIndex = post.photos.length - 1;
+      if (currentIndex >= post.photos.length) currentIndex = 0;
+
+      img.src = post.photos[currentIndex];
+      img.dataset.photoIndex = currentIndex;
+
+      // Show/hide navigation buttons
+      const prevBtn = document.querySelector(`.carousel-prev[data-post-id="${postId}"]`);
+      const nextBtn = document.querySelector(`.carousel-next[data-post-id="${postId}"]`);
+      
+      if (prevBtn) prevBtn.style.display = currentIndex > 0 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = currentIndex < post.photos.length - 1 ? 'flex' : 'none';
+    }
+
+    // Filter and search posts
+    function filterPosts() {
+      const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+      const sortOption = document.getElementById('sortDropdown').value;
+      
+      let filteredPosts = [...allPosts];
+      
+      // Apply search filter
+      if (searchTerm) {
+        filteredPosts = filteredPosts.filter(post => 
+          (post.title && post.title.toLowerCase().includes(searchTerm)) ||
+          (post.serviceName && post.serviceName.toLowerCase().includes(searchTerm)) ||
+          (post.notes && post.notes.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      // Apply sorting
+      if (sortOption === 'price-high') {
+        filteredPosts.sort((a, b) => parseFloat(b.fee || 0) - parseFloat(a.fee || 0));
+      } else if (sortOption === 'price-low') {
+        filteredPosts.sort((a, b) => parseFloat(a.fee || 0) - parseFloat(b.fee || 0));
+      } else if (sortOption === 'newest') {
+        filteredPosts.sort((a, b) => b.id - a.id);
+      } else if (sortOption === 'oldest') {
+        filteredPosts.sort((a, b) => a.id - b.id);
+      }
+      
+      renderPosts(filteredPosts);
+    }
+
+    // Contact influencer function - now opens service request modal
+    function contactInfluencer(postCode) {
+      // Store the current post code for the request
+      window.currentServiceCode = postCode;
+      
+      // Find the post details
+      const post = allPosts.find(p => p.code === postCode);
+      if (post) {
+        document.querySelector('.modal-title').textContent = `Request: ${post.serviceName || 'Service'}`;
+        
+        // Update service location
+        const locationText = `${post.city || ''}, ${post.state || ''}`.replace(/^,\s*|,\s*$/g, '');
+        document.getElementById('serviceLocation').textContent = locationText || 'Location to be confirmed';
+      }
+      
+      // Open the modal
+      openServiceModal();
+    }
+
+    // Modal management variables
+    let currentDate = new Date();
+    let selectedDates = []; // Now array of objects: {date: 'YYYY-MM-DD', time: 'AM'|'PM'|null}
+
+    // Open service request modal
+    function openServiceModal() {
+      document.getElementById('serviceModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Initialize calendar
+      renderCalendar();
+      
+      // Check if we need to pre-fill form from edit submission
+      checkForEditSubmission();
+    }
+    
+    // Check for edit submission data and pre-fill form
+    function checkForEditSubmission() {
+      const editData = sessionStorage.getItem('editSubmission');
+      if (editData) {
+        try {
+          const data = JSON.parse(editData);
+          
+          // Pre-fill form fields
+          document.getElementById('clientName').value = data.name || '';
+          document.getElementById('clientEmail').value = data.email || '';
+          document.getElementById('clientPhone').value = data.phone || '';
+          document.getElementById('clientZipCode').value = data.zipCode || '';
+          
+          // Pre-fill dates
+          if (data.dates) {
+            const dates = JSON.parse(data.dates);
+            selectedDates = dates;
+            updateSelectedDatesDisplay();
+          }
+          
+          // Clear the session storage so it doesn't persist
+          sessionStorage.removeItem('editSubmission');
+          
+          // Show a message that they're editing
+          const modalTitle = document.querySelector('#serviceModal .modal-header h3');
+          if (modalTitle) {
+            modalTitle.innerHTML = '📝 Edit Your Service Request';
+            modalTitle.style.color = '#f57c00';
+          }
+          
+        } catch (e) {
+          console.error('Error parsing edit submission data:', e);
+        }
+      }
+    }
+    
+    // Check if we should auto-open modal for editing on page load
+    function checkAutoOpenModal() {
+      const editData = sessionStorage.getItem('editSubmission');
+      if (editData) {
+        try {
+          const data = JSON.parse(editData);
+          if (data.autoOpenModal) {
+            // Auto-open the service modal for editing
+            setTimeout(() => {
+              openServiceModal();
+            }, 500); // Small delay to ensure page is fully loaded
+          }
+        } catch (e) {
+          console.error('Error checking auto-open modal:', e);
+        }
+      }
+    }
+
+    // Close service request modal
+    function closeServiceModal() {
+      document.getElementById('serviceModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+      
+      // Reset form
+      document.getElementById('serviceRequestForm').reset();
+      selectedDates = [];
+      updateSelectedDatesDisplay();
+    }
+
+
+
+    // Calendar functions
+    function renderCalendar() {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      
+      // Update month header
+      document.getElementById('calendarMonth').textContent = 
+        `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+      
+      // Clear calendar grid
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      
+      // Add day headers
+      dayNames.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        grid.appendChild(dayHeader);
+      });
+      
+      // Get first day of month and number of days
+      const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      const today = new Date();
+      
+      // Add empty cells for days before month starts
+      for (let i = 0; i < firstDay.getDay(); i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day other-month';
+        grid.appendChild(emptyDay);
+      }
+      
+      // Add days of the month
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        const dateString = dayDate.toISOString().split('T')[0];
+        
+        // Disable past dates
+        if (dayDate < today.setHours(0,0,0,0)) {
+          dayElement.classList.add('disabled');
+        } else {
+          dayElement.onclick = () => toggleDate(dateString, dayElement);
+        }
+        
+        // Check if date is selected
+        if (selectedDates.some(d => d.date === dateString)) {
+          dayElement.classList.add('selected');
+        }
+        
+        grid.appendChild(dayElement);
+      }
+    }
+
+    function changeMonth(direction) {
+      currentDate.setMonth(currentDate.getMonth() + direction);
+      renderCalendar();
+    }
+
+    function toggleDate(dateString, element) {
+      if (element.classList.contains('disabled')) return;
+      
+      const existingIndex = selectedDates.findIndex(d => d.date === dateString);
+      if (existingIndex > -1) {
+        // Remove date
+        selectedDates.splice(existingIndex, 1);
+        element.classList.remove('selected');
+      } else {
+        // Add date with no time preference initially
+        selectedDates.push({date: dateString, time: null});
+        element.classList.add('selected');
+      }
+      
+      updateSelectedDatesDisplay();
+    }
+
+    function updateSelectedDatesDisplay() {
+      const container = document.getElementById('selectedDatesContainer');
+      const list = document.getElementById('selectedDatesList');
+      
+      if (selectedDates.length > 0) {
+        container.style.display = 'block';
+        list.innerHTML = selectedDates.map((dateObj, index) => {
+          const dateDisplay = new Date(dateObj.date + 'T00:00:00');
+          return `
+            <div class="date-item">
+              <span class="date-text">${dateDisplay.toLocaleDateString()}</span>
+              <div class="time-buttons">
+                <button type="button" class="time-btn ${dateObj.time === 'AM' ? 'selected' : ''}" 
+                        onclick="setDateTime(${index}, 'AM')">AM</button>
+                <button type="button" class="time-btn ${dateObj.time === 'PM' ? 'selected' : ''}" 
+                        onclick="setDateTime(${index}, 'PM')">PM</button>
+              </div>
+              <button type="button" class="remove-date" onclick="removeDate(${index})" title="Remove date">×</button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    // Set time preference for a specific date
+    function setDateTime(dateIndex, time) {
+      if (selectedDates[dateIndex]) {
+        selectedDates[dateIndex].time = time;
+        updateSelectedDatesDisplay();
+      }
+    }
+
+    // Remove a specific date
+    function removeDate(dateIndex) {
+      const dateToRemove = selectedDates[dateIndex];
+      if (dateToRemove) {
+        // Remove from selectedDates array
+        selectedDates.splice(dateIndex, 1);
+        
+        // Update calendar display
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(day => {
+          if (day.textContent && day.onclick && day.onclick.toString().includes(dateToRemove.date)) {
+            day.classList.remove('selected');
+          }
+        });
+        
+        // Re-render calendar to update selection state
+        renderCalendar();
+        updateSelectedDatesDisplay();
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('serviceRequestForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Get form data
+      const clientName = document.getElementById('clientName').value.trim();
+      const clientEmail = document.getElementById('clientEmail').value.trim();
+      const clientPhone = document.getElementById('clientPhone').value.trim();
+      const clientZipCode = document.getElementById('clientZipCode').value.trim();
+      
+      // Validate required fields
+      if (!clientName || !clientEmail || !clientPhone || !clientZipCode) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      // Validate email format
+      if (!validateEmail(clientEmail)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      // Validate phone format
+      if (!validatePhone(clientPhone)) {
+        alert('Please enter a valid 10-digit phone number.');
+        return;
+      }
+      
+      // Validate zip code format
+      if (!validateZipCode(clientZipCode)) {
+        alert('Please enter a valid 5-digit zip code.');
+        return;
+      }
+      
+      if (selectedDates.length === 0) {
+        alert('Please select at least one date.');
+        return;
+      }
+      
+      // Check if all dates have time preferences
+      const datesWithoutTime = selectedDates.filter(d => !d.time);
+      if (datesWithoutTime.length > 0) {
+        alert('Please select AM or PM for all selected dates.');
+        return;
+      }
+      
+      // Get form data
+      const formData = {
+        serviceCode: window.currentServiceCode,
+        clientName: document.getElementById('clientName').value,
+        clientEmail: document.getElementById('clientEmail').value,
+        clientPhone: document.getElementById('clientPhone').value,
+        clientZipCode: document.getElementById('clientZipCode').value,
+        selectedDates: selectedDates,
+        influencerHandle: influencerHandle
+      };
+      
+      try {
+        // Send service request to backend
+        const response = await fetch(`${API_BASE}/service-requests`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+          closeServiceModal();
+          
+          // Record as signup for analytics
+          recordSignup(window.currentServiceCode);
+          
+          // Find the post to get the serviceName
+          const post = allPosts.find(p => p.code === formData.serviceCode);
+          // Create URL with submission data for thank you page, including serviceName
+          const params = new URLSearchParams({
+            name: formData.clientName,
+            email: formData.clientEmail,
+            phone: formData.clientPhone,
+            zipCode: formData.clientZipCode,
+            dates: JSON.stringify(formData.selectedDates),
+            serviceCode: formData.serviceCode,
+            influencerHandle: formData.influencerHandle,
+            serviceName: post && post.serviceName ? post.serviceName : ''
+          });
+          // Redirect to request submission page with submission data
+          window.location.href = `requestsubmission.html?${params.toString()}`;
+        } else {
+          throw new Error('Failed to send request');
+        }
+      } catch (error) {
+        console.error('Error sending service request:', error);
+        alert('❌ Unable to send request. Please try again or contact the influencer directly.');
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('serviceModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeServiceModal();
+      }
+    });
+
+
+
+    // AI Chat Bot function (floating icon)
+    function openChatBot() {
+      // This will eventually open the AI booking assistant
+      alert(`🤖 AI Booking Assistant\n\nComing Soon!\n\nThis will help you:\n• Check available appointment times\n• Book services directly\n• Handle payments\n• Send booking confirmations\n\nFor now, please use the "Message Influencer" button on individual posts.`);
+      
+      // TODO: Implement AI chat bot interface
+      // This could open a modal with chat interface
+      // or redirect to a dedicated chat page
+    }
+
+    // Message influencer directly (goes to their inbox)
+    function messageInfluencerDirect(postCode) {
+      // Get message from user
+      const message = prompt(`Send a message to @${influencerHandle} about service "${postCode}":`);
+      
+      if (message && message.trim()) {
+        // Send message to influencer's inbox
+        sendMessageToInfluencer(postCode, message.trim());
+      }
+    }
+
+         // Message influencer from header button (general message)
+     function messageInfluencerFromHeader() {
+       // Get general message from user
+       const message = prompt(`Send a message to @${influencerHandle}:`);
+       
+       if (message && message.trim()) {
+         // Send general message to influencer's inbox
+         sendMessageToInfluencer('GENERAL', message.trim());
+       }
+     }
+
+     // Send message to influencer's inbox system
+     async function sendMessageToInfluencer(postCode, messageText) {
+      try {
+        const response = await fetch(`${API_BASE}/messages/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            toInfluencer: influencerHandle,
+            postCode: postCode,
+            message: messageText,
+            timestamp: new Date().toISOString(),
+            senderType: 'public_visitor'
+          })
+        });
+
+        if (response.ok) {
+          alert('✅ Message sent successfully!\n\nThe influencer will see your message in their inbox and can respond to you directly.');
+          
+          // Record this as a signup/interaction
+          recordSignup(postCode);
+        } else {
+          throw new Error('Failed to send message');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        
+        // Fallback to email if API fails
+        const subject = `Message about service ${postCode}`;
+        const body = encodeURIComponent(`Hi @${influencerHandle},\n\n${messageText}\n\nRegarding your service: ${postCode}\n\nBest regards`);
+        
+        if (confirm('Unable to send direct message. Would you like to send an email instead?')) {
+          window.location.href = `mailto:${influencerHandle}@example.com?subject=${subject}&body=${body}`;
+        }
+      }
+    }
+
+    // Record signup for analytics
+    async function recordSignup(postCode) {
+      try {
+        await fetch(`${API_BASE}/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ postCode })
+        });
+        
+        // Refresh signup counts
+        loadPosts();
+      } catch (error) {
+        console.warn('Failed to record signup:', error);
+      }
+    }
+
+    // Load profile data
+    async function loadProfile() {
+      try {
+        // Try to load from database first
+        const response = await fetch(`${API_BASE}/profile/${influencerHandle}`);
+        if (response.ok) {
+          const profile = await response.json();
+          if (profile.profilePhoto || profile.handle || profile.bio) {
+            updateProfileDisplay({
+              photo: profile.profilePhoto,
+              handle: profile.handle || `@${influencerHandle}`,
+              bio: profile.bio || 'No bio available'
+            });
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Could not load profile from database:', error);
+      }
+      
+      // Fallback to default
+      updateProfileDisplay({
+        photo: '',
+        handle: `@${influencerHandle}`,
+        bio: 'No bio available'
+      });
+    }
+
+    // Update profile display
+    function updateProfileDisplay(profile) {
+      document.getElementById('profileHandle').textContent = profile.handle;
+      document.getElementById('profileBio').textContent = profile.bio;
+      
+      const profilePic = document.getElementById('profilePic');
+      if (profile.photo) {
+        profilePic.src = profile.photo;
+        profilePic.style.display = 'block';
+      } else {
+        // Show a default placeholder instead of hiding
+        profilePic.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjZjBmMGYwIi8+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNDUiIHI9IjE1IiBmaWxsPSIjY2NjIi8+CjxwYXRoIGQ9Ik0zMCA4NWMwLTE2LjU2OSAxMy40MzEtMzAgMzAtMzBzMzAgMTMuNDMxIDMwIDMwdjEwSDMwVjg1eiIgZmlsbD0iI2NjYyIvPgo8L3N2Zz4K';
+        profilePic.style.display = 'block';
+      }
+    }
+
+    // Utility function to escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add event listeners
+      document.getElementById('searchBar').addEventListener('input', filterPosts);
+      document.getElementById('sortDropdown').addEventListener('change', filterPosts);
+      
+      // Add validation event listeners for form fields
+      const emailInput = document.getElementById('clientEmail');
+      const phoneInput = document.getElementById('clientPhone');
+      const zipCodeInput = document.getElementById('clientZipCode');
+
+      if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+          const email = this.value.trim();
+          if (email && !validateEmail(email)) {
+            this.classList.add('error');
+            showFieldError(this, 'Please enter a valid email address');
+          } else {
+            this.classList.remove('error');
+            clearFieldError(this);
+          }
+        });
+      }
+
+      if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+          const formatted = formatPhone(this.value);
+          if (this.value !== formatted) {
+            this.value = formatted;
+          }
+        });
+
+        phoneInput.addEventListener('blur', function() {
+          const phone = this.value;
+          if (phone && !validatePhone(phone)) {
+            this.classList.add('error');
+            showFieldError(this, 'Please enter a valid 10-digit phone number');
+          } else {
+            this.classList.remove('error');
+            clearFieldError(this);
+          }
+        });
+      }
+
+      if (zipCodeInput) {
+        zipCodeInput.addEventListener('input', function() {
+          const formatted = formatZipCode(this.value);
+          if (this.value !== formatted) {
+            this.value = formatted;
+          }
+        });
+
+        zipCodeInput.addEventListener('blur', function() {
+          const zipCode = this.value;
+          if (zipCode && !validateZipCode(zipCode)) {
+            this.classList.add('error');
+            showFieldError(this, 'Please enter a valid 5-digit zip code');
+          } else {
+            this.classList.remove('error');
+            clearFieldError(this);
+          }
+        });
+      }
+      
+      // Load data
+      loadProfile();
+      loadPosts();
+      
+      // Check if we should auto-open the modal for editing
+      checkAutoOpenModal();
+    });
+  </script>
+</body>
+</html> 

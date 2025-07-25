@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .appointment-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .appointment-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .appointment-content {
+            padding: 2rem;
+        }
+
+        .appointment-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .appointment-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .appointment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .influencer-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .influencer-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .influencer-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0ea5e9;
+        }
+
+        .influencer-info {
+            flex: 1;
+        }
+
+        .influencer-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 0.25rem;
+        }
+
+        .influencer-handle {
+            font-size: 0.9rem;
+            color: #0369a1;
+            font-weight: 500;
+        }
+
+        .recommendation-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .time-options {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-option:hover {
+            border-color: #667eea;
+            background: #f0f9ff;
+        }
+
+        .time-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .time-option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .time-date {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .time-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .time-availability {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .payment-section {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-details {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .payment-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .service-fee {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .platform-fee {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            padding-top: 0.5rem;
+            border-top: 1px solid #d1d5db;
+        }
+
+        .confirmation-section {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .confirmation-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 0.5rem;
+        }
+
+        .confirmation-message {
+            color: #047857;
+            line-height: 1.5;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .timeline-completed {
+            background: #059669;
+            color: white;
+        }
+
+        .timeline-current {
+            background: #667eea;
+            color: white;
+        }
+
+        .timeline-pending {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .appointment-details {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-details {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="appointment-container">
+        <div class="appointment-header">
+            <h1 class="header-title">📅 Appointment Management</h1>
+            <p class="header-subtitle">Secure booking and confirmation system</p>
+        </div>
+
+        <div class="appointment-content">
+            <!-- Timeline Section -->
+            <div class="timeline" id="appointmentTimeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon timeline-completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Service Request Submitted</div>
+                        <div class="timeline-description">Your request has been received and is being reviewed</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon timeline-completed">✓</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Salon Response Received</div>
+                        <div class="timeline-description">The salon has provided available time slots</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon timeline-current">3</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Select Preferred Time</div>
+                        <div class="timeline-description">Choose from the available time slots below</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon timeline-pending">4</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Payment & Confirmation</div>
+                        <div class="timeline-description">Secure payment and final booking confirmation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Details -->
+            <div class="appointment-card">
+                <div class="appointment-status status-pending">Awaiting Confirmation</div>
+                
+                <div class="appointment-details">
+                    <div class="detail-section">
+                        <div class="detail-title">🏪 Service Details</div>
+                        <div class="detail-item">
+                            <span class="detail-label">Service:</span>
+                            <span class="detail-value" id="serviceName">Luxury Manicure</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Salon:</span>
+                            <span class="detail-value" id="salonName">Beauty Salon</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value" id="salonLocation">Downtown Location</span>
+                        </div>
+                    </div>
+
+                    <!-- Influencer Recommendation Section -->
+                    <div class="influencer-section">
+                        <div class="recommendation-label">Booked by</div>
+                        <div class="influencer-header">
+                            <img src="https://via.placeholder.com/60x60/0ea5e9/ffffff?text=👤" alt="Influencer Photo" class="influencer-photo" id="influencerPhoto">
+                            <div class="influencer-info">
+                                <div class="influencer-name" id="influencerName">Loading...</div>
+                                <div class="influencer-handle" id="influencerHandle">@loading</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-title">👤 Your Information</div>
+                        <div class="detail-item">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value" id="clientName">Mark Zuck</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value" id="clientEmail">mark@meta.com</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone:</span>
+                            <span class="detail-value" id="clientPhone">(650) 111-4444</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value" id="clientLocation">21202</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Time Slots -->
+                <div class="detail-section">
+                    <div class="detail-title">⏰ Available Time Slots</div>
+                    <div class="time-options" id="timeOptions">
+                        <div class="time-option" data-slot="1">
+                            <div class="time-option-info">
+                                <div class="time-date">Monday, July 24th</div>
+                                <div class="time-details">10:00 AM - 11:30 AM</div>
+                            </div>
+                            <div class="time-availability">Available</div>
+                        </div>
+                        <div class="time-option" data-slot="2">
+                            <div class="time-option-info">
+                                <div class="time-date">Tuesday, July 25th</div>
+                                <div class="time-details">2:00 PM - 3:30 PM</div>
+                            </div>
+                            <div class="time-availability">Available</div>
+                        </div>
+                        <div class="time-option" data-slot="3">
+                            <div class="time-option-info">
+                                <div class="time-date">Wednesday, July 26th</div>
+                                <div class="time-details">11:00 AM - 12:30 PM</div>
+                            </div>
+                            <div class="time-availability">Available</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="payment-section">
+                    <div class="payment-title">💳 Payment Summary</div>
+                    <div class="payment-details">
+                        <div class="payment-info">
+                            <div class="service-fee" id="serviceFee">$85.00</div>
+                            <div class="platform-fee">Platform fee: $5.00</div>
+                            <div class="total-amount" id="totalAmount">Total: $90.00</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="confirmBookingBtn" disabled>
+                                💳 Confirm & Pay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="messageBtn">
+                        💬 Message Salon
+                    </button>
+                    <button class="btn btn-outline" id="rescheduleBtn">
+                        📅 Request Reschedule
+                    </button>
+                    <button class="btn btn-danger" id="cancelBtn">
+                        ❌ Cancel Request
+                    </button>
+                </div>
+            </div>
+
+            <!-- Confirmation Section (Hidden by default) -->
+            <div class="confirmation-section" id="confirmationSection" style="display: none;">
+                <div class="confirmation-icon">🎉</div>
+                <div class="confirmation-title">Booking Confirmed!</div>
+                <div class="confirmation-message">
+                    Your appointment has been successfully booked and confirmed.<br>
+                    You will receive email confirmations and reminders.<br>
+                    <strong>Confirmation Code: <span id="confirmationCode">BK-2025-001</span></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appointmentData = {};
+        let selectedTimeSlot = null;
+        const API_BASE = 'http://localhost:3000';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📅 Appointment Management System Initialized');
+            loadAppointmentData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Time slot selection
+            document.querySelectorAll('.time-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    selectTimeSlot(this.dataset.slot);
+                });
+            });
+
+            // Action buttons
+            document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
+            document.getElementById('messageBtn').addEventListener('click', openMessaging);
+            document.getElementById('rescheduleBtn').addEventListener('click', requestReschedule);
+            document.getElementById('cancelBtn').addEventListener('click', cancelAppointment);
+        }
+
+        async function loadAppointmentData() {
+            // In a real app, this would come from URL parameters or API
+            const urlParams = new URLSearchParams(window.location.search);
+            const requestId = urlParams.get('request') || '13';
+            
+            try {
+                console.log('🔄 Loading appointment data for request:', requestId);
+                
+                // Fetch appointment data from backend
+                const response = await fetch(`${API_BASE}/service-requests/id/${requestId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch appointment data: ${response.status}`);
+                }
+                
+                const requestData = await response.json();
+                
+                appointmentData = {
+                    requestId: requestId,
+                    serviceName: requestData.serviceName || 'Unknown Service',
+                    salonName: requestData.influencerName || 'Unknown Salon',
+                    salonLocation: requestData.clientZipCode || 'Location not specified',
+                    clientName: requestData.clientName || 'Unknown Client',
+                    clientEmail: requestData.clientEmail || 'No email provided',
+                    clientPhone: requestData.clientPhone || 'No phone provided',
+                    clientLocation: requestData.clientZipCode || 'No location provided',
+                    serviceFee: requestData.fee || 0,
+                    platformFee: 5.00,
+                    totalAmount: (requestData.fee || 0) + 5.00,
+                    status: requestData.status || 'pending',
+                    influencerName: requestData.influencerName || 'Unknown Influencer',
+                    influencerHandle: requestData.influencerHandle || 'unknown',
+                    influencerPhoto: requestData.coverPhoto || 'https://via.placeholder.com/60x60/0ea5e9/ffffff?text=👤',
+                    timeOptions: requestData.selectedDates || []
+                };
+                
+                console.log('✅ Appointment data loaded:', appointmentData);
+                updateUI();
+                updateTimeSlots();
+                
+            } catch (error) {
+                console.error('❌ Error loading appointment data:', error);
+                
+                // Fallback to default data
+            appointmentData = {
+                requestId: requestId,
+                serviceName: 'Luxury Manicure',
+                salonName: 'Beauty Salon',
+                salonLocation: 'Downtown Location',
+                clientName: 'Mark Zuck',
+                clientEmail: 'mark@meta.com',
+                clientPhone: '(650) 111-4444',
+                clientLocation: '21202',
+                serviceFee: 85.00,
+                platformFee: 5.00,
+                totalAmount: 90.00,
+                    status: 'pending',
+                    influencerName: 'Unknown Influencer',
+                    influencerHandle: 'unknown',
+                    influencerPhoto: 'https://via.placeholder.com/60x60/0ea5e9/ffffff?text=👤',
+                    timeOptions: [
+                        { date: '2025-07-24', time: '10:00' },
+                        { date: '2025-07-25', time: '14:00' },
+                        { date: '2025-07-26', time: '11:00' }
+                    ]
+            };
+
+            updateUI();
+                updateTimeSlots();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('serviceName').textContent = appointmentData.serviceName;
+            document.getElementById('salonName').textContent = appointmentData.salonName;
+            document.getElementById('salonLocation').textContent = appointmentData.salonLocation;
+            document.getElementById('clientName').textContent = appointmentData.clientName;
+            document.getElementById('clientEmail').textContent = appointmentData.clientEmail;
+            document.getElementById('clientPhone').textContent = appointmentData.clientPhone;
+            document.getElementById('clientLocation').textContent = appointmentData.clientLocation;
+            document.getElementById('serviceFee').textContent = '$' + appointmentData.serviceFee.toFixed(2);
+            document.getElementById('totalAmount').textContent = 'Total: $' + appointmentData.totalAmount.toFixed(2);
+            
+            // Update influencer information
+            document.getElementById('influencerName').textContent = appointmentData.influencerName;
+            document.getElementById('influencerHandle').textContent = '@' + appointmentData.influencerHandle;
+            document.getElementById('influencerPhoto').src = appointmentData.influencerPhoto;
+        }
+
+        function updateTimeSlots() {
+            const timeOptionsDiv = document.getElementById('timeOptions');
+            timeOptionsDiv.innerHTML = ''; // Clear existing options
+
+            if (appointmentData.timeOptions && appointmentData.timeOptions.length > 0) {
+                appointmentData.timeOptions.forEach((slot, index) => {
+                    const option = document.createElement('div');
+                    option.className = 'time-option';
+                    option.dataset.slot = index + 1; // Use index + 1 as slot ID
+                    
+                    // Format the date for display
+                    const dateObj = new Date(slot.date);
+                    const formattedDate = dateObj.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    // Format the time for display
+                    const formattedTime = formatTime24to12(slot.time);
+                    
+                    option.innerHTML = `
+                        <div class="time-option-info">
+                            <div class="time-date">${formattedDate}</div>
+                            <div class="time-details">${formattedTime}</div>
+                        </div>
+                        <div class="time-availability">Available</div>
+                    `;
+                    timeOptionsDiv.appendChild(option);
+                });
+            } else {
+                timeOptionsDiv.innerHTML = '<p>No available time slots found.</p>';
+            }
+
+            // Re-attach event listeners to new options
+            document.querySelectorAll('.time-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    selectTimeSlot(this.dataset.slot);
+                });
+            });
+        }
+
+        function formatTime24to12(time24) {
+            if (!time24) return 'Time not specified';
+            
+            try {
+                const [hours, minutes] = time24.split(':');
+                const hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour % 12 || 12;
+                return `${hour12}:${minutes} ${ampm}`;
+            } catch (error) {
+                return time24; // Return original if parsing fails
+            }
+        }
+
+        function selectTimeSlot(slotId) {
+            // Remove previous selection
+            document.querySelectorAll('.time-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Select new slot
+            const selectedOption = document.querySelector(`[data-slot="${slotId}"]`);
+            selectedOption.classList.add('selected');
+            selectedTimeSlot = slotId;
+
+            // Enable confirm button
+            document.getElementById('confirmBookingBtn').disabled = false;
+
+            console.log('Selected time slot:', slotId);
+        }
+
+        async function confirmBooking() {
+            if (!selectedTimeSlot) {
+                alert('Please select a time slot first.');
+                return;
+            }
+
+            try {
+                console.log('Processing booking confirmation...');
+
+                // Get the selected time slot details
+                const selectedOption = document.querySelector(`[data-slot="${selectedTimeSlot}"]`);
+                if (!selectedOption) {
+                    throw new Error('Selected time slot not found');
+                }
+                
+                // Get the selected time option using the slot index
+                const selectedTimeOption = appointmentData.timeOptions[selectedTimeSlot - 1];
+                
+                if (!selectedTimeOption) {
+                    throw new Error('Time slot data not found');
+                }
+                
+                // Parse the time slot information
+                const selectedTimeSlotData = {
+                    date: selectedTimeOption.date,
+                    time: selectedTimeOption.time,
+                    slotId: selectedTimeSlot
+                };
+                
+                console.log('Selected time slot data:', selectedTimeSlotData);
+
+                // Create Stripe checkout session
+                const response = await fetch(`${API_BASE}/create-checkout-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requestId: appointmentData.requestId,
+                        selectedTimeSlot: selectedTimeSlotData,
+                        serviceName: appointmentData.serviceName,
+                        amount: appointmentData.totalAmount,
+                        clientEmail: appointmentData.clientEmail,
+                        clientName: appointmentData.clientName
+                    }),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to create checkout session');
+                }
+                
+                const { url } = await response.json();
+                
+                console.log('✅ Stripe checkout session created, redirecting to:', url);
+                
+                // Redirect to Stripe checkout
+                window.location.href = url;
+                
+            } catch (error) {
+                console.error('❌ Booking confirmation failed:', error);
+                alert('❌ Booking failed: ' + error.message);
+            }
+        }
+
+        async function processPayment() {
+            // Simulate payment processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Mock payment processing
+            console.log('💳 Processing payment...');
+            console.log('Amount:', appointmentData.totalAmount);
+            console.log('Service:', appointmentData.serviceName);
+
+            // In a real app, integrate with payment processors like:
+            // - Stripe
+            // - PayPal
+            // - Square
+            // - etc.
+
+            return {
+                success: true,
+                transactionId: 'txn_' + Date.now(),
+                amount: appointmentData.totalAmount
+            };
+        }
+
+        function updateTimeline(status) {
+            const timeline = document.getElementById('appointmentTimeline');
+            const items = timeline.querySelectorAll('.timeline-item');
+
+            if (status === 'confirmed') {
+                // Mark step 3 as completed
+                const step3Icon = items[2].querySelector('.timeline-icon');
+                step3Icon.className = 'timeline-icon timeline-completed';
+                step3Icon.textContent = '✓';
+
+                // Mark step 4 as current
+                const step4Icon = items[3].querySelector('.timeline-icon');
+                step4Icon.className = 'timeline-icon timeline-completed';
+                step4Icon.textContent = '✓';
+
+                // Update descriptions
+                items[2].querySelector('.timeline-description').textContent = 'Time slot selected and confirmed';
+                items[3].querySelector('.timeline-description').textContent = 'Payment processed and booking confirmed';
+            }
+        }
+
+        function showConfirmation() {
+            document.getElementById('confirmationCode').textContent = appointmentData.confirmationCode;
+            document.getElementById('confirmationSection').style.display = 'block';
+            
+            // Scroll to confirmation
+            document.getElementById('confirmationSection').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+
+            // Disable booking button
+            document.getElementById('confirmBookingBtn').disabled = true;
+            document.getElementById('confirmBookingBtn').textContent = '✅ Confirmed';
+        }
+
+        async function sendConfirmationNotifications() {
+            try {
+                // Send email to client
+                await fetch(`${API_BASE}/notifications/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: appointmentData.clientEmail,
+                        subject: 'Booking Confirmation - ' + appointmentData.serviceName,
+                        message: `Your appointment has been confirmed!\n\nService: ${appointmentData.serviceName}\nSalon: ${appointmentData.salonName}\nConfirmation Code: ${appointmentData.confirmationCode}\n\nWe look forward to seeing you!`,
+                        type: 'booking_confirmation'
+                    }),
+                });
+
+                // Send notification to salon
+                await fetch(`${API_BASE}/notifications/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: 'salon@beautysalon.com',
+                        subject: 'New Booking Confirmed - ' + appointmentData.serviceName,
+                        message: `A new appointment has been confirmed!\n\nService: ${appointmentData.serviceName}\nClient: ${appointmentData.clientName}\nConfirmation Code: ${appointmentData.confirmationCode}\n\nPlease prepare for the appointment.`,
+                        type: 'salon_notification'
+                    }),
+                });
+
+                console.log('📧 Confirmation notifications sent');
+            } catch (error) {
+                console.error('❌ Failed to send notifications:', error);
+            }
+        }
+
+        function openMessaging() {
+            const messagingUrl = `messaging-system.html?type=client&user=client1&request=${appointmentData.requestId}`;
+            window.open(messagingUrl, '_blank');
+        }
+
+        function requestReschedule() {
+            if (confirm('Request to reschedule this appointment? The salon will be notified and provide new time options.')) {
+                alert('📅 Reschedule request sent! The salon will contact you with new available times.');
+                console.log('Reschedule requested for appointment:', appointmentData.requestId);
+            }
+        }
+
+        function cancelAppointment() {
+            if (confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
+                appointmentData.status = 'cancelled';
+                alert('❌ Appointment cancelled. You will receive a confirmation email shortly.');
+                console.log('Appointment cancelled:', appointmentData.requestId);
+                
+                // In a real app, update the backend and send notifications
+                window.location.href = 'digitalshop.html';
+            }
+        }
+    </script>
+</body>
+</html> 

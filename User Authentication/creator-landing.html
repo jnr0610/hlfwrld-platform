@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hlfwrld - Beauty Services Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .landing-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .landing-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+        }
+
+        .landing-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .landing-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .landing-content {
+            padding: 3rem 2rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-link {
+            margin-top: 2rem;
+            color: #6b7280;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="landing-header">
+            <h1 class="landing-title">Hlfwrld</h1>
+            <p class="landing-subtitle">Join our platform and start monetizing the beauty services you already love</p>
+        </div>
+
+        <div class="landing-content">
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🛍️</div>
+                    <h3 class="feature-title">Build Your Digital Shop</h3>
+                    <p class="feature-description">Make each beauty service you already love shoppable</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💸</div>
+                    <h3 class="feature-title">Commission</h3>
+                    <p class="feature-description">Provide your 4-digit code to the salon you use so we can onboard them to get you industry leading commissions</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Share</h3>
+                    <p class="feature-description">Share your Hlfwrld page on your stories, linktree, DM funnels for maximum reach</p>
+                </div>
+            </div>
+
+            <a href="http://localhost:3000/creator-auth" class="cta-button">Get Started</a>
+
+            <div class="login-link">
+                Already have an account? <a href="http://localhost:3000/creator-auth">Log in</a>
+            </div>
+
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+                <p style="color: #6b7280; margin-bottom: 1rem;">Are you a salon owner?</p>
+                <a href="http://localhost:3000/salon-landing" style="display: inline-block; background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 25px; text-decoration: none; font-weight: 600; transition: background 0.2s ease;">For Salons</a>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <a href="http://localhost:3000/" style="color: #667eea; text-decoration: none; font-weight: 600; font-size: 0.9rem;">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

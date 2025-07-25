@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmation - Hlfwrld</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .appointment-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .appointment-details h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-section {
+            margin-bottom: 2rem;
+        }
+
+        .action-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .time-option {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .time-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Appointment Confirmation</h1>
+            <p>Review and confirm the appointment details</p>
+        </div>
+
+        <div class="content">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="warning-box">
+                <h4>⚠️ Action Required</h4>
+                <p>This appointment has been paid for but requires your manual confirmation. Please review the details and confirm there are no conflicts.</p>
+            </div>
+
+            <div class="appointment-details">
+                <h3>📋 Appointment Details</h3>
+                <div class="details-grid" id="appointmentDetails">
+                    <!-- Appointment details will be populated here -->
+                </div>
+            </div>
+
+            <div class="action-section">
+                <h3>🎯 Choose Your Action</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="confirmAppointment()">
+                        ✅ Confirm Appointment
+                    </button>
+                    <button class="btn btn-warning" onclick="showAlternativeModal()">
+                        ⚠️ Offer Alternative Times
+                    </button>
+                    <button class="btn btn-danger" onclick="showRefundModal()">
+                        💰 Process Refund
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+    </div>
+
+    <!-- Alternative Times Modal -->
+    <div id="alternativeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('alternativeModal')">&times;</span>
+            <h3>⏰ Offer Alternative Times</h3>
+            <p>Please provide alternative times that work for you:</p>
+            
+            <div class="form-group">
+                <label>Additional Time Options (one per line):</label>
+                <textarea id="alternativeTimes" rows="5" placeholder="e.g., 2024-01-15 14:00:00&#10;2024-01-15 16:00:00&#10;2024-01-16 10:00:00"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Message to Client:</label>
+                <textarea id="alternativeMessage" rows="3" placeholder="Explain why you need to reschedule and offer these alternatives..."></textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <button class="btn btn-warning" onclick="submitAlternatives()">Send Alternatives</button>
+                <button class="btn btn-danger" onclick="closeModal('alternativeModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Modal -->
+    <div id="refundModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('refundModal')">&times;</span>
+            <h3>💰 Process Refund</h3>
+            <p>Are you sure you want to process a refund for this appointment?</p>
+            
+            <div class="form-group">
+                <label>Reason for Refund:</label>
+                <textarea id="refundReason" rows="3" placeholder="Please explain why you cannot accommodate this appointment..."></textarea>
+            </div>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <button class="btn btn-danger" onclick="processRefund()">Process Refund</button>
+                <button class="btn btn-warning" onclick="closeModal('refundModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let bookingData = null;
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('bookingId');
+        const token = urlParams.get('token');
+        const action = urlParams.get('action');
+
+        function showMessage(message, type) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (type === 'error') {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            } else {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const content = document.querySelector('.content');
+            
+            if (show) {
+                loading.style.display = 'block';
+                content.style.display = 'none';
+            } else {
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            }
+        }
+
+        async function loadBookingDetails() {
+            try {
+                const response = await fetch(`${API_BASE}/booking/confirmation/${bookingId}?token=${token}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    bookingData = data;
+                    displayAppointmentDetails(data);
+                    
+                    // If action is 'review', show alternative modal
+                    if (action === 'review') {
+                        setTimeout(() => showAlternativeModal(), 1000);
+                    }
+                } else {
+                    showMessage(data.error || 'Failed to load booking details', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        function displayAppointmentDetails(data) {
+            const detailsGrid = document.getElementById('appointmentDetails');
+            const appointmentDate = new Date(data.appointmentTime);
+            
+            detailsGrid.innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Service</div>
+                    <div class="detail-value">${data.serviceName}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Client Name</div>
+                    <div class="detail-value">${data.clientName}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Client Email</div>
+                    <div class="detail-value">${data.clientEmail}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Date & Time</div>
+                    <div class="detail-value">${appointmentDate.toLocaleDateString()} at ${appointmentDate.toLocaleTimeString()}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Amount Paid</div>
+                    <div class="detail-value">$${data.serviceFee}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">🔄 Pending Confirmation</div>
+                </div>
+            `;
+        }
+
+        async function confirmAppointment() {
+            if (!confirm('Are you sure you want to confirm this appointment? This will finalize the booking.')) {
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/booking/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bookingId: bookingId,
+                        token: token,
+                        action: 'confirm'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('✅ Appointment confirmed successfully! Client has been notified.', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                    }, 3000);
+                } else {
+                    showMessage(result.error || 'Failed to confirm appointment', 'error');
+                    showLoading(false);
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                showLoading(false);
+            }
+        }
+
+        function showAlternativeModal() {
+            document.getElementById('alternativeModal').style.display = 'block';
+        }
+
+        function showRefundModal() {
+            document.getElementById('refundModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function submitAlternatives() {
+            const alternativeTimes = document.getElementById('alternativeTimes').value;
+            const message = document.getElementById('alternativeMessage').value;
+
+            if (!alternativeTimes.trim()) {
+                alert('Please provide at least one alternative time.');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/booking/alternatives`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bookingId: bookingId,
+                        token: token,
+                        alternativeTimes: alternativeTimes.split('\n').filter(t => t.trim()),
+                        message: message
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('✅ Alternative times sent to client successfully!', 'success');
+                    closeModal('alternativeModal');
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                    }, 3000);
+                } else {
+                    showMessage(result.error || 'Failed to send alternatives', 'error');
+                    showLoading(false);
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                showLoading(false);
+            }
+        }
+
+        async function processRefund() {
+            const reason = document.getElementById('refundReason').value;
+
+            if (!reason.trim()) {
+                alert('Please provide a reason for the refund.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to process a refund? This action cannot be undone.')) {
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE}/booking/refund`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bookingId: bookingId,
+                        token: token,
+                        reason: reason
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('✅ Refund processed successfully! Client has been notified.', 'success');
+                    closeModal('refundModal');
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                    }, 3000);
+                } else {
+                    showMessage(result.error || 'Failed to process refund', 'error');
+                    showLoading(false);
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                showLoading(false);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Load booking details on page load
+        if (bookingId && token) {
+            loadBookingDetails();
+        } else {
+            showMessage('Invalid request. Missing booking ID or token.', 'error');
+        }
+    </script>
+</body>
+</html> 

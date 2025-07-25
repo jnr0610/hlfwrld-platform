@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Appointment Time - Hlfwrld</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .request-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .request-info h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .time-options {
+            margin-bottom: 2rem;
+        }
+
+        .time-options h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .time-option {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .time-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .time-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8f9fa;
+        }
+
+        .time-option.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .payment-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .payment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .payment-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .commission-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .time-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .payment-details {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Select Your Appointment Time</h1>
+            <p>Choose from the available times and complete your booking</p>
+        </div>
+
+        <div class="content">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="request-info">
+                <h3>📋 Request Details</h3>
+                <div class="info-grid" id="requestInfo">
+                    <!-- Request details will be populated here -->
+                </div>
+            </div>
+
+            <div class="time-options">
+                <h3>⏰ Available Times</h3>
+                <div class="time-grid" id="timeGrid">
+                    <!-- Time options will be populated here -->
+                </div>
+            </div>
+
+            <div class="payment-section">
+                <h3>💳 Payment Details</h3>
+                <div class="payment-details">
+                    <div class="payment-item">
+                        <div class="payment-label">Service Fee</div>
+                        <div class="payment-value" id="serviceFee">$0.00</div>
+                    </div>
+                    <div class="payment-item">
+                        <div class="payment-label">Platform Commission (20%)</div>
+                        <div class="payment-value" id="commission">$0.00</div>
+                    </div>
+                    <div class="payment-item">
+                        <div class="payment-label">You Pay</div>
+                        <div class="payment-value" id="totalAmount">$0.00</div>
+                    </div>
+                    <div class="payment-item">
+                        <div class="payment-label">Salon Receives</div>
+                        <div class="payment-value" id="salonReceives">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="commission-note">
+                    <strong>Note:</strong> 20% platform commission is automatically deducted. The salon receives 80% of the service fee.
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                <button class="btn btn-primary" id="bookBtn" onclick="bookAppointment()" disabled>
+                    Book Appointment & Pay
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your booking...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let selectedTime = null;
+        let requestData = null;
+        let serviceFee = 0;
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('requestId');
+        const token = urlParams.get('token');
+
+        function showMessage(message, type) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (type === 'error') {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            } else {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function loadRequestDetails() {
+            try {
+                const response = await fetch(`${API_BASE}/service-request/${requestId}?token=${token}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    requestData = data;
+                    serviceFee = parseFloat(data.serviceFee || 0);
+                    displayRequestInfo(data);
+                    displayTimeOptions(data.timeOptions || []);
+                    updatePaymentDetails();
+                } else {
+                    showMessage(data.error || 'Failed to load request details', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        function displayRequestInfo(data) {
+            const infoGrid = document.getElementById('requestInfo');
+            infoGrid.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">Service</div>
+                    <div class="info-value">${data.serviceName || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Salon</div>
+                    <div class="info-value">${data.salonName || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Your Name</div>
+                    <div class="info-value">${data.clientName || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Your Email</div>
+                    <div class="info-value">${data.clientEmail || 'N/A'}</div>
+                </div>
+            `;
+        }
+
+        function displayTimeOptions(timeOptions) {
+            const timeGrid = document.getElementById('timeGrid');
+            
+            if (timeOptions.length === 0) {
+                timeGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No time options available</p>';
+                return;
+            }
+
+            timeGrid.innerHTML = timeOptions.map(option => `
+                <div class="time-option" onclick="selectTime('${option}')" data-time="${option}">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${formatTime(option)}</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">${formatDate(option)}</div>
+                </div>
+            `).join('');
+        }
+
+        async function selectTime(time) {
+            // Check availability in real-time
+            try {
+                const response = await fetch(`${API_BASE}/time-slot/check/${requestId}/${encodeURIComponent(time)}`);
+                const result = await response.json();
+                
+                if (!result.available) {
+                    showMessage(`❌ ${result.reason || 'Time slot is no longer available'}`, 'error');
+                    // Remove this time option from the display
+                    const timeOption = document.querySelector(`[data-time="${time}"]`);
+                    if (timeOption) {
+                        timeOption.classList.add('disabled');
+                        timeOption.onclick = null;
+                        timeOption.style.cursor = 'not-allowed';
+                    }
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking time slot availability:', error);
+            }
+
+            // Remove previous selection
+            document.querySelectorAll('.time-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selection to clicked option
+            const selectedOption = document.querySelector(`[data-time="${time}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+
+            selectedTime = time;
+            document.getElementById('bookBtn').disabled = false;
+        }
+
+        function formatTime(timeString) {
+            const date = new Date(timeString);
+            return date.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        }
+
+        function formatDate(timeString) {
+            const date = new Date(timeString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function updatePaymentDetails() {
+            const commission = serviceFee * 0.20;
+            const salonReceives = serviceFee * 0.80;
+
+            document.getElementById('serviceFee').textContent = `$${serviceFee.toFixed(2)}`;
+            document.getElementById('commission').textContent = `$${commission.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `$${serviceFee.toFixed(2)}`;
+            document.getElementById('salonReceives').textContent = `$${salonReceives.toFixed(2)}`;
+        }
+
+        async function bookAppointment() {
+            if (!selectedTime) {
+                showMessage('Please select a time slot', 'error');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const content = document.querySelector('.content');
+            const bookBtn = document.getElementById('bookBtn');
+
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            bookBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/booking/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requestId: requestId,
+                        selectedTime: selectedTime,
+                        token: token
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Redirect to Stripe checkout
+                    if (result.checkoutUrl) {
+                        window.location.href = result.checkoutUrl;
+                    } else {
+                        showMessage('Booking created successfully!', 'success');
+                        setTimeout(() => {
+                            window.location.href = `http://localhost:3000/booking-success?bookingId=${result.bookingId}`;
+                        }, 2000);
+                    }
+                } else {
+                    showMessage(result.error || 'Failed to create booking', 'error');
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                    bookBtn.disabled = false;
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                bookBtn.disabled = false;
+            }
+        }
+
+        // Load request details on page load
+        if (requestId && token) {
+            loadRequestDetails();
+            
+            // Refresh time slots every 30 seconds to check for availability changes
+            setInterval(() => {
+                refreshTimeSlots();
+            }, 30000);
+        } else {
+            showMessage('Invalid request. Missing request ID or token.', 'error');
+        }
+
+        async function refreshTimeSlots() {
+            try {
+                const response = await fetch(`${API_BASE}/service-request/${requestId}?token=${token}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayTimeOptions(data.timeOptions || []);
+                }
+            } catch (error) {
+                console.error('Error refreshing time slots:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

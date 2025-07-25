@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Account Settings - Hlfwrld</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Main Header with Hlfwrld Branding */
+        .main-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            opacity: 0.75;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+        }
+
+        .nav-section {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn {
+            color: #fecaca;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Page Title Section */
+        .page-title-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-description {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        /* Settings Sections */
+        .settings-grid {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input:disabled {
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Subscription Plans */
+        .subscription-plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .plan-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .plan-card {
+            position: relative;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            border-color: #10b981;
+        }
+
+        .plan-card:hover::before {
+            left: 100%;
+        }
+
+        .plan-card:hover .plan-name {
+            color: #10b981;
+            transform: scale(1.05);
+        }
+
+        .plan-card:hover .plan-price {
+            color: #059669;
+            transform: scale(1.1);
+        }
+
+        .plan-card:hover .plan-features li {
+            transform: translateX(5px);
+        }
+
+        .plan-card.current {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .plan-card.recommended {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .plan-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Plan Selection Styles */
+        .plan-selection-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .plan-selection-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .plan-selection-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-selection-header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .plan-radio {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .plan-radio input[type="radio"] {
+            display: none;
+        }
+
+        .plan-radio label {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .plan-radio input[type="radio"]:checked + label {
+            border-color: #10b981;
+            background: #10b981;
+        }
+
+        .plan-radio input[type="radio"]:checked + label::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .plan-card:hover .plan-radio label {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .plan-card:hover .plan-radio input[type="radio"]:checked + label {
+            animation: pulse 1s infinite;
+        }
+
+        .plan-update-section {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .plan-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .selected-plan-info,
+        .plan-change-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 1rem;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .plan-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .plan-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .plan-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .plan-period {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-features li {
+            padding: 0.25rem 0;
+            color: #374151;
+            transition: all 0.3s ease;
+        }
+
+        .plan-features li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .plan-features li:hover:before {
+            transform: scale(1.2);
+            color: #059669;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .badge-current {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-recommended {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .plan-card:hover .plan-badge {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Payment Information Styles */
+        .payment-info-display {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .payment-method {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .payment-method-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+        }
+
+        .payment-details {
+            flex: 1;
+        }
+
+        .payment-method-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-method-expiry {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .payment-status {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .billing-info {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .billing-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .billing-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .billing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .billing-item:last-child {
+            border-bottom: none;
+        }
+
+        .billing-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .billing-value {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .danger-zone .section-title {
+            color: #dc2626;
+        }
+
+        .danger-zone .section-description {
+            color: #7f1d1d;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .subscription-plans {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .nav-section {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Main Header with Hlfwrld Branding -->
+        <div class="main-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">Hlfwrld</h1>
+                </div>
+                <div class="nav-section">
+                    <a href="http://localhost:3000/salon-dashboard" class="nav-link">Dashboard</a>
+                    <a href="http://localhost:3000/salon-account-settings" class="nav-link">Account</a>
+                    <a href="http://localhost:3000/contact-us" class="nav-link">Contact Us</a>
+                    <button onclick="logOut()" class="nav-link logout-btn">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Title Section -->
+        <div class="page-title-section">
+            <h1 class="page-title">Account Settings</h1>
+            <p class="page-description">Manage your salon profile and subscription</p>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Salon Information Section -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">🏪</span>
+                    <h2 class="section-title">Salon Information</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Salon Name</label>
+                        <input type="text" class="form-input" id="salonName" value="Beauty Haven Salon" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salon Owner Name</label>
+                        <input type="text" class="form-input" id="ownerName" value="Sarah Johnson" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salon Address</label>
+                        <input type="text" class="form-input" id="salonAddress" value="123 Beauty Street, Los Angeles, CA 90210" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salon Owner Email</label>
+                        <input type="email" class="form-input" id="salonEmail" value="sarah@beautyhaven.com" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salon Owner Phone</label>
+                        <input type="tel" class="form-input" id="salonPhone" value="(555) 123-4567" disabled>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="editSalonInfo()">Edit Information</button>
+                    <button class="btn btn-primary" onclick="saveSalonInfo()" id="saveSalonBtn" style="display: none;">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Subscription Plan Section -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">💳</span>
+                    <h2 class="section-title">Subscription Plan</h2>
+                </div>
+                <div class="plan-selection-section">
+                    <div class="plan-selection-header">
+                        <h3>Select Your Plan</h3>
+                        <p>Choose the plan that best fits your salon's needs. You can change your plan at any time.</p>
+                    </div>
+                    
+                    <div class="subscription-plans">
+                        <div class="plan-card" onclick="selectPlan('basic')" data-plan="basic">
+                            <div class="plan-radio">
+                                <input type="radio" name="planSelection" id="plan-basic" value="basic">
+                                <label for="plan-basic"></label>
+                            </div>
+                            <div class="plan-name">Basic</div>
+                            <div class="plan-price">$29</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>Up to 5 new client requests</li>
+                                <li>Basic analytics</li>
+                                <li>Email support</li>
+                                <li>Standard booking tools</li>
+                            </ul>
+                        </div>
+                        <div class="plan-card current recommended" onclick="selectPlan('professional')" data-plan="professional">
+                            <div class="plan-radio">
+                                <input type="radio" name="planSelection" id="plan-professional" value="professional" checked>
+                                <label for="plan-professional"></label>
+                            </div>
+                            <div class="plan-badge badge-current">Current Plan</div>
+                            <div class="plan-badge badge-recommended">Recommended</div>
+                            <div class="plan-name">Professional</div>
+                            <div class="plan-price">$89</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>Up to 100 new client requests</li>
+                                <li>Advanced analytics</li>
+                                <li>Priority support</li>
+                                <li>Advanced booking tools</li>
+                                <li>Marketing tools</li>
+                            </ul>
+                        </div>
+                        <div class="plan-card" onclick="selectPlan('premium')" data-plan="premium">
+                            <div class="plan-radio">
+                                <input type="radio" name="planSelection" id="plan-premium" value="premium">
+                                <label for="plan-premium"></label>
+                            </div>
+                            <div class="plan-name">Premium</div>
+                            <div class="plan-price">$149</div>
+                            <div class="plan-period">per month</div>
+                            <ul class="plan-features">
+                                <li>Unlimited new client requests</li>
+                                <li>Premium analytics</li>
+                                <li>24/7 support</li>
+                                <li>All booking tools</li>
+                                <li>Custom branding</li>
+                                <li>Advanced marketing</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-update-section">
+                        <div class="plan-summary">
+                            <div class="selected-plan-info">
+                                <span class="summary-label">Selected Plan:</span>
+                                <span class="summary-value" id="selectedPlanDisplay">Professional - $89/month</span>
+                            </div>
+                            <div class="plan-change-info">
+                                <span class="summary-label">Next Billing:</span>
+                                <span class="summary-value">December 25, 2024</span>
+                            </div>
+                        </div>
+                        <div class="plan-actions">
+                            <button class="btn btn-secondary" onclick="cancelSubscription()">Cancel Subscription</button>
+                            <button class="btn btn-success" onclick="updatePlan()" id="updatePlanBtn">Update Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information Section -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <span class="section-icon">💳</span>
+                    <h2 class="section-title">Payment Information</h2>
+                </div>
+                <div class="payment-info-display">
+                    <div class="payment-method">
+                        <div class="payment-method-header">
+                            <span class="payment-icon">💳</span>
+                            <div class="payment-details">
+                                <div class="payment-method-name">Visa ending in 4242</div>
+                                <div class="payment-method-expiry">Expires 12/25</div>
+                            </div>
+                            <div class="payment-status">
+                                <span class="status-badge status-active">Active</span>
+                            </div>
+                        </div>
+                        <div class="payment-actions">
+                            <button class="btn btn-secondary" onclick="updatePaymentMethod()">Update Payment Method</button>
+                            <button class="btn btn-outline" onclick="viewBillingHistory()">View Billing History</button>
+                        </div>
+                    </div>
+                    <div class="billing-info">
+                        <h3>Billing Information</h3>
+                        <div class="billing-details">
+                            <div class="billing-item">
+                                <span class="billing-label">Next Billing Date:</span>
+                                <span class="billing-value">December 25, 2024</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Current Plan:</span>
+                                <span class="billing-value">Professional - $89/month</span>
+                            </div>
+                            <div class="billing-item">
+                                <span class="billing-label">Billing Cycle:</span>
+                                <span class="billing-value">Monthly</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script>
+        let selectedPlan = 'professional';
+        let isEditing = false;
+
+        function editSalonInfo() {
+            const inputs = ['salonName', 'ownerName', 'salonAddress', 'salonEmail', 'salonPhone'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.disabled = false;
+                input.style.background = 'white';
+            });
+            
+            document.getElementById('saveSalonBtn').style.display = 'inline-block';
+            isEditing = true;
+        }
+
+        function saveSalonInfo() {
+            const inputs = ['salonName', 'ownerName', 'salonAddress', 'salonEmail', 'salonPhone'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.disabled = true;
+                input.style.background = '#f9fafb';
+            });
+            
+            document.getElementById('saveSalonBtn').style.display = 'none';
+            isEditing = false;
+            
+            // Here you would typically save to the backend
+            alert('✅ Salon information updated successfully!');
+        }
+
+        function selectPlan(plan) {
+            // Update radio button selection
+            document.getElementById(`plan-${plan}`).checked = true;
+            
+            // Remove selected class from all plans
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to chosen plan
+            const selectedCard = document.querySelector(`[data-plan="${plan}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            selectedPlan = plan;
+            updatePlanDisplay();
+        }
+
+        function updatePlanDisplay() {
+            const planNames = {
+                'basic': 'Basic - $29/month',
+                'professional': 'Professional - $89/month',
+                'premium': 'Premium - $149/month'
+            };
+            
+            document.getElementById('selectedPlanDisplay').textContent = planNames[selectedPlan];
+        }
+
+        function updatePlan() {
+            const planNames = {
+                'basic': 'Basic',
+                'professional': 'Professional',
+                'premium': 'Premium'
+            };
+            
+            const planPrices = {
+                'basic': '$29',
+                'professional': '$89',
+                'premium': '$149'
+            };
+            
+            if (confirm(`Are you sure you want to update your plan to ${planNames[selectedPlan]} (${planPrices[selectedPlan]}/month)?`)) {
+                // Get salon ID from localStorage
+                const salonData = JSON.parse(localStorage.getItem('salonData') || '{}');
+                const salonId = salonData.id;
+                
+                if (!salonId) {
+                    alert('❌ Salon information not found. Please log in again.');
+                    return;
+                }
+
+                fetch('http://localhost:3000/salon/update-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        salonId: salonId,
+                        newPlan: selectedPlan 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`✅ ${data.message}`);
+                        
+                        // Update the current plan display
+                        document.querySelectorAll('.plan-card').forEach(card => {
+                            card.classList.remove('current');
+                        });
+                        
+                        const newCurrentCard = document.querySelector(`[data-plan="${selectedPlan}"]`);
+                        if (newCurrentCard) {
+                            newCurrentCard.classList.add('current');
+                        }
+                        
+                        // Update the radio button to reflect current plan
+                        document.querySelectorAll('input[name="planSelection"]').forEach(radio => {
+                            radio.checked = false;
+                        });
+                        document.getElementById(`plan-${selectedPlan}`).checked = true;
+                        
+                        // Refresh payment info
+                        loadPaymentInfo();
+                    } else {
+                        alert('❌ Failed to update plan: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Failed to update plan. Please try again.');
+                });
+            }
+        }
+
+        function cancelSubscription() {
+            // Redirect to the account cancellation page
+            window.location.href = 'http://localhost:3000/account-cancellation';
+        }
+
+        function deleteAccount() {
+            const confirmDelete = confirm('⚠️ WARNING: This action cannot be undone. All your data will be permanently deleted. Are you absolutely sure?');
+            if (confirmDelete) {
+                const finalConfirm = confirm('This is your final warning. Click OK to permanently delete your account and all associated data.');
+                if (finalConfirm) {
+                    // Here you would typically delete the account in the backend
+                    alert('Account deletion initiated. You will be logged out immediately.');
+                    logOut();
+                }
+            }
+        }
+
+        function updatePaymentMethod() {
+            // Get salon ID from localStorage or URL params
+            const salonData = JSON.parse(localStorage.getItem('salonData') || '{}');
+            const salonId = salonData.id;
+            
+            if (!salonId) {
+                alert('❌ Salon information not found. Please log in again.');
+                return;
+            }
+
+            fetch('http://localhost:3000/salon/create-billing-portal-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ salonId: salonId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('❌ Failed to create billing portal session: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Failed to connect to billing portal. Please try again.');
+            });
+        }
+
+        function viewBillingHistory() {
+            // This will also use the billing portal session
+            updatePaymentMethod();
+        }
+
+        function logOut() {
+            // Clear any stored data
+            localStorage.removeItem('salonProfile');
+            localStorage.removeItem('salonToken');
+            localStorage.removeItem('salonData');
+            
+            // Redirect to salon login page
+            console.log('Salon logged out, redirecting to salon login page');
+            window.location.href = 'http://localhost:3000/salon-login';
+        }
+
+        function loadPaymentInfo() {
+            const salonData = JSON.parse(localStorage.getItem('salonData') || '{}');
+            const salonId = salonData.id;
+            
+            if (!salonId) {
+                console.log('No salon ID found, using demo data');
+                return;
+            }
+
+            fetch(`http://localhost:3000/salon/payment-info?salonId=${salonId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.paymentMethod) {
+                        // Update payment method display
+                        const paymentMethodName = document.querySelector('.payment-method-name');
+                        const paymentMethodExpiry = document.querySelector('.payment-method-expiry');
+                        
+                        if (paymentMethodName) {
+                            paymentMethodName.textContent = `${data.paymentMethod.brand} ending in ${data.paymentMethod.last4}`;
+                        }
+                        
+                        if (paymentMethodExpiry) {
+                            paymentMethodExpiry.textContent = `Expires ${data.paymentMethod.expMonth}/${data.paymentMethod.expYear}`;
+                        }
+                    }
+                    
+                    if (data.nextBillingDate) {
+                        // Update billing info
+                        const nextBillingElement = document.querySelector('.billing-item:nth-child(1) .billing-value');
+                        if (nextBillingElement) {
+                            nextBillingElement.textContent = data.nextBillingDate;
+                        }
+                    }
+                    
+                    if (data.currentPlan) {
+                        // Update current plan display
+                        const currentPlanElement = document.querySelector('.billing-item:nth-child(2) .billing-value');
+                        if (currentPlanElement) {
+                            currentPlanElement.textContent = `${data.currentPlan} - $${data.subscriptionPlan === 'basic' ? '29' : data.subscriptionPlan === 'premium' ? '149' : '89'}/month`;
+                        }
+                        
+                        // Update plan selection
+                        selectedPlan = data.subscriptionPlan;
+                        selectPlan(data.subscriptionPlan);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading payment info:', error);
+                });
+        }
+
+        // Load salon data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Here you would typically load the salon's current information from the backend
+            console.log('🏪 Salon Account Settings Loaded');
+            
+            // Set up radio button event listeners
+            document.querySelectorAll('input[name="planSelection"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    selectPlan(this.value);
+                });
+            });
+            
+            // Initialize the display
+            updatePlanDisplay();
+            
+            // Load payment information
+            loadPaymentInfo();
+        });
+    </script>
+</body>
+</html> 

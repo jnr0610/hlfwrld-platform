@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Processing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .payment-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .payment-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .payment-content {
+            padding: 2rem;
+        }
+
+        .payment-summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .service-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .service-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .service-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .payment-breakdown {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .breakdown-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .breakdown-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .total-amount {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid #e5e7eb;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .total-label {
+            color: #1f2937;
+        }
+
+        .total-value {
+            color: #059669;
+        }
+
+        .payment-methods {
+            margin-bottom: 2rem;
+        }
+
+        .methods-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .payment-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+            background: #f0f9ff;
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .payment-option.selected .payment-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .card-form {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .form-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .security-info {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .security-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .security-text {
+            font-size: 0.9rem;
+            color: #047857;
+            line-height: 1.4;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+        }
+
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .processing-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .processing-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            display: none;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 1rem;
+        }
+
+        .success-text {
+            color: #047857;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1 class="header-title">💳 Secure Payment</h1>
+            <p class="header-subtitle">Complete your booking with secure payment processing</p>
+            <div class="security-badge">
+                🔒 256-bit SSL Encryption
+            </div>
+        </div>
+
+        <div class="payment-content">
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <div class="summary-title">📋 Booking Summary</div>
+                
+                <div class="service-details">
+                    <div class="service-info">
+                        <div class="service-name" id="serviceName">Luxury Manicure</div>
+                        <div class="service-description" id="serviceDescription">Beauty Salon • Monday, July 24th at 10:00 AM</div>
+                    </div>
+                    <div class="service-price" id="servicePrice">$85.00</div>
+                </div>
+
+                <div class="payment-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Service Fee</span>
+                        <span class="breakdown-value" id="serviceFeeValue">$85.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Platform Fee</span>
+                        <span class="breakdown-value" id="platformFeeValue">$5.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Processing Fee</span>
+                        <span class="breakdown-value" id="processingFeeValue">$2.50</span>
+                    </div>
+                    <div class="total-amount">
+                        <span class="total-label">Total Amount</span>
+                        <span class="total-value" id="totalAmountValue">$92.50</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <div class="methods-title">💳 Payment Method</div>
+                <div class="payment-options">
+                    <div class="payment-option" data-method="card">
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-info">
+                            <div class="payment-name">Credit/Debit Card</div>
+                            <div class="payment-description">Visa, Mastercard, American Express</div>
+                        </div>
+                    </div>
+                    <div class="payment-option" data-method="paypal">
+                        <div class="payment-icon">🅿️</div>
+                        <div class="payment-info">
+                            <div class="payment-name">PayPal</div>
+                            <div class="payment-description">Pay with your PayPal account</div>
+                        </div>
+                    </div>
+                    <div class="payment-option" data-method="apple">
+                        <div class="payment-icon">🍎</div>
+                        <div class="payment-info">
+                            <div class="payment-name">Apple Pay</div>
+                            <div class="payment-description">Quick and secure payment with Touch ID</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Form -->
+            <div class="card-form" id="cardForm">
+                <div class="form-title">💳 Card Information</div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="cardNumber">Card Number</label>
+                    <input type="text" class="form-input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="expiryDate">Expiry Date</label>
+                        <input type="text" class="form-input" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="cvv">CVV</label>
+                        <input type="text" class="form-input" id="cvv" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cardName">Cardholder Name</label>
+                    <input type="text" class="form-input" id="cardName" placeholder="John Doe">
+                </div>
+            </div>
+
+            <!-- Security Info -->
+            <div class="security-info">
+                <div class="security-title">
+                    🔒 Your Payment is Secure
+                </div>
+                <div class="security-text">
+                    We use industry-standard 256-bit SSL encryption to protect your payment information. 
+                    Your card details are never stored on our servers and are processed securely through 
+                    certified payment processors.
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-outline" id="backBtn">
+                    ← Back to Booking
+                </button>
+                <button class="btn btn-primary" id="payBtn" disabled>
+                    🔒 Complete Payment
+                </button>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">🎉</div>
+                <div class="success-title">Payment Successful!</div>
+                <div class="success-text">
+                    Your booking has been confirmed and payment has been processed successfully.<br>
+                    <strong>Transaction ID: <span id="transactionId">TXN-2025-001</span></strong><br>
+                    You will receive confirmation emails shortly.
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="viewBookingBtn">
+                        📅 View Booking Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <h3>Processing Payment...</h3>
+            <p>Please do not close this window or navigate away.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let selectedPaymentMethod = null;
+        let bookingData = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('💳 Payment System Initialized');
+            loadBookingData();
+            setupEventListeners();
+        });
+
+        function loadBookingData() {
+            // In a real app, this would come from URL parameters or session storage
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            bookingData = {
+                requestId: urlParams.get('request') || '13',
+                serviceName: 'Luxury Manicure',
+                salonName: 'Beauty Salon',
+                appointmentTime: 'Monday, July 24th at 10:00 AM',
+                serviceFee: 85.00,
+                platformFee: 5.00,
+                processingFee: 2.50,
+                totalAmount: 92.50
+            };
+
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('serviceName').textContent = bookingData.serviceName;
+            document.getElementById('serviceDescription').textContent = `${bookingData.salonName} • ${bookingData.appointmentTime}`;
+            document.getElementById('servicePrice').textContent = `$${bookingData.serviceFee.toFixed(2)}`;
+            document.getElementById('serviceFeeValue').textContent = `$${bookingData.serviceFee.toFixed(2)}`;
+            document.getElementById('platformFeeValue').textContent = `$${bookingData.platformFee.toFixed(2)}`;
+            document.getElementById('processingFeeValue').textContent = `$${bookingData.processingFee.toFixed(2)}`;
+            document.getElementById('totalAmountValue').textContent = `$${bookingData.totalAmount.toFixed(2)}`;
+        }
+
+        function setupEventListeners() {
+            // Payment method selection
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    selectPaymentMethod(this.dataset.method);
+                });
+            });
+
+            // Form validation
+            document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
+            document.getElementById('expiryDate').addEventListener('input', formatExpiryDate);
+            document.getElementById('cvv').addEventListener('input', validateCVV);
+            document.getElementById('cardName').addEventListener('input', validateForm);
+
+            // Action buttons
+            document.getElementById('payBtn').addEventListener('click', processPayment);
+            document.getElementById('backBtn').addEventListener('click', goBack);
+            document.getElementById('viewBookingBtn').addEventListener('click', viewBooking);
+        }
+
+        function selectPaymentMethod(method) {
+            // Remove previous selection
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Select new method
+            document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+            selectedPaymentMethod = method;
+
+            // Show/hide card form
+            const cardForm = document.getElementById('cardForm');
+            if (method === 'card') {
+                cardForm.style.display = 'block';
+                validateForm();
+            } else {
+                cardForm.style.display = 'none';
+                document.getElementById('payBtn').disabled = false;
+            }
+
+            console.log('Selected payment method:', method);
+        }
+
+        function formatCardNumber(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            if (formattedValue.length > 19) formattedValue = formattedValue.substring(0, 19);
+            e.target.value = formattedValue;
+            validateForm();
+        }
+
+        function formatExpiryDate(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+            validateForm();
+        }
+
+        function validateCVV(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
+            validateForm();
+        }
+
+        function validateForm() {
+            if (selectedPaymentMethod !== 'card') return;
+
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            const expiryDate = document.getElementById('expiryDate').value;
+            const cvv = document.getElementById('cvv').value;
+            const cardName = document.getElementById('cardName').value.trim();
+
+            const isValid = cardNumber.length >= 13 && 
+                           expiryDate.length === 5 && 
+                           cvv.length >= 3 && 
+                           cardName.length > 0;
+
+            document.getElementById('payBtn').disabled = !isValid;
+        }
+
+        async function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method.');
+                return;
+            }
+
+            try {
+                // Show processing overlay
+                document.getElementById('processingOverlay').style.display = 'flex';
+
+                console.log('Processing payment...');
+                console.log('Method:', selectedPaymentMethod);
+                console.log('Amount:', bookingData.totalAmount);
+
+                // Simulate payment processing
+                const paymentResult = await simulatePaymentProcessing();
+
+                if (paymentResult.success) {
+                    // Hide processing overlay
+                    document.getElementById('processingOverlay').style.display = 'none';
+
+                    // Show success message
+                    document.getElementById('transactionId').textContent = paymentResult.transactionId;
+                    document.getElementById('successMessage').style.display = 'block';
+
+                    // Send confirmation notifications
+                    await sendPaymentConfirmation(paymentResult);
+
+                    console.log('✅ Payment successful');
+                } else {
+                    throw new Error(paymentResult.error);
+                }
+            } catch (error) {
+                // Hide processing overlay
+                document.getElementById('processingOverlay').style.display = 'none';
+
+                console.error('❌ Payment failed:', error);
+                alert('❌ Payment failed: ' + error.message + '\n\nPlease try again or use a different payment method.');
+            }
+        }
+
+        async function simulatePaymentProcessing() {
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Mock payment processing
+            console.log('💳 Processing payment with:', selectedPaymentMethod);
+
+            // In a real implementation, integrate with payment processors:
+            // - Stripe: stripe.createPaymentIntent()
+            // - PayPal: paypal.payment.create()
+            // - Square: squareConnect.paymentsApi.createPayment()
+            // - Apple Pay: ApplePaySession
+
+            // Simulate success (90% success rate)
+            const success = Math.random() > 0.1;
+
+            if (success) {
+                return {
+                    success: true,
+                    transactionId: 'TXN-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0'),
+                    amount: bookingData.totalAmount,
+                    method: selectedPaymentMethod,
+                    timestamp: new Date()
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'Payment declined. Please check your payment information and try again.'
+                };
+            }
+        }
+
+        async function sendPaymentConfirmation(paymentResult) {
+            try {
+                // Send confirmation to backend
+                await fetch(`${API_BASE}/payments/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requestId: bookingData.requestId,
+                        transactionId: paymentResult.transactionId,
+                        amount: paymentResult.amount,
+                        method: paymentResult.method,
+                        status: 'completed'
+                    }),
+                });
+
+                // Send email notifications
+                await fetch(`${API_BASE}/notifications/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: 'client@example.com',
+                        subject: 'Payment Confirmation - ' + bookingData.serviceName,
+                        message: `Your payment has been processed successfully!\n\nService: ${bookingData.serviceName}\nAmount: $${bookingData.totalAmount}\nTransaction ID: ${paymentResult.transactionId}\n\nYour booking is confirmed!`,
+                        type: 'payment_confirmation'
+                    }),
+                });
+
+                console.log('📧 Payment confirmation sent');
+            } catch (error) {
+                console.error('❌ Failed to send payment confirmation:', error);
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function viewBooking() {
+            window.location.href = `appointment-system.html?request=${bookingData.requestId}&confirmed=true`;
+        }
+    </script>
+</body>
+</html> 

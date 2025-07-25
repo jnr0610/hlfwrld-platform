@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hlfwrld - Beauty Services Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .landing-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .landing-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+        }
+
+        .landing-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .landing-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .landing-content {
+            padding: 3rem 2rem;
+        }
+
+        .user-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .user-type-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 2rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-type-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .user-type-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-type-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .user-type-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-type-features {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-type-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .user-type-feature::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-links {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .login-link {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .platform-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .platform-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .platform-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .user-types {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .login-links {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .landing-title {
+                font-size: 2.5rem;
+            }
+
+            .landing-subtitle {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="landing-header">
+            <h1 class="landing-title">Hlfwrld</h1>
+            <p class="landing-subtitle">The Beauty Services Platform Connecting Creators & Salons</p>
+        </div>
+
+        <div class="landing-content">
+            <div class="user-types">
+                <div class="user-type-card" onclick="window.location.href='http://localhost:3000/creator-landing'">
+                    <div class="user-type-icon">👩‍🎨</div>
+                    <h3 class="user-type-title">For Creators</h3>
+                    <p class="user-type-description">Monetize your beauty content and connect with local salons</p>
+                    <div class="user-type-features">
+                        <div class="user-type-feature">Build your digital shop</div>
+                        <div class="user-type-feature">Earn commissions on bookings</div>
+                        <div class="user-type-feature">Share your unique 4-digit code</div>
+                        <div class="user-type-feature">Connect with local salons</div>
+                    </div>
+                    <button class="cta-button" onclick="window.location.href='http://localhost:3000/creator-landing'">Join as Creator</button>
+                </div>
+
+                <div class="user-type-card" onclick="window.location.href='http://localhost:3000/salon-landing'">
+                    <div class="user-type-icon">💇‍♀️</div>
+                    <h3 class="user-type-title">For Salons</h3>
+                    <p class="user-type-description">Partner with beauty influencers and grow your business</p>
+                    <div class="user-type-features">
+                        <div class="user-type-feature">Connect with verified influencers</div>
+                        <div class="user-type-feature">Boost bookings & visibility</div>
+                        <div class="user-type-feature">Get authentic content</div>
+                        <div class="user-type-feature">Secure payment processing</div>
+                    </div>
+                    <button class="cta-button">Join as Salon</button>
+                </div>
+            </div>
+
+            <div class="login-links">
+                <div class="login-link">
+                    Creator? <a href="http://localhost:3000/creator-auth">Log in here</a>
+                </div>
+                <div class="login-link">
+                    Salon? <a href="http://localhost:3000/salon-login">Log in here</a>
+                </div>
+            </div>
+
+            <div class="platform-info">
+                <h3 class="platform-title">How It Works</h3>
+                <p class="platform-description">
+                    Creators build their digital shop with beauty services they love. They share their unique 4-digit code with local salons. 
+                    When salons sign up using that code, they're connected for authentic partnerships. Creators earn commissions on bookings 
+                    while salons get increased visibility and authentic content from trusted influencers.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

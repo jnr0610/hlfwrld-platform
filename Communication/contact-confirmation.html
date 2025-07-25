@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Sent - Hlfwrld</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirmation-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .confirmation-card {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .confirmation-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      font-size: 2.5rem;
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+      }
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+      }
+    }
+
+    .confirmation-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    .confirmation-subtitle {
+      font-size: 1.3rem;
+      color: #28a745;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .confirmation-message {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .response-time {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-left: 4px solid #667eea;
+    }
+
+    .response-time h3 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .response-time p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    .next-steps {
+      background: #e8f5e8;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-left: 4px solid #28a745;
+    }
+
+    .next-steps h3 {
+      color: #155724;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .next-steps ul {
+      text-align: left;
+      color: #155724;
+      font-size: 1rem;
+      padding-left: 1.5rem;
+    }
+
+    .next-steps li {
+      margin-bottom: 0.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    .contact-info {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .contact-info p {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-email {
+      color: #667eea;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .contact-email:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .confirmation-container {
+        padding: 1rem;
+      }
+      
+      .confirmation-card {
+        padding: 2rem 1.5rem;
+      }
+      
+      .confirmation-title {
+        font-size: 1.8rem;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="confirmation-container">
+    <div class="confirmation-card">
+      <div class="success-icon">✓</div>
+      
+      <h1 class="confirmation-title">Message Sent Successfully!</h1>
+      <p class="confirmation-subtitle">Thank you for reaching out to us</p>
+      
+      <p class="confirmation-message">
+        We've received your message and appreciate you taking the time to contact us. 
+        Our team is dedicated to providing you with the best possible support.
+      </p>
+      
+      <div class="response-time">
+        <h3>⏰ Response Time</h3>
+        <p>We typically respond to all inquiries within <strong>24 hours</strong> during business days.</p>
+      </div>
+      
+      <div class="next-steps">
+        <h3>📋 What Happens Next?</h3>
+        <ul>
+          <li>We'll review your message and assign it to the appropriate team member</li>
+          <li>You'll receive a confirmation email with your inquiry details</li>
+          <li>Our team will get back to you with a detailed response</li>
+          <li>If needed, we may follow up with additional questions</li>
+        </ul>
+      </div>
+      
+      <div class="action-buttons">
+        <a href="http://localhost:3000/digitalshop" class="btn btn-primary">
+          ← Back to Digital Shop
+        </a>
+        <a href="http://localhost:3000/contact-us" class="btn btn-secondary">
+          Send Another Message
+        </a>
+      </div>
+      
+      <div class="contact-info">
+        <p>Need immediate assistance?</p>
+        <p>You can also reach us directly at: 
+          <a href="mailto:contact@hlfwrld.com" class="contact-email">contact@hlfwrld.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add some interactive elements
+    document.addEventListener('DOMContentLoaded', function() {
+      // Animate the success icon on load
+      const successIcon = document.querySelector('.success-icon');
+      successIcon.style.animation = 'none';
+      setTimeout(() => {
+        successIcon.style.animation = 'pulse 2s infinite';
+      }, 100);
+      
+      // Add smooth scroll behavior for any anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html> 
