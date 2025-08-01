@@ -512,7 +512,7 @@ Booking Reference: #${requestId}
 }
 
 // Configure domain for URLs
-const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || 'localhost:8001';
+const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || 'https://www.hlfwrld.com';
 
 // Configure AWS SES
 const ses = new AWS.SES({
@@ -1154,154 +1154,7 @@ app.post('/service-requests/:requestId/reschedule', async (req, res) => {
     }
 });
 
-// Stripe webhook to handle successful payments
-app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_your_webhook_secret_here';
-  
-  let event;
-  
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-  
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed':
-      const session = event.data.object;
-      console.log('✅ Payment completed for session:', session.id);
-      
-      // Update service request status to confirmed
-      const requestId = session.metadata.requestId;
-      const selectedTimeSlot = JSON.parse(session.metadata.selectedTimeSlot);
-      
-      // Save payment to database
-      db.run(
-        `INSERT INTO payments (requestId, transactionId, amount, method, status, completedAt)
-         VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-        [requestId, session.payment_intent, session.amount_total / 100, 'stripe', 'completed'],
-        function (err) {
-          if (err) {
-            console.error('❌ Error saving payment:', err.message);
-          } else {
-            console.log('✅ Payment saved to database');
-          }
-        }
-      );
-      
-      // Update service request status
-      db.run(
-        `UPDATE service_requests SET status = 'confirmed' WHERE id = ?`,
-        [requestId],
-        function (err) {
-          if (err) {
-            console.error('❌ Error updating service request status:', err.message);
-          } else {
-            console.log('✅ Service request status updated to confirmed');
-          }
-        }
-      );
-      
-      // Generate client token for appointment management
-      const clientToken = generateClientToken(requestId);
-      
-      // Create or update reservation with selected time slot and client token
-      db.run(
-        `INSERT OR REPLACE INTO reservations (requestId, token, selectedTimeSlot, status, expiresAt, clientToken)
-         VALUES (?, ?, ?, 'confirmed', datetime('now', '+30 minutes'), ?)`,
-        [requestId, 'confirmed_' + requestId, JSON.stringify(selectedTimeSlot), clientToken],
-        function (err) {
-          if (err) {
-            console.error('❌ Error creating reservation:', err.message);
-          } else {
-            console.log('✅ Reservation created/updated with selected time slot and client token');
-            
-            // Generate appointment management link
-            const appointmentLink = `http://${FRONTEND_DOMAIN}/appointment-system.html?request=${requestId}`;
-            
-            // Send appointment confirmation email
-            db.get(
-              `SELECT sr.clientName, sr.clientEmail, p.serviceName, p.influencerName
-               FROM service_requests sr
-               LEFT JOIN posts p ON sr.serviceCode = p.code
-               WHERE sr.id = ?`,
-              [requestId],
-              (err, appointmentData) => {
-                if (err) {
-                  console.error('❌ Error fetching appointment data for email:', err.message);
-                } else if (appointmentData) {
-                  const emailBody = generateAppointmentConfirmationEmail(
-                    appointmentData.clientName,
-                    appointmentData.serviceName,
-                    selectedTimeSlot.date,
-                    selectedTimeSlot.time,
-                    appointmentData.influencerName,
-                    appointmentLink
-                  );
-                  
-                  sendEmail(
-                    appointmentData.clientEmail,
-                    `${appointmentData.influencerName || 'Salon'} - Your ${appointmentData.serviceName} Appointment`,
-                    emailBody,
-                    requestId
-                  ).then(result => {
-                    console.log('📧 Appointment confirmation email sent:', result);
-                  }).catch(err => {
-                    console.error('❌ Error sending appointment confirmation email:', err);
-                  });
-                  
-                  // Send notification email to salon
-                  db.get(
-                    `SELECT s.email, s.salonName 
-                     FROM salons s
-                     INNER JOIN service_requests sr ON s.influencerCode = sr.serviceCode
-                     WHERE sr.id = ?`,
-                    [requestId],
-                    (err, salonData) => {
-                      if (err) {
-                        console.error('❌ Error fetching salon data for notification:', err.message);
-                      } else if (salonData) {
-                        const salonEmailBody = generateSalonBookingNotificationEmail(
-                          salonData.salonName,
-                          appointmentData.clientName,
-                          appointmentData.serviceName,
-                          selectedTimeSlot.date,
-                          selectedTimeSlot.time,
-                          session.amount_total / 100,
-                          requestId
-                        );
-                        
-                        sendEmail(
-                          salonData.email,
-                          `New Appointment Booked - ${appointmentData.serviceName}`,
-                          salonEmailBody,
-                          requestId
-                        ).then(result => {
-                          console.log('📧 Salon booking notification email sent:', result);
-                        }).catch(err => {
-                          console.error('❌ Error sending salon notification email:', err);
-                        });
-                      }
-                    }
-                  );
-                }
-              }
-            );
-          }
-        }
-      );
-      
-      break;
-      
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
-  }
-  
-  res.json({ received: true });
-});
+// Duplicate webhook handler removed - using comprehensive one below
 
 // Update service request status
 app.put('/service-requests/:requestId/status', (req, res) => {
@@ -1416,7 +1269,7 @@ app.post('/service-requests/:requestId/respond', async (req, res) => {
                   
                   // Generate appointment management URL with a dynamic token
                   const clientToken = generateClientToken(requestId);
-                  const appointmentManagementUrl = `http://localhost:3000/Booking/appointment-system.html?requestId=${requestId}&token=${clientToken}`;
+                  const appointmentManagementUrl = `https://www.hlfwrld.com/Booking/appointment-system.html?requestId=${requestId}&token=${clientToken}`;
                   
                             const emailWithLink = emailBody + `
           <div style="margin-top: 20px; text-align: center;">
@@ -3469,7 +3322,7 @@ app.post('/booking/alternatives', async (req, res) => {
       </div>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:3000/time-selection?requestId=${bookingId}&token=${booking.clientToken}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+        <a href="https://www.hlfwrld.com/time-selection?requestId=${bookingId}&token=${booking.clientToken}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
           Select New Time
         </a>
       </div>
@@ -4411,7 +4264,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
       });
 
       if (salon) {
-        const confirmationUrl = `http://localhost:3000/salon-booking-confirmation?bookingId=${bookingData.requestId}&token=${generateSalonConfirmationToken(bookingData.requestId)}`;
+        const confirmationUrl = `https://www.hlfwrld.com/salon-booking-confirmation?bookingId=${bookingData.requestId}&token=${generateSalonConfirmationToken(bookingData.requestId)}`;
         
         const salonEmailBody = `
           <h2>🔄 Appointment Confirmation Required</h2>
