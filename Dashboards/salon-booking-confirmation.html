@@ -523,7 +523,7 @@
                 if (response.ok) {
                     showMessage('✅ Appointment confirmed successfully! Client has been notified.', 'success');
                     setTimeout(() => {
-                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                        window.location.href = 'salon-dashboard.html';
                     }, 3000);
                 } else {
                     showMessage(result.error || 'Failed to confirm appointment', 'error');
@@ -578,7 +578,7 @@
                     showMessage('✅ Alternative times sent to client successfully!', 'success');
                     closeModal('alternativeModal');
                     setTimeout(() => {
-                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                        window.location.href = 'salon-dashboard.html';
                     }, 3000);
                 } else {
                     showMessage(result.error || 'Failed to send alternatives', 'error');
@@ -623,7 +623,7 @@
                     showMessage('✅ Refund processed successfully! Client has been notified.', 'success');
                     closeModal('refundModal');
                     setTimeout(() => {
-                        window.location.href = 'http://localhost:3000/salon-dashboard';
+                        window.location.href = 'salon-dashboard.html';
                     }, 3000);
                 } else {
                     showMessage(result.error || 'Failed to process refund', 'error');

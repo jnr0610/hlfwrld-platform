@@ -1,8 +1,12 @@
 # 🧪 Booking System Test Suite
 
-This folder contains comprehensive tests for all external services used in the booking system.
+This folder contains comprehensive tests for all external services and complete workflow testing for the booking system.
 
 ## 📁 Test Files
+
+### **🔄 Workflow Tests**
+- **`test-end-to-end-workflow.js`** - Complete user journey from signup to payment
+- **`test-payment-workflow.js`** - Comprehensive payment processing with Stripe test cards
 
 ### **📧 Email Service Tests**
 - **`test-resend.js`** - Test Resend email service (currently active)
@@ -11,10 +15,18 @@ This folder contains comprehensive tests for all external services used in the b
 ### **💳 Payment Service Tests**
 - **`test-stripe.js`** - Test Stripe payment integration
 
-### **🚀 Test Runner**
+### **🚀 Test Runner & Setup**
 - **`run-all-tests.js`** - Master test runner for all services
+- **`setup-test-environment.js`** - Automated test environment setup
+- **`quick-start.sh`** - Quick setup script for immediate testing
 
 ## 🚀 Quick Start
+
+### Quick Setup
+```bash
+cd backend/tests
+./quick-start.sh
+```
 
 ### Run All Tests
 ```bash
@@ -24,6 +36,12 @@ node run-all-tests.js
 
 ### Run Specific Tests
 ```bash
+# Test complete workflow
+node run-all-tests.js e2e
+
+# Test payment processing
+node run-all-tests.js payment
+
 # Test only Resend email service
 node run-all-tests.js resend
 
@@ -40,6 +58,13 @@ node run-all-tests.js --help
 ```
 
 ## 📋 Environment Variables Required
+
+### For Complete Workflow Testing
+```bash
+BASE_URL=http://localhost:3000
+TEST_EMAIL=test@example.com
+TEST_PHONE=+1234567890
+```
 
 ### For Resend (Currently Active)
 ```bash
@@ -102,6 +127,11 @@ node test-stripe.js
 - ✅ Error scenarios
 
 ## 🎯 When to Run Tests
+
+### **Complete Workflow Testing**
+- **Before Going Live** - Run `node run-all-tests.js e2e` to test the entire user journey
+- **After Major Changes** - Test the complete flow after significant updates
+- **Payment Testing** - Run `node run-all-tests.js payment` to test all payment scenarios
 
 ### **Before Going Live**
 - Run all tests to ensure everything works
@@ -173,12 +203,20 @@ To add a new service test:
 
 Before deploying to production, ensure:
 
+- [ ] Complete workflow test passes (`node run-all-tests.js e2e`)
+- [ ] Payment workflow test passes (`node run-all-tests.js payment`)
 - [ ] All email tests pass
 - [ ] Payment tests complete successfully
 - [ ] Error handling works correctly
 - [ ] Environment variables are properly set
 - [ ] Service accounts are in good standing
 - [ ] Rate limits are sufficient for expected usage
+
+## 📚 Additional Documentation
+
+- **`WORKFLOW_TESTING_GUIDE.md`** - Comprehensive guide for testing the complete workflow
+- **`setup-test-environment.js`** - Automated environment setup and validation
+- **`quick-start.sh`** - One-command setup for immediate testing
 
 ---
 

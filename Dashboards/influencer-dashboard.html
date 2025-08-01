@@ -547,8 +547,12 @@
                 <div class="stat-label">Confirmed</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="estimatedCommission">$0</div>
-                <div class="stat-label">Estimated Expected Commission</div>
+                <div class="stat-number" id="actualCommissions">$0</div>
+                <div class="stat-label">Total Commissions Earned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="confirmedBookings">0</div>
+                <div class="stat-label">Confirmed Bookings</div>
             </div>
         </div>
 
@@ -621,6 +625,20 @@
                 <button class="pagination-btn" id="nextBtn" onclick="nextPage()" disabled>Next</button>
             </div>
         </div>
+
+        <!-- Confirmed Bookings Section -->
+        <div class="requests-container" style="margin-top: 40px;">
+            <div class="requests-header">
+                <h3>💰 Confirmed Bookings & Commissions</h3>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 8px;">Bookings where clients have paid and you've earned commission</p>
+            </div>
+
+            <div id="bookingsList">
+                <div class="loading">
+                    <div>🔄 Loading confirmed bookings...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -673,16 +691,16 @@
 
         async function loadRequests() {
             try {
-                console.log('=== LOADING REQUESTS ===');
+                console.log('=== LOADING DASHBOARD DATA ===');
                 console.log('API Base:', API_BASE);
                 console.log('Influencer Handle:', influencerHandle);
-                console.log('Full URL:', `${API_BASE}/service-requests/${influencerHandle}`);
+                console.log('Full URL:', `${API_BASE}/influencer/dashboard/${influencerHandle}`);
                 
                 // Add cache busting and timeout
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
                 
-                const response = await fetch(`${API_BASE}/service-requests/${influencerHandle}?t=${Date.now()}`, {
+                const response = await fetch(`${API_BASE}/influencer/dashboard/${influencerHandle}?t=${Date.now()}`, {
                     signal: controller.signal,
                     cache: 'no-cache'
                 });
@@ -694,13 +712,20 @@
                 console.log('Response content-type:', response.headers.get('content-type'));
                 
                 if (response.ok) {
-                    allRequests = await response.json();
-                    console.log('✅ Successfully loaded requests:', allRequests.length);
-                    if (allRequests.length > 0) {
-                        console.log('First request sample:', allRequests[0]);
-                    }
-                    updateStats();
+                    const dashboardData = await response.json();
+                    console.log('✅ Successfully loaded dashboard data:', dashboardData);
+                    
+                    // Update global variables
+                    allRequests = dashboardData.serviceRequests || [];
+                    window.dashboardData = dashboardData; // Store for global access
+                    
+                    console.log('Service requests:', allRequests.length);
+                    console.log('Confirmed bookings:', dashboardData.bookings?.length || 0);
+                    console.log('Commission stats:', dashboardData.commissionStats);
+                    
+                    updateStats(dashboardData);
                     displayRequests(allRequests);
+                    displayBookings(dashboardData.bookings || []);
                 } else {
                     const errorText = await response.text();
                     console.error('❌ HTTP Error response:', errorText);
@@ -720,9 +745,9 @@
                 
                 document.getElementById('requestsList').innerHTML = `
                     <div class="empty-state">
-                        <h3>❌ Error Loading Requests</h3>
+                        <h3>❌ Error Loading Dashboard</h3>
                         <p><strong>Error:</strong> ${errorMessage}</p>
-                        <p><strong>API URL:</strong> ${API_BASE}/service-requests/${influencerHandle}</p>
+                        <p><strong>API URL:</strong> ${API_BASE}/influencer/dashboard/${influencerHandle}</p>
                         <p><strong>Error Type:</strong> ${error.name}</p>
                         <p>Check browser console (F12) for detailed logs.</p>
                         <div style="margin-top: 1rem;">
@@ -752,21 +777,78 @@
             }
         }
 
-        function updateStats() {
+        function updateStats(dashboardData) {
             const total = allRequests.length;
             const pending = allRequests.filter(r => r.status === 'pending').length;
             const confirmed = allRequests.filter(r => r.status === 'confirmed').length;
-            const confirmedRequests = allRequests.filter(r => r.status === 'confirmed' || r.status === 'completed');
-        const totalConfirmedRevenue = confirmedRequests.reduce((total, request) => {
-            const service = serviceData[request.serviceCode] || { fee: 0 };
-            return total + service.fee;
-        }, 0);
-        const estimatedCommission = totalConfirmedRevenue * 0.15; // 15% commission
+            
+            // Use real commission data if available
+            const commissionStats = dashboardData?.commissionStats;
+            const actualCommissions = commissionStats?.totalCommissions || 0;
+            const confirmedBookingsCount = commissionStats?.confirmedBookings || 0;
 
             document.getElementById('totalRequests').textContent = total;
             document.getElementById('pendingRequests').textContent = pending;
             document.getElementById('confirmedRequests').textContent = confirmed;
-            document.getElementById('estimatedCommission').textContent = `$${estimatedCommission.toFixed(2)}`;
+            document.getElementById('actualCommissions').textContent = `$${actualCommissions.toFixed(2)}`;
+            document.getElementById('confirmedBookings').textContent = confirmedBookingsCount;
+        }
+
+        function displayBookings(bookings) {
+            const bookingsList = document.getElementById('bookingsList');
+            
+            if (!bookings || bookings.length === 0) {
+                bookingsList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>💰 No Confirmed Bookings Yet</h3>
+                        <p>When clients book and pay for your recommended services, they'll appear here with your commission details.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const bookingsHTML = bookings.map(booking => {
+                const appointmentDate = new Date(booking.appointmentTime);
+                const formattedDate = appointmentDate.toLocaleDateString();
+                const formattedTime = appointmentDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const commission = parseFloat(booking.influencerCommission || 0).toFixed(2);
+                const serviceFee = parseFloat(booking.serviceFee || 0).toFixed(2);
+                const statusColor = booking.bookingStatus === 'confirmed' ? '#28a745' : '#ffc107';
+                const statusText = booking.bookingStatus === 'confirmed' ? 'Confirmed' : 'Pending Confirmation';
+                
+                return `
+                    <div class="booking-card" style="background: white; border: 1px solid #e1e5e9; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 1.1rem;">${booking.serviceName}</h4>
+                                <p style="margin: 0 0 4px 0; color: #666; font-size: 0.9rem;">
+                                    <strong>Client:</strong> ${booking.clientName}
+                                </p>
+                                <p style="margin: 0 0 4px 0; color: #666; font-size: 0.9rem;">
+                                    <strong>Salon:</strong> ${booking.salonName || 'N/A'}
+                                </p>
+                                <p style="margin: 0 0 4px 0; color: #666; font-size: 0.9rem;">
+                                    <strong>Date & Time:</strong> ${formattedDate} at ${formattedTime}
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="background: ${statusColor}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px;">
+                                    ${statusText}
+                                </div>
+                                <div style="background: #e8f5e8; color: #28a745; padding: 8px 12px; border-radius: 6px; font-weight: 600;">
+                                    💰 $${commission}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f1f3f4; font-size: 0.85rem; color: #666;">
+                            <span>Service Fee: $${serviceFee}</span>
+                            <span>Commission Rate: ${((parseFloat(commission) / parseFloat(serviceFee)) * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            bookingsList.innerHTML = bookingsHTML;
         }
 
         function displayRequests(requests) {
@@ -949,8 +1031,8 @@
             event.target.classList.add('active');
             console.log('Navigate to Account page');
             
-            // Navigate to account page with absolute URL
-            window.location.href = 'http://localhost:3000/account';
+            // Navigate to digital shop with account settings tab
+            window.location.href = '../Main Pages/digitalshop.html?tab=account';
         };
 
         window.goToDigitalShop = () => {
@@ -960,7 +1042,7 @@
             console.log('Navigate to Digital Shop page');
             
             // Navigate to digital shop page with absolute URL
-            window.location.href = 'http://localhost:3000/digitalshop';
+            window.location.href = '../Main Pages/digitalshop.html';
         };
 
         window.goToInfluencerDashboard = () => {
@@ -979,13 +1061,13 @@
             console.log('Navigate to Contact page');
             
             // Navigate to contact page with absolute URL
-            console.log('Redirecting to:', 'http://localhost:3000/contact-us');
+            console.log('Redirecting to:', '../Communication/contact-us.html');
             try {
-                window.location.href = 'http://localhost:3000/contact-us';
+                window.location.href = '../Communication/contact-us.html';
             } catch (error) {
                 console.error('Navigation error:', error);
                 // Fallback: try direct navigation
-                window.location.replace('http://localhost:3000/contact-us');
+                window.location.replace('../Communication/contact-us.html');
             }
         };
 
@@ -997,7 +1079,7 @@
             
             // Redirect to creator login page with absolute URL
             console.log('User logged out, redirecting to creator login page');
-            window.location.href = 'http://localhost:3000/creator-auth';
+            window.location.href = '../User-Authentication/creator-auth.html';
         };
     </script>
 </body>

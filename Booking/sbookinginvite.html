@@ -506,7 +506,7 @@
             <button class="btn btn-edit" onclick="editTimeOptions()">
                 📝 Edit Time Options
             </button>
-            <a href="http://localhost:3000/salon-dashboard" class="btn btn-primary">
+            <a href="../Main Pages/index.htmlsalon-dashboard" class="btn btn-primary">
                 🏠 Return to Dashboard
             </a>
         </div>
@@ -642,7 +642,7 @@
         async function fetchUpdatedRequestData(requestId) {
             try {
                 console.log('Fetching updated request data from backend...');
-                const response = await fetch(`http://localhost:3000/service-requests/influencer_name`);
+                const response = await fetch(`../Main Pages/index.htmlservice-requests/influencer_name`);
                 
                 if (response.ok) {
                     const allRequests = await response.json();
@@ -909,7 +909,7 @@
                 console.log('Updating time options:', updatedTimeOptions);
 
                 // Send updated time options to backend
-                const response = await fetch(`http://localhost:3000/service-requests/${requestData.requestId}/respond`, {
+                const response = await fetch(`../Main Pages/index.htmlservice-requests/${requestData.requestId}/respond`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

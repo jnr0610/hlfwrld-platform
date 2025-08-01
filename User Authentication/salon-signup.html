@@ -458,11 +458,11 @@
       </form>
 
       <div class="login-link">
-        Already have an account? <a href="http://localhost:3000/salon-login">Log in here</a>
+        Already have an account? <a href="salon-login.html">Log in here</a>
       </div>
 
       <div style="text-align: center;">
-        <a href="http://localhost:3000/salon-landing" class="back-btn">Back to Salon Landing</a>
+        <a href="salon-landing.html" class="back-btn">Back to Salon Landing</a>
       </div>
     </div>
   </div>
@@ -542,6 +542,7 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:3000';
     const salonSignupForm = document.getElementById('salonSignupForm');
     const errorMessage = document.getElementById('errorMessage');
     const successMessage = document.getElementById('successMessage');
@@ -605,6 +606,8 @@
 
     salonSignupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log('Form submitted!');
+      console.log('API_BASE:', API_BASE);
       
       // Hide any existing messages
       errorMessage.style.display = 'none';
@@ -649,7 +652,9 @@
       }
 
       try {
-        const response = await fetch('http://localhost:3000/salon/signup', {
+        console.log('Sending data to API:', data);
+        console.log('Full URL:', `${API_BASE}/salon/signup`);
+        const response = await fetch(`${API_BASE}/salon/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -657,19 +662,36 @@
           body: JSON.stringify(data)
         });
 
+        console.log('Response status:', response.status);
         const result = await response.json();
+        console.log('Response result:', result);
 
         if (response.ok && result.success) {
-          showSuccess('Salon account created successfully! Redirecting to login...');
+          console.log('✅ Success! Hybrid tokens received:', { 
+            sessionToken: result.sessionToken, 
+            jwtToken: result.jwtToken ? result.jwtToken.substring(0, 20) + '...' : 'Not provided' 
+          });
+          
+          // Store both tokens in localStorage
+          localStorage.setItem('salonSessionToken', result.sessionToken); // Short-term (24 hours)
+          localStorage.setItem('salonJWTToken', result.jwtToken); // Long-term (90 days)
+          localStorage.setItem('salonData', JSON.stringify({
+            salonId: result.salonId,
+            salonName: result.salonName
+          }));
+          
+          showSuccess('Salon account created successfully! Redirecting to dashboard...');
           setTimeout(() => {
-            window.location.href = 'salon-login.html';
+            window.location.href = '../Dashboards/salon-dashboard.html?sessionToken=' + result.sessionToken;
           }, 2000);
         } else {
+          console.log('❌ Server error:', result);
           showError(result.error || 'Failed to create salon account');
         }
         
       } catch (error) {
         console.error('❌ Error creating salon account:', error);
+        console.error('Error details:', error.message);
         showError('Network error. Please check your connection and try again.');
       } finally {
         // Re-enable submit button

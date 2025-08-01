@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Session System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .token-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .expiry-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Hybrid Session System Test</h1>
+        <p>This page demonstrates the new hybrid session system with both short-term (24 hours) and long-term (90 days) JWT tokens.</p>
+        
+        <div class="expiry-info">
+            <h3>📅 Session Types:</h3>
+            <ul>
+                <li><strong>Short-term Session:</strong> 24 hours, stored in server memory</li>
+                <li><strong>Long-term JWT:</strong> 90 days, self-contained token</li>
+                <li><strong>Automatic Fallback:</strong> JWT used when short-term session expires</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>1. Login Test</h3>
+            <button onclick="testLogin()">🔑 Test Salon Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Dashboard Access Test</h3>
+            <button onclick="testDashboardWithShortToken()">📊 Test with Short-term Token</button>
+            <button onclick="testDashboardWithJWT()">🔐 Test with JWT Token</button>
+            <div id="dashboardResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Service Requests Test</h3>
+            <button onclick="testServiceRequests()">📋 Test Service Requests</button>
+            <div id="requestsResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Token Storage Test</h3>
+            <button onclick="showStoredTokens()">💾 Show Stored Tokens</button>
+            <button onclick="clearTokens()">🗑️ Clear All Tokens</button>
+            <div id="storageResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let currentTokens = {};
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>🔄 Logging in...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/salon/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'frontendtest@example.com',
+                        password: 'frontendpassword123'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    currentTokens = {
+                        sessionToken: result.sessionToken,
+                        jwtToken: result.jwtToken
+                    };
+
+                    // Store tokens in localStorage (like the real app)
+                    localStorage.setItem('salonSessionToken', result.sessionToken);
+                    localStorage.setItem('salonJWTToken', result.jwtToken);
+                    localStorage.setItem('salonData', JSON.stringify({
+                        salonId: result.salonId,
+                        salonName: result.salonName
+                    }));
+
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful!</h4>
+                            <p><strong>Salon:</strong> ${result.salonName}</p>
+                            <p><strong>Short-term Token:</strong></p>
+                            <div class="token-display">${result.sessionToken}</div>
+                            <p><strong>JWT Token (first 50 chars):</strong></p>
+                            <div class="token-display">${result.jwtToken.substring(0, 50)}...</div>
+                            <p><strong>Expiry:</strong> Short-term: 24 hours | JWT: 90 days</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Login Failed</h4><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Network Error</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function testDashboardWithShortToken() {
+            const resultDiv = document.getElementById('dashboardResult');
+            if (!currentTokens.sessionToken) {
+                resultDiv.innerHTML = '<div class="error"><h4>❌ No Short-term Token</h4><p>Please login first</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>🔄 Testing dashboard with short-term token...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/salon/dashboard?sessionToken=${currentTokens.sessionToken}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Dashboard Access Successful (Short-term Token)</h4>
+                            <p><strong>Salon:</strong> ${result.salon.salonName}</p>
+                            <p><strong>Email:</strong> ${result.salon.email}</p>
+                            <p><strong>Total Bookings:</strong> ${result.stats.totalBookings}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Dashboard Access Failed</h4><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Network Error</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function testDashboardWithJWT() {
+            const resultDiv = document.getElementById('dashboardResult');
+            if (!currentTokens.jwtToken) {
+                resultDiv.innerHTML = '<div class="error"><h4>❌ No JWT Token</h4><p>Please login first</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>🔄 Testing dashboard with JWT token...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/salon/dashboard?sessionToken=${currentTokens.jwtToken}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Dashboard Access Successful (JWT Token)</h4>
+                            <p><strong>Salon:</strong> ${result.salon.salonName}</p>
+                            <p><strong>Email:</strong> ${result.salon.email}</p>
+                            <p><strong>Total Bookings:</strong> ${result.stats.totalBookings}</p>
+                            <p><em>This JWT token will work for 90 days!</em></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Dashboard Access Failed</h4><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Network Error</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function testServiceRequests() {
+            const resultDiv = document.getElementById('requestsResult');
+            const token = currentTokens.jwtToken || currentTokens.sessionToken;
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error"><h4>❌ No Token Available</h4><p>Please login first</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>🔄 Testing service requests...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/service-requests/salon/2?sessionToken=${token}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Service Requests Retrieved Successfully</h4>
+                            <p><strong>Total Requests:</strong> ${result.length}</p>
+                            <p><strong>Pending:</strong> ${result.filter(r => r.status === 'pending').length}</p>
+                            <p><strong>Responded:</strong> ${result.filter(r => r.status === 'responded').length}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Service Requests Failed</h4><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Network Error</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        function showStoredTokens() {
+            const resultDiv = document.getElementById('storageResult');
+            const sessionToken = localStorage.getItem('salonSessionToken');
+            const jwtToken = localStorage.getItem('salonJWTToken');
+            const salonData = localStorage.getItem('salonData');
+
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>💾 Stored Tokens</h4>
+                    <p><strong>Short-term Token:</strong></p>
+                    <div class="token-display">${sessionToken || 'Not stored'}</div>
+                    <p><strong>JWT Token (first 50 chars):</strong></p>
+                    <div class="token-display">${jwtToken ? jwtToken.substring(0, 50) + '...' : 'Not stored'}</div>
+                    <p><strong>Salon Data:</strong></p>
+                    <div class="token-display">${salonData || 'Not stored'}</div>
+                </div>
+            `;
+        }
+
+        function clearTokens() {
+            localStorage.removeItem('salonSessionToken');
+            localStorage.removeItem('salonJWTToken');
+            localStorage.removeItem('salonData');
+            currentTokens = {};
+            
+            const resultDiv = document.getElementById('storageResult');
+            resultDiv.innerHTML = '<div class="success"><h4>✅ All Tokens Cleared</h4><p>Local storage has been cleared</p></div>';
+        }
+    </script>
+</body>
+</html> 

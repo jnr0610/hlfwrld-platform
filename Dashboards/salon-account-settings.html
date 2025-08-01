@@ -674,9 +674,9 @@
                     <h1 class="brand-title">Hlfwrld</h1>
                 </div>
                 <div class="nav-section">
-                    <a href="http://localhost:3000/salon-dashboard" class="nav-link">Dashboard</a>
-                    <a href="http://localhost:3000/salon-account-settings" class="nav-link">Account</a>
-                    <a href="http://localhost:3000/contact-us" class="nav-link">Contact Us</a>
+                                    <a href="salon-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="salon-account-settings.html" class="nav-link">Account</a>
+                    <a href="../Communication/contact-us.html" class="nav-link">Contact Us</a>
                     <button onclick="logOut()" class="nav-link logout-btn">Log Out</button>
                 </div>
             </div>
@@ -937,7 +937,7 @@
                     return;
                 }
 
-                fetch('http://localhost:3000/salon/update-subscription', {
+                fetch('/salon/update-subscription', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -983,7 +983,7 @@
 
         function cancelSubscription() {
             // Redirect to the account cancellation page
-            window.location.href = 'http://localhost:3000/account-cancellation';
+            window.location.href = 'account-cancellation.html';
         }
 
         function deleteAccount() {
@@ -1008,7 +1008,7 @@
                 return;
             }
 
-            fetch('http://localhost:3000/salon/create-billing-portal-session', {
+            fetch('/salon/create-billing-portal-session', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1042,7 +1042,7 @@
             
             // Redirect to salon login page
             console.log('Salon logged out, redirecting to salon login page');
-            window.location.href = 'http://localhost:3000/salon-login';
+            window.location.href = '../User Authentication/salon-login.html';
         }
 
         function loadPaymentInfo() {
@@ -1054,7 +1054,7 @@
                 return;
             }
 
-            fetch(`http://localhost:3000/salon/payment-info?salonId=${salonId}`)
+            fetch(`/salon/payment-info?salonId=${salonId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.paymentMethod) {

@@ -206,16 +206,17 @@
       </form>
 
       <div class="signup-link">
-        Don't have an account? <a href="http://localhost:3000/salon-signup">Sign up here</a>
+        Don't have an account? <a href="salon-signup.html">Sign up here</a>
       </div>
 
       <div style="text-align: center;">
-        <a href="http://localhost:3000/salon-landing" class="back-btn">Back to Salon Landing</a>
+        <a href="salon-landing.html" class="back-btn">Back to Salon Landing</a>
       </div>
     </div>
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:3000';
     const salonLoginForm = document.getElementById('salonLoginForm');
     const errorMessage = document.getElementById('errorMessage');
     const submitBtn = document.getElementById('submitBtn');
@@ -252,7 +253,7 @@
       };
 
       try {
-        const response = await fetch('http://localhost:3000/salon/login', {
+        const response = await fetch(`${API_BASE}/salon/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -263,12 +264,18 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-          // Store salon token
-          localStorage.setItem('salonToken', result.token);
-          localStorage.setItem('salonId', result.salonId);
+          // Store salon data
+          const salonData = {
+            salonId: result.salonId,
+            salonName: result.salonName,
+            email: result.email || data.email
+          };
+          localStorage.setItem('salonData', JSON.stringify(salonData));
+          localStorage.setItem('salonSessionToken', result.sessionToken);
+          localStorage.setItem('salonJWTToken', result.jwtToken);
           
           // Redirect to salon dashboard
-                      window.location.href = 'http://localhost:3000/salon-dashboard';
+          window.location.href = '../Dashboards/salon-dashboard.html';
         } else {
           showError(result.error || 'Invalid email or password');
         }

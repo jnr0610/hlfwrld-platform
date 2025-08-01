@@ -41,6 +41,7 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .landing-subtitle {
@@ -65,19 +66,47 @@
             border-radius: 16px;
             padding: 2rem;
             border: 2px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s ease;
         }
 
         .user-type-card:hover {
             border-color: #667eea;
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.25);
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        }
+
+        .user-type-card:hover::before {
+            left: 100%;
+        }
+
+        .user-type-card:hover .user-type-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .user-type-card:hover .cta-button {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
         .user-type-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .user-type-title {
@@ -122,15 +151,33 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 1.1rem;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: none;
             cursor: pointer;
             width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
         }
 
         .login-links {
@@ -174,6 +221,19 @@
             line-height: 1.6;
         }
 
+        .footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .copyright {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
         @media (max-width: 768px) {
             .user-types {
                 grid-template-columns: 1fr;
@@ -204,7 +264,7 @@
 
         <div class="landing-content">
             <div class="user-types">
-                <div class="user-type-card" onclick="window.location.href='http://localhost:3000/creator-landing'">
+                <div class="user-type-card" onclick="window.location.href='../User-Authentication/creator-landing.html'">
                     <div class="user-type-icon">👩‍🎨</div>
                     <h3 class="user-type-title">For Creators</h3>
                     <p class="user-type-description">Monetize your beauty content and connect with local salons</p>
@@ -214,10 +274,10 @@
                         <div class="user-type-feature">Share your unique 4-digit code</div>
                         <div class="user-type-feature">Connect with local salons</div>
                     </div>
-                    <button class="cta-button" onclick="window.location.href='http://localhost:3000/creator-landing'">Join as Creator</button>
+                    <button class="cta-button" onclick="window.location.href='../User-Authentication/creator-landing.html'">Join as a Creator</button>
                 </div>
 
-                <div class="user-type-card" onclick="window.location.href='http://localhost:3000/salon-landing'">
+                <div class="user-type-card" onclick="window.location.href='../User-Authentication/salon-landing.html'">
                     <div class="user-type-icon">💇‍♀️</div>
                     <h3 class="user-type-title">For Salons</h3>
                     <p class="user-type-description">Partner with beauty influencers and grow your business</p>
@@ -227,16 +287,16 @@
                         <div class="user-type-feature">Get authentic content</div>
                         <div class="user-type-feature">Secure payment processing</div>
                     </div>
-                    <button class="cta-button">Join as Salon</button>
+                    <button class="cta-button" onclick="window.location.href='../User-Authentication/salon-landing.html'">Join as a Salon</button>
                 </div>
             </div>
 
             <div class="login-links">
                 <div class="login-link">
-                    Creator? <a href="http://localhost:3000/creator-auth">Log in here</a>
+                    Already a creator? <a href="../User-Authentication/creator-auth.html?tab=login">Log in here</a>
                 </div>
                 <div class="login-link">
-                    Salon? <a href="http://localhost:3000/salon-login">Log in here</a>
+                    Already a salon? <a href="../User-Authentication/salon-login.html">Log in here</a>
                 </div>
             </div>
 
@@ -244,9 +304,14 @@
                 <h3 class="platform-title">How It Works</h3>
                 <p class="platform-description">
                     Creators build their digital shop with beauty services they love. They share their unique 4-digit code with local salons. 
-                    When salons sign up using that code, they're connected for authentic partnerships. Creators earn commissions on bookings 
+                    Salons can only sign up when invited with a 4-digit influencer code, which is required for getting access to Hlfwrld. 
+                    When salons sign up using that code, they gain exclusive access to view and manage their influencer-driven new clients. Creators earn commissions on bookings 
                     while salons get increased visibility and authentic content from trusted influencers.
                 </p>
+            </div>
+
+            <div class="footer">
+                <p class="copyright">© 2025 Hlfwrld. All rights reserved.</p>
             </div>
         </div>
     </div>

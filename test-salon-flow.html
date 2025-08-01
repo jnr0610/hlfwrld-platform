@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Salon Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Salon Signup to Dashboard Flow</h1>
+    
+    <div class="container">
+        <h2>Step 1: Salon Signup</h2>
+        <button onclick="testSalonSignup()">Test Salon Signup</button>
+        <div id="signupResult"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Step 2: Dashboard Access</h2>
+        <button onclick="testDashboardAccess()">Test Dashboard Access</button>
+        <div id="dashboardResult"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Step 3: Service Requests</h2>
+        <button onclick="testServiceRequests()">Test Service Requests</button>
+        <div id="serviceRequestsResult"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Step 4: Complete Flow Test</h2>
+        <button onclick="testCompleteFlow()">Test Complete Flow</button>
+        <div id="completeFlowResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let currentSessionToken = null;
+        let currentSalonId = null;
+
+        async function testSalonSignup() {
+            const resultDiv = document.getElementById('signupResult');
+            resultDiv.innerHTML = '<p>Testing salon signup...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/salon/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        salonName: 'Test Salon ' + Date.now(),
+                        ownerName: 'Test Owner',
+                        email: 'test' + Date.now() + '@example.com',
+                        phone: '(555) 123-4567',
+                        address: '123 Test St',
+                        city: 'Test City',
+                        state: 'MD',
+                        zipCode: '12345',
+                        influencerCode: '6337',
+                        password: 'testpass123',
+                        confirmPassword: 'testpass123',
+                        agreementAccepted: true
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentSessionToken = result.sessionToken;
+                    currentSalonId = result.salonId;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Salon signup successful!
+                            <br>Salon ID: ${result.salonId}
+                            <br>Salon Name: ${result.salonName}
+                            <br>Session Token: ${result.sessionToken}
+                        </div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ Salon signup failed: ${result.error}</div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testDashboardAccess() {
+            const resultDiv = document.getElementById('dashboardResult');
+            
+            if (!currentSessionToken) {
+                resultDiv.innerHTML = '<div class="error">❌ No session token available. Please run salon signup first.</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Testing dashboard access...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/salon/dashboard?sessionToken=${currentSessionToken}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentSessionToken}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Dashboard access successful!
+                            <br>Salon: ${result.salon.salonName}
+                            <br>Total Bookings: ${result.stats.totalBookings}
+                            <br>Pending Bookings: ${result.stats.pendingBookings}
+                            <br>Confirmed Bookings: ${result.stats.confirmedBookings}
+                            <br>Total Revenue: $${result.stats.totalRevenue}
+                        </div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ Dashboard access failed: ${result.error}</div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testServiceRequests() {
+            const resultDiv = document.getElementById('serviceRequestsResult');
+            
+            if (!currentSessionToken || !currentSalonId) {
+                resultDiv.innerHTML = '<div class="error">❌ No session token or salon ID available. Please run salon signup first.</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Testing service requests...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/service-requests/salon/${currentSalonId}?sessionToken=${currentSessionToken}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentSessionToken}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Service requests access successful!
+                            <br>Number of requests: ${result.length}
+                        </div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">❌ Service requests access failed: ${result.error}</div>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testCompleteFlow() {
+            const resultDiv = document.getElementById('completeFlowResult');
+            resultDiv.innerHTML = '<p>Testing complete flow...</p>';
+            
+            try {
+                // Step 1: Salon Signup
+                const signupResponse = await fetch(`${API_BASE}/salon/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        salonName: 'Complete Flow Test Salon',
+                        ownerName: 'Complete Flow Owner',
+                        email: 'completeflow' + Date.now() + '@example.com',
+                        phone: '(555) 123-4567',
+                        address: '123 Complete Flow St',
+                        city: 'Test City',
+                        state: 'MD',
+                        zipCode: '12345',
+                        influencerCode: '6337',
+                        password: 'testpass123',
+                        confirmPassword: 'testpass123',
+                        agreementAccepted: true
+                    })
+                });
+
+                const signupResult = await signupResponse.json();
+                
+                if (!signupResult.success) {
+                    throw new Error(`Signup failed: ${signupResult.error}`);
+                }
+
+                const sessionToken = signupResult.sessionToken;
+                const salonId = signupResult.salonId;
+
+                // Step 2: Dashboard Access
+                const dashboardResponse = await fetch(`${API_BASE}/salon/dashboard?sessionToken=${sessionToken}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+
+                const dashboardResult = await dashboardResponse.json();
+                
+                if (!dashboardResponse.ok) {
+                    throw new Error(`Dashboard access failed: ${dashboardResult.error}`);
+                }
+
+                // Step 3: Service Requests
+                const serviceRequestsResponse = await fetch(`${API_BASE}/service-requests/salon/${salonId}?sessionToken=${sessionToken}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+
+                const serviceRequestsResult = await serviceRequestsResponse.json();
+                
+                if (!serviceRequestsResponse.ok) {
+                    throw new Error(`Service requests access failed: ${serviceRequestsResult.error}`);
+                }
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        ✅ Complete flow test successful!
+                        <br><br>
+                        <strong>Step 1 - Signup:</strong> ✅ Salon created (ID: ${salonId})
+                        <br><strong>Step 2 - Dashboard:</strong> ✅ Dashboard accessed (Salon: ${dashboardResult.salon.salonName})
+                        <br><strong>Step 3 - Service Requests:</strong> ✅ Service requests accessed (Count: ${serviceRequestsResult.length})
+                        <br><br>
+                        <strong>Session Token:</strong> ${sessionToken}
+                    </div>
+                    <h3>Dashboard Data:</h3>
+                    <pre>${JSON.stringify(dashboardResult, null, 2)}</pre>
+                    <h3>Service Requests Data:</h3>
+                    <pre>${JSON.stringify(serviceRequestsResult, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Complete flow test failed: ${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

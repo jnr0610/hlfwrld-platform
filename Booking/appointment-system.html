@@ -444,6 +444,117 @@
                 min-width: auto;
             }
         }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            border: none;
+            background: none;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .close:hover {
+            background: #f1f5f9;
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .reschedule-form {
+            margin: 1.5rem 0;
+        }
+
+        .date-option {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .date-option label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .date-option input[type="date"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .time-preference {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .time-preference label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
+        .time-preference input[type="radio"] {
+            margin: 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
     </style>
 </head>
 <body>
@@ -587,9 +698,6 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="btn btn-secondary" id="messageBtn">
-                        💬 Message Salon
-                    </button>
                     <button class="btn btn-outline" id="rescheduleBtn">
                         📅 Request Reschedule
                     </button>
@@ -607,6 +715,68 @@
                     Your appointment has been successfully booked and confirmed.<br>
                     You will receive email confirmations and reminders.<br>
                     <strong>Confirmation Code: <span id="confirmationCode">BK-2025-001</span></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div id="rescheduleModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📅 Request Reschedule</h3>
+                <span class="close" onclick="closeRescheduleModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Please select your 3 preferred dates and time preferences for rescheduling:</p>
+                
+                <div class="reschedule-form">
+                    <!-- Date Option 1 -->
+                    <div class="date-option">
+                        <label>Preferred Date 1:</label>
+                        <input type="date" id="rescheduleDate1" required>
+                        <div class="time-preference">
+                            <label>
+                                <input type="radio" name="timePreference1" value="AM"> Morning (AM)
+                            </label>
+                            <label>
+                                <input type="radio" name="timePreference1" value="PM"> Afternoon (PM)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Date Option 2 -->
+                    <div class="date-option">
+                        <label>Preferred Date 2:</label>
+                        <input type="date" id="rescheduleDate2" required>
+                        <div class="time-preference">
+                            <label>
+                                <input type="radio" name="timePreference2" value="AM"> Morning (AM)
+                            </label>
+                            <label>
+                                <input type="radio" name="timePreference2" value="PM"> Afternoon (PM)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Date Option 3 -->
+                    <div class="date-option">
+                        <label>Preferred Date 3:</label>
+                        <input type="date" id="rescheduleDate3" required>
+                        <div class="time-preference">
+                            <label>
+                                <input type="radio" name="timePreference3" value="AM"> Morning (AM)
+                            </label>
+                            <label>
+                                <input type="radio" name="timePreference3" value="PM"> Afternoon (PM)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitRescheduleRequest()">Submit Request</button>
                 </div>
             </div>
         </div>
@@ -633,15 +803,15 @@
 
             // Action buttons
             document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
-            document.getElementById('messageBtn').addEventListener('click', openMessaging);
-            document.getElementById('rescheduleBtn').addEventListener('click', requestReschedule);
+            document.getElementById('rescheduleBtn').addEventListener('click', openRescheduleModal);
             document.getElementById('cancelBtn').addEventListener('click', cancelAppointment);
         }
 
         async function loadAppointmentData() {
-            // In a real app, this would come from URL parameters or API
+            // Get URL parameters from email link
             const urlParams = new URLSearchParams(window.location.search);
-            const requestId = urlParams.get('request') || '13';
+            const requestId = urlParams.get('requestId') || urlParams.get('request') || '13';
+            const token = urlParams.get('token');
             
             try {
                 console.log('🔄 Loading appointment data for request:', requestId);
@@ -655,23 +825,37 @@
                 
                 const requestData = await response.json();
                 
+                // Parse salon time options from notes field
+                let salonTimeOptions = [];
+                if (requestData.notes && requestData.notes.includes('Salon time options:')) {
+                    try {
+                        const notesMatch = requestData.notes.match(/Salon time options: (\[.*?\])/);
+                        if (notesMatch) {
+                            salonTimeOptions = JSON.parse(notesMatch[1]);
+                        }
+                    } catch (e) {
+                        console.warn('Could not parse salon time options:', e);
+                    }
+                }
+                
                 appointmentData = {
                     requestId: requestId,
                     serviceName: requestData.serviceName || 'Unknown Service',
-                    salonName: requestData.influencerName || 'Unknown Salon',
-                    salonLocation: requestData.clientZipCode || 'Location not specified',
+                    salonName: requestData.salonName || requestData.influencerName || 'Unknown Salon',  
+                    salonLocation: `${requestData.address || ''} ${requestData.city || ''}, ${requestData.state || ''}`.trim() || 'Location not specified',
                     clientName: requestData.clientName || 'Unknown Client',
                     clientEmail: requestData.clientEmail || 'No email provided',
                     clientPhone: requestData.clientPhone || 'No phone provided',
                     clientLocation: requestData.clientZipCode || 'No location provided',
-                    serviceFee: requestData.fee || 0,
-                    platformFee: 5.00,
-                    totalAmount: (requestData.fee || 0) + 5.00,
+                    serviceFee: parseFloat(requestData.fee) || 0,
+                    platformFee: Math.round((parseFloat(requestData.fee) || 0) * 0.05 * 100) / 100,
+                    totalAmount: (parseFloat(requestData.fee) || 0) + Math.round((parseFloat(requestData.fee) || 0) * 0.05 * 100) / 100,
                     status: requestData.status || 'pending',
                     influencerName: requestData.influencerName || 'Unknown Influencer',
                     influencerHandle: requestData.influencerHandle || 'unknown',
                     influencerPhoto: requestData.coverPhoto || 'https://via.placeholder.com/60x60/0ea5e9/ffffff?text=👤',
-                    timeOptions: requestData.selectedDates || []
+                    timeOptions: salonTimeOptions.length > 0 ? salonTimeOptions : requestData.selectedDates || [],
+                    confirmationCode: 'HLFW-' + requestId + '-' + Date.now().toString().slice(-4)
                 };
                 
                 console.log('✅ Appointment data loaded:', appointmentData);
@@ -692,8 +876,8 @@
                 clientPhone: '(650) 111-4444',
                 clientLocation: '21202',
                 serviceFee: 85.00,
-                platformFee: 5.00,
-                totalAmount: 90.00,
+                platformFee: Math.round(85.00 * 0.05 * 100) / 100,
+                totalAmount: 85.00 + Math.round(85.00 * 0.05 * 100) / 100,
                     status: 'pending',
                     influencerName: 'Unknown Influencer',
                     influencerHandle: 'unknown',
@@ -958,15 +1142,113 @@
             }
         }
 
-        function openMessaging() {
-            const messagingUrl = `messaging-system.html?type=client&user=client1&request=${appointmentData.requestId}`;
-            window.open(messagingUrl, '_blank');
+        function openRescheduleModal() {
+            document.getElementById('rescheduleModal').style.display = 'flex';
+            
+            // Set minimum date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            
+            document.getElementById('rescheduleDate1').min = minDate;
+            document.getElementById('rescheduleDate2').min = minDate;
+            document.getElementById('rescheduleDate3').min = minDate;
         }
 
-        function requestReschedule() {
-            if (confirm('Request to reschedule this appointment? The salon will be notified and provide new time options.')) {
-                alert('📅 Reschedule request sent! The salon will contact you with new available times.');
-                console.log('Reschedule requested for appointment:', appointmentData.requestId);
+        function closeRescheduleModal() {
+            document.getElementById('rescheduleModal').style.display = 'none';
+            
+            // Clear form
+            document.getElementById('rescheduleDate1').value = '';
+            document.getElementById('rescheduleDate2').value = '';
+            document.getElementById('rescheduleDate3').value = '';
+            
+            // Clear radio buttons
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+        }
+
+        async function submitRescheduleRequest() {
+            console.log('📅 Current appointmentData:', appointmentData);
+            
+            // Collect form data
+            const date1 = document.getElementById('rescheduleDate1').value;
+            const date2 = document.getElementById('rescheduleDate2').value;
+            const date3 = document.getElementById('rescheduleDate3').value;
+            
+            const timePreference1 = document.querySelector('input[name="timePreference1"]:checked')?.value;
+            const timePreference2 = document.querySelector('input[name="timePreference2"]:checked')?.value;
+            const timePreference3 = document.querySelector('input[name="timePreference3"]:checked')?.value;
+            
+            console.log('📅 Form data:', { date1, date2, date3, timePreference1, timePreference2, timePreference3 });
+            
+            // Validate form
+            if (!date1 || !date2 || !date3) {
+                alert('Please select all 3 preferred dates.');
+                return;
+            }
+            
+            if (!timePreference1 || !timePreference2 || !timePreference3) {
+                alert('Please select time preferences for all dates.');
+                return;
+            }
+            
+            // Check if appointmentData is available
+            if (!appointmentData || !appointmentData.requestId) {
+                alert('❌ No appointment data available. Please refresh the page and try again.');
+                console.error('❌ appointmentData not available:', appointmentData);
+                return;
+            }
+            
+            // Prepare reschedule data
+            const rescheduleData = {
+                requestId: appointmentData.requestId,
+                clientName: appointmentData.clientName,
+                clientEmail: appointmentData.clientEmail,
+                serviceName: appointmentData.serviceName,
+                preferredDates: [
+                    { date: date1, timePreference: timePreference1 },
+                    { date: date2, timePreference: timePreference2 },
+                    { date: date3, timePreference: timePreference3 }
+                ]
+            };
+            
+            try {
+                console.log('📅 Submitting reschedule request:', rescheduleData);
+                console.log('📅 API URL:', `${API_BASE}/service-requests/${appointmentData.requestId}/reschedule`);
+                
+                // Submit reschedule request to backend
+                const response = await fetch(`${API_BASE}/service-requests/${appointmentData.requestId}/reschedule`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(rescheduleData)
+                });
+                
+                console.log('📅 Response status:', response.status);
+                console.log('📅 Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Response error:', errorText);
+                    throw new Error(`Failed to submit reschedule request: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Reschedule request submitted:', result);
+                
+                // Close modal
+                closeRescheduleModal();
+                
+                // Show success message
+                alert('📅 Reschedule request submitted successfully! You will receive a confirmation email, and the salon will send you new time options shortly.');
+                
+            } catch (error) {
+                console.error('❌ Error submitting reschedule request:', error);
+                console.error('❌ Error details:', error.message);
+                alert(`❌ Failed to submit reschedule request: ${error.message}`);
             }
         }
 
@@ -977,7 +1259,7 @@
                 console.log('Appointment cancelled:', appointmentData.requestId);
                 
                 // In a real app, update the backend and send notifications
-                window.location.href = 'digitalshop.html';
+                window.location.href = '../Main Pages/digitalshop.html';
             }
         }
     </script>

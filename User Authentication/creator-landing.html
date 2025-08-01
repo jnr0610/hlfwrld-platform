@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hlfwrld - Beauty Services Platform</title>
+    <title>Creator Landing - Hlfwrld</title>
     <style>
         * {
             margin: 0;
@@ -38,13 +38,14 @@
         }
 
         .landing-title {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
             margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .landing-subtitle {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             opacity: 0.9;
             margin-bottom: 2rem;
         }
@@ -112,6 +113,38 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        .footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .copyright {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 2.5rem;
+            }
+
+            .landing-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .landing-container {
+                margin: 10px;
+                max-width: 100%;
+            }
+
+            .landing-content {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -140,19 +173,23 @@
                 </div>
             </div>
 
-            <a href="http://localhost:3000/creator-auth" class="cta-button">Get Started</a>
+                    <a href="creator-auth.html?tab=signup" class="cta-button">Get Started</a>
 
-            <div class="login-link">
-                Already have an account? <a href="http://localhost:3000/creator-auth">Log in</a>
-            </div>
+        <div class="login-link">
+            Already have an account? <a href="creator-auth.html?tab=login">Log in</a>
+        </div>
 
             <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
                 <p style="color: #6b7280; margin-bottom: 1rem;">Are you a salon owner?</p>
-                <a href="http://localhost:3000/salon-landing" style="display: inline-block; background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 25px; text-decoration: none; font-weight: 600; transition: background 0.2s ease;">For Salons</a>
+                <a href="salon-landing.html" style="display: inline-block; background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 25px; text-decoration: none; font-weight: 600; transition: background 0.2s ease;">For Salons</a>
             </div>
 
             <div style="margin-top: 1rem;">
-                <a href="http://localhost:3000/" style="color: #667eea; text-decoration: none; font-weight: 600; font-size: 0.9rem;">← Back to Home</a>
+                <a href="../Main Pages/index.html" style="color: #667eea; text-decoration: none; font-weight: 600; font-size: 0.9rem;">← Back to Home</a>
+            </div>
+
+            <div class="footer">
+                <p class="copyright">© 2025 Hlfwrld. All rights reserved.</p>
             </div>
         </div>
     </div>

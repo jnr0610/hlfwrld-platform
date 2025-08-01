@@ -7,17 +7,55 @@ const path = require('path');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_your_stripe_secret_key_here');
 const AWS = require('aws-sdk');
 const { Resend } = require('resend');
+const jwt = require('jsonwebtoken');
 
 const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Hybrid session management with JWT tokens
+const sessions = new Map(); // For short-term sessions (24 hours)
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const generateSessionToken = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+// Generate JWT token for long-term sessions (90 days)
+const generateJWTToken = (salonData) => {
+  return jwt.sign(
+    {
+      salonId: salonData.salonId,
+      salonName: salonData.salonName,
+      email: salonData.email,
+      type: 'salon'
+    },
+    JWT_SECRET,
+    { expiresIn: '90d' } // 90 days
+  );
+};
+
+// Verify JWT token
+const verifyJWTToken = (token) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
 // Initialize Resend (much simpler than AWS SES)
 let resend;
 try {
-  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('🔧 Resend API Key:', process.env.RESEND_API_KEY ? 'Present' : 'Missing');
+  console.log('🔧 Email Service:', process.env.EMAIL_SERVICE);
+  
+  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_your_resend_api_key_here') {
+    resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('✅ Resend configured successfully');
+  } else {
+    throw new Error('Resend API key not properly configured');
+  }
 } catch (error) {
   console.log('⚠️  Resend not configured - emails will use fallback mode');
+  console.log('🔧 Error details:', error.message);
   resend = null;
 }
 
@@ -36,7 +74,7 @@ app.use('/Documentation', express.static(path.join(__dirname, '../Documentation'
 app.use('/Configuration', express.static(path.join(__dirname, '../Configuration')));
 
 // Initialize SQLite DB
-const db = new sqlite3.Database('./Database/database.sqlite', (err) => {
+const db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlite'), (err) => {
   if (err) return console.error('DB open error:', err.message);
   console.log('Connected to SQLite database.');
 });
@@ -120,7 +158,7 @@ db.serialize(() => {
   });
 
   // Add influencerCode column to creators table if it doesn't exist
-  db.run(`ALTER TABLE creators ADD COLUMN influencerCode TEXT UNIQUE`, (err) => {
+  db.run(`ALTER TABLE creators ADD COLUMN influencerCode TEXT`, (err) => {
     if (err && !err.message.includes('duplicate column name')) {
       console.log('Could not add influencerCode column:', err.message);
     }
@@ -264,6 +302,43 @@ db.serialize(() => {
   db.run(`ALTER TABLE bookings ADD COLUMN refundReason TEXT`, (err) => { /* ... */ });
 });
 
+// Hybrid session validation middleware
+const validateSession = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.query.sessionToken;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Session token required' });
+  }
+
+  // First, try to validate as JWT token (long-term session)
+  const jwtPayload = verifyJWTToken(token);
+  if (jwtPayload) {
+    req.session = {
+      salonId: jwtPayload.salonId,
+      salonName: jwtPayload.salonName,
+      email: jwtPayload.email,
+      type: jwtPayload.type,
+      createdAt: Date.now() // JWT tokens are self-contained
+    };
+    return next();
+  }
+
+  // If not JWT, try short-term session
+  const session = sessions.get(token);
+  if (!session) {
+    return res.status(401).json({ error: 'Invalid or expired session' });
+  }
+
+  // Check if short-term session is expired (24 hours)
+  if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) {
+    sessions.delete(token);
+    return res.status(401).json({ error: 'Session expired' });
+  }
+
+  req.session = session;
+  next();
+};
+
 // Helper to generate a unique 4-digit code
 function generateCode() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -310,32 +385,12 @@ function formatTimeSlot(timeOption) {
 }
 
 function generateEmailTemplate(clientName, serviceName, timeOptions, salonName, requestId) {
-  const timeSlotsList = timeOptions.map((option, index) => 
-    `${index + 1}. ${formatTimeSlot(option)}`
-  ).join('\n');
-  
-  const appointmentLink = `http://${FRONTEND_DOMAIN}/appointment-system.html?request=${requestId}`;
-  
   return `
-Hi ${clientName},
-
-Great news! Your appointment request has been reviewed and we have available time slots for your ${serviceName} service.
-
-Available Appointments:
-${timeSlotsList}
-
-To book your preferred time:
-${appointmentLink}
-
-Please note: These time slots are held for 30 minutes. If you don't select a time within this period, the slots may become available to other clients.
-
-We look forward to seeing you!
-
-Best regards,
-${salonName || 'Your Salon Team'}
-
----
-This message was sent regarding your appointment request. For questions, please contact us directly.
+<div style="color: black; font-family: Arial, sans-serif; line-height: 1.4;">
+  <p style="color: black; margin: 0 0 10px 0;">Hi ${clientName},</p>
+  <p style="color: black; margin: 0 0 10px 0;">Great news! You're off the waitlist for the ${serviceName} that ${salonName} also books.</p>
+  <p style="color: black; margin: 0 0 15px 0;">Please click on the link below to view your available options, the salon location, and if desired book the appointment. These options will be held for you for 1 hour!</p>
+</div>
   `.trim();
 }
 
@@ -372,6 +427,87 @@ ${salonName || 'Your Salon Team'}
 
 ---
 This message confirms your appointment booking. For urgent changes, please call us directly.
+  `.trim();
+}
+
+function generateWaitlistConfirmationEmail(clientName, serviceName, creatorFirstName, influencerHandle, selectedDates, requestId) {
+  const formattedDates = selectedDates.map(date => {
+    const dateObj = new Date(date.date);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    return `${formattedDate} (${date.time})`;
+  }).join('\n• ');
+
+  return `
+Hi ${clientName},
+
+Thank you for your interest in the "${serviceName}" that ${creatorFirstName} (@${influencerHandle}) also books.
+
+Here are your waitlist confirmation details:
+• Service: ${serviceName}
+• Preferred dates:
+  • ${formattedDates}
+
+What happens next:
+1. The salon will review your request
+2. After approval, you will receive an email with location details
+3. Review location details before confirming your booking
+4. Complete payment to secure your appointment
+
+We will keep you updated on the status of your request.
+
+If you have any questions, please do not hesitate to reach out.
+
+Best regards,
+The Hlfwrld Team
+www.hlfwrld.com
+contact@hlfwrld.com
+
+---
+This is an automated confirmation of your service request. Please save this email for your records.
+  `.trim();
+}
+
+function generateSalonBookingNotificationEmail(salonName, clientName, serviceName, appointmentDate, appointmentTime, paymentAmount, requestId) {
+  const formattedDate = new Date(appointmentDate).toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  return `
+Hi ${salonName},
+
+Great news! A new appointment has been booked and paid for. The client is ready to be assigned to a beauty service provider.
+
+APPOINTMENT DETAILS:
+• Service: ${serviceName}
+• Client: ${clientName}
+• Date: ${formattedDate}
+• Time: ${appointmentTime}
+• Amount Paid: $${paymentAmount}
+
+NEXT STEPS:
+Please assign this client to a beauty service provider who has an opening during the requested time slot. You can manage this appointment through your salon dashboard.
+
+Dashboard Link: http://localhost:3000/Dashboards/salon-dashboard.html
+
+The client has already completed payment, so you can proceed with scheduling the service provider immediately.
+
+IMPORTANT: All client communication should be handled through the platform. Do not contact the client directly outside of our system.
+
+Best regards,
+The Hlfwrld Team
+www.hlfwrld.com
+contact@hlfwrld.com
+
+---
+Booking Reference: #${requestId}
   `.trim();
 }
 
@@ -610,21 +746,40 @@ app.get('/signup-count/:code', (req, res) => {
 // Profile management endpoints
 // Get profile data
 app.get('/profile/:influencerName', (req, res) => {
+  // First get the profile data
   db.get(
     `SELECT * FROM profiles WHERE influencerName = ?`,
     [req.params.influencerName],
-    (err, row) => {
+    (err, profileRow) => {
       if (err) return res.status(500).json({ error: err.message });
-      if (!row) {
-        // Return default profile if none exists
-        return res.json({
-          influencerName: req.params.influencerName,
-          profilePhoto: null,
-          handle: '',
-          bio: ''
-        });
-      }
-      res.json(row);
+      
+      // Then get the creator's name from the creators table
+      db.get(
+        `SELECT name FROM creators WHERE username = ?`,
+        [req.params.influencerName],
+        (err, creatorRow) => {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          if (!profileRow) {
+            // Return default profile if none exists
+            return res.json({
+              influencerName: req.params.influencerName,
+              profilePhoto: null,
+              handle: '',
+              bio: '',
+              name: creatorRow ? creatorRow.name : ''
+            });
+          }
+          
+          // Combine profile data with creator name
+          const profileData = {
+            ...profileRow,
+            name: creatorRow ? creatorRow.name : ''
+          };
+          
+          res.json(profileData);
+        }
+      );
     }
   );
 });
@@ -734,7 +889,7 @@ app.get('/messages/:influencerName/unread-count', (req, res) => {
 });
 
 // Create service request
-app.post('/service-requests', (req, res) => {
+app.post('/service-requests', async (req, res) => {
   const { serviceCode, influencerHandle, clientName, clientEmail, clientPhone, clientZipCode, selectedDates } = req.body;
   
   console.log('📅 New service request for:', influencerHandle);
@@ -744,15 +899,49 @@ app.post('/service-requests', (req, res) => {
     `INSERT INTO service_requests (serviceCode, influencerHandle, clientName, clientEmail, clientPhone, clientZipCode, selectedDates, preferredTime)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [serviceCode, influencerHandle, clientName, clientEmail, clientPhone, clientZipCode, JSON.stringify(selectedDates), 'Individual per date'],
-    function (err) {
+    async function (err) {
       if (err) {
         console.error('❌ Error saving service request:', err.message);
         return res.status(500).json({ error: err.message });
       }
-      console.log('✅ Service request saved');
+      
+      const requestId = this.lastID;
+      console.log('✅ Service request saved with ID:', requestId);
+      
+      // Get service details and creator info for email
+      db.get(
+        `SELECT p.serviceName, p.fee, p.influencerName, c.name as creatorName
+         FROM posts p 
+         LEFT JOIN creators c ON p.influencerName = c.username
+         WHERE p.code = ?`,
+        [serviceCode],
+        async (err, post) => {
+          if (err) {
+            console.error('❌ Error fetching service details:', err.message);
+          } else {
+            // Extract first name from creator's full name
+            let creatorFirstName = 'Creator';
+            if (post && post.creatorName) {
+              creatorFirstName = post.creatorName.split(' ')[0]; // Get first name
+            }
+            
+            // Send waitlist confirmation email
+            const emailSubject = `Waitlist Confirmation`;
+            const emailBody = generateWaitlistConfirmationEmail(clientName, post ? post.serviceName : 'Service', creatorFirstName, influencerHandle, selectedDates, requestId);
+            
+            try {
+              await sendEmail(clientEmail, emailSubject, emailBody, requestId);
+              console.log('📧 Waitlist confirmation email sent to:', clientEmail);
+            } catch (emailError) {
+              console.error('❌ Error sending waitlist confirmation email:', emailError);
+            }
+          }
+        }
+      );
+      
       res.json({ 
         success: true,
-        requestId: this.lastID
+        requestId: requestId
       });
     }
   );
@@ -809,17 +998,50 @@ app.get('/service-requests/:influencerHandle', (req, res) => {
   );
 });
 
+// Get service requests for a specific salon
+app.get('/service-requests/salon/:salonId', validateSession, (req, res) => {
+  const salonId = req.params.salonId;
+  
+  console.log(`📋 Fetching service requests for salon: ${salonId}`);
+  
+  db.all(
+    `SELECT sr.*, p.influencerName, p.serviceName, p.fee, p.city, p.state
+     FROM service_requests sr
+     JOIN posts p ON sr.serviceCode = p.code
+     JOIN salons s ON p.code = s.influencerCode
+     WHERE s.id = ?
+     ORDER BY sr.timestamp DESC`,
+    [salonId],
+    (err, requests) => {
+      if (err) {
+        console.error('❌ Error fetching service requests for salon:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      
+      // Parse selectedDates JSON for each row
+      const parsedRequests = requests.map(row => ({
+        ...row,
+        selectedDates: JSON.parse(row.selectedDates || '[]')
+      }));
+      
+      console.log(`📋 Found ${parsedRequests.length} service requests for salon ${salonId}`);
+      res.json(parsedRequests);
+    }
+  );
+});
+
 // Get specific service request by ID with influencer information
 app.get('/service-requests/id/:requestId', (req, res) => {
   const requestId = req.params.requestId;
   
   db.get(
     `SELECT sr.*, p.serviceName, p.fee, p.influencerName, p.coverPhoto, p2.amount as paymentAmount, p2.status as paymentStatus, p2.method as paymentMethod, p2.completedAt as paymentDate,
-            r.selectedTimeSlot as confirmedAppointment
+            r.selectedTimeSlot as confirmedAppointment, s.salonName, s.address, s.city, s.state, s.zipCode
      FROM service_requests sr
      LEFT JOIN posts p ON sr.serviceCode = p.code
      LEFT JOIN payments p2 ON sr.id = p2.requestId
      LEFT JOIN reservations r ON sr.id = r.requestId AND r.status = 'confirmed'
+     LEFT JOIN salons s ON p.code = s.influencerCode
      WHERE sr.id = ?`,
     [requestId],
     (err, row) => {
@@ -886,6 +1108,50 @@ app.post('/create-checkout-session', async (req, res) => {
     console.error('❌ Error creating Stripe checkout session:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Handle reschedule requests
+app.post('/service-requests/:requestId/reschedule', async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        const { clientName, clientEmail, serviceName, preferredDates } = req.body;
+
+        console.log('📅 Reschedule request received:', { requestId, clientName, preferredDates });
+
+        // Update the service request status to indicate reschedule requested
+        const updateQuery = `
+            UPDATE service_requests 
+            SET status = 'reschedule_requested',
+                notes = COALESCE(notes, '') || ' | Reschedule requested: ' || ?
+            WHERE id = ?
+        `;
+        
+        const rescheduleDetails = JSON.stringify(preferredDates);
+        await new Promise((resolve, reject) => {
+            db.run(updateQuery, [rescheduleDetails, requestId], function(err) {
+                if (err) {
+                    console.error('❌ Database update error:', err);
+                    reject(err);
+                } else {
+                    console.log('✅ Database updated successfully');
+                    resolve(this);
+                }
+            });
+        });
+
+        // No email sent to client - they already know they submitted the reschedule request
+        console.log('📅 Reschedule request processed - no email sent to client');
+
+        res.json({ 
+            success: true, 
+            message: 'Reschedule request submitted successfully',
+            requestId: requestId
+        });
+
+    } catch (error) {
+        console.error('❌ Error handling reschedule request:', error);
+        res.status(500).json({ error: 'Failed to process reschedule request' });
+    }
 });
 
 // Stripe webhook to handle successful payments
@@ -986,6 +1252,41 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
                   }).catch(err => {
                     console.error('❌ Error sending appointment confirmation email:', err);
                   });
+                  
+                  // Send notification email to salon
+                  db.get(
+                    `SELECT s.email, s.salonName 
+                     FROM salons s
+                     INNER JOIN service_requests sr ON s.influencerCode = sr.serviceCode
+                     WHERE sr.id = ?`,
+                    [requestId],
+                    (err, salonData) => {
+                      if (err) {
+                        console.error('❌ Error fetching salon data for notification:', err.message);
+                      } else if (salonData) {
+                        const salonEmailBody = generateSalonBookingNotificationEmail(
+                          salonData.salonName,
+                          appointmentData.clientName,
+                          appointmentData.serviceName,
+                          selectedTimeSlot.date,
+                          selectedTimeSlot.time,
+                          session.amount_total / 100,
+                          requestId
+                        );
+                        
+                        sendEmail(
+                          salonData.email,
+                          `New Appointment Booked - ${appointmentData.serviceName}`,
+                          salonEmailBody,
+                          requestId
+                        ).then(result => {
+                          console.log('📧 Salon booking notification email sent:', result);
+                        }).catch(err => {
+                          console.error('❌ Error sending salon notification email:', err);
+                        });
+                      }
+                    }
+                  );
                 }
               }
             );
@@ -1071,9 +1372,10 @@ app.post('/service-requests/:requestId/respond', async (req, res) => {
               // Insert new time slots
               const insertPromises = timeOptions.map(timeOption => {
                 return new Promise((resolve, reject) => {
+                  const timeOptionString = JSON.stringify(timeOption);
                   db.run(
                     `INSERT INTO time_slots (requestId, timeOption, isAvailable) VALUES (?, ?, ?)`,
-                    [requestId, timeOption, true],
+                    [requestId, timeOptionString, true],
                     function (err) {
                       if (err) reject(err);
                       else resolve();
@@ -1109,30 +1411,34 @@ app.post('/service-requests/:requestId/respond', async (req, res) => {
                 const clientEmail = request.clientEmail;
                 
                 if (clientEmail) {
-                  const emailSubject = `${salonName || 'Salon'} - Available Times for ${serviceName}`;
+                  const emailSubject = `HLFWRLD Waitlist Approval`;
                   const emailBody = generateEmailTemplate(clientName, serviceName, timeOptions, salonName, requestId);
                   
-                  // Generate time selection URL
-                  const timeSelectionUrl = `http://localhost:3000/time-selection?requestId=${requestId}&token=${request.clientToken}`;
+                  // Generate appointment management URL with a dynamic token
+                  const clientToken = generateClientToken(requestId);
+                  const appointmentManagementUrl = `http://localhost:3000/Booking/appointment-system.html?requestId=${requestId}&token=${clientToken}`;
                   
-                  const emailWithLink = emailBody + `
-                  
-                  <div style="margin-top: 30px; text-align: center;">
-                    <a href="${timeSelectionUrl}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
-                      Select Your Appointment Time
-                    </a>
-                  </div>
-                  
-                  <p style="margin-top: 20px; font-size: 14px; color: #666;">
-                    Or copy and paste this link: ${timeSelectionUrl}
-                  </p>`;
+                            const emailWithLink = emailBody + `
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="${appointmentManagementUrl}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+              Book Appointment & Complete Payment
+            </a>
+          </div>
+          <p style="margin: 12px 0; font-size: 14px; color: black; text-align: center;">
+            Or copy and paste this link: ${appointmentManagementUrl}
+          </p>
+          <div style="margin-top: 20px; color: black;">
+            <p style="color: black; margin: 0;">Best,<br>
+            The Hlfwrld Team<br>
+            contact@hlfwrld.com</p>
+          </div>`;
                   
                   const emailResult = await sendEmail(clientEmail, emailSubject, emailWithLink, requestId);
-                  console.log('📧 Email sent to client with time selection link:', emailResult);
+                  console.log('📧 Email sent to client with appointment management link:', emailResult);
                   
-                  // Create reservation with 30-minute expiration
+                  // Create reservation with 1-hour expiration
                   const reservationToken = generateReservationToken(requestId);
-                  const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+                  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
                   
                   db.run(
                     `INSERT INTO reservations (requestId, token, expiresAt) VALUES (?, ?, ?)`,
@@ -1141,7 +1447,7 @@ app.post('/service-requests/:requestId/respond', async (req, res) => {
                       if (err) {
                         console.error('❌ Error creating reservation:', err.message);
                       } else {
-                        console.log('⏰ Reservation created with 30-minute expiration');
+                        console.log('⏰ Reservation created with 1-hour expiration');
                       }
                     }
                   );
@@ -1424,20 +1730,7 @@ app.get('/notifications/:userId/:userType', (req, res) => {
     )
   `);
 
-  // Create salons table for salon user accounts
-  db.run(`
-    CREATE TABLE IF NOT EXISTS salons (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      salonName TEXT NOT NULL,
-      signupCode TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      phone TEXT,
-      address TEXT,
-      isVerified BOOLEAN DEFAULT FALSE,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // Note: salons table is already created above with influencerCode field
 
 // Get email logs for a service request
 app.get('/email-logs/:requestId', (req, res) => {
@@ -1609,110 +1902,9 @@ function createStripeCheckoutUrl(reservation, selectedTimeSlot) {
   return `http://${FRONTEND_DOMAIN}/mock-checkout.html?${params.toString()}`;
 }
 
-// Salon signup with 4-digit code verification
-app.post('/salons/signup', (req, res) => {
-  const { salonName, signupCode, email, password, phone, address } = req.body;
-  
-  if (!salonName || !signupCode || !email || !password) {
-    return res.status(400).json({ error: 'Salon name, signup code, email, and password are required' });
-  }
-  
-  // Verify the signup code matches a salon name from posts
-  db.get(
-    `SELECT * FROM posts WHERE code = ? AND salonName = ?`,
-    [signupCode, salonName],
-    (err, post) => {
-      if (err) {
-        console.error('❌ Error verifying signup code:', err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      
-      if (!post) {
-        return res.status(400).json({ 
-          error: 'Invalid signup code or salon name. Please check that your salon name matches exactly with your post and use the correct 4-digit code.' 
-        });
-      }
-      
-      // Check if salon already exists
-      db.get(
-        `SELECT * FROM salons WHERE email = ? OR signupCode = ?`,
-        [email, signupCode],
-        (err, existingSalon) => {
-          if (err) {
-            console.error('❌ Error checking existing salon:', err.message);
-            return res.status(500).json({ error: err.message });
-          }
-          
-          if (existingSalon) {
-            return res.status(400).json({ 
-              error: 'Salon with this email or signup code already exists' 
-            });
-          }
-          
-          // Create salon account
-          db.run(
-            `INSERT INTO salons (salonName, signupCode, email, password, phone, address, isVerified)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [salonName, signupCode, email, password, phone, address, true], // Auto-verify since code was validated
-            function (err) {
-              if (err) {
-                console.error('❌ Error creating salon account:', err.message);
-                return res.status(500).json({ error: err.message });
-              }
-              
-              console.log(`✅ Salon account created: ${salonName} (Code: ${signupCode})`);
-              
-              res.json({
-                success: true,
-                message: 'Salon account created successfully',
-                salonId: this.lastID,
-                salonName: salonName
-              });
-            }
-          );
-        }
-      );
-    }
-  );
-});
+// Old salon signup endpoint removed - using /salon/signup instead
 
-// Salon login
-app.post('/salons/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
-  }
-  
-  db.get(
-    `SELECT * FROM salons WHERE email = ? AND password = ?`,
-    [email, password],
-    (err, salon) => {
-      if (err) {
-        console.error('❌ Error during salon login:', err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      
-      if (!salon) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
-      
-      console.log(`✅ Salon logged in: ${salon.salonName}`);
-      
-      res.json({
-        success: true,
-        salon: {
-          id: salon.id,
-          salonName: salon.salonName,
-          email: salon.email,
-          signupCode: salon.signupCode,
-          phone: salon.phone,
-          address: salon.address
-        }
-      });
-    }
-  );
-});
+// Old salon login endpoint removed - using /salon/login instead
 
 // Get available signup codes (for salons to see which codes they can use)
 app.get('/posts/signup-codes', (req, res) => {
@@ -2049,6 +2241,44 @@ function verifyPassword(password, hashedPassword) {
   return hashPassword(password) === hashedPassword;
 }
 
+// Username availability check endpoint
+app.get('/creator/check-username', (req, res) => {
+  const { username } = req.query;
+  
+  if (!username) {
+    return res.status(400).json({ error: 'Username parameter is required' });
+  }
+  
+  if (username.length < 3 || username.length > 20) {
+    return res.json({ available: false, error: 'Username must be between 3 and 20 characters' });
+  }
+  
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return res.json({ available: false, error: 'Username can only contain letters, numbers, and underscores' });
+  }
+  
+  // Check if username is reserved
+  if (isReservedUsername(username)) {
+    return res.json({ available: false, error: 'This username is not available' });
+  }
+  
+  // Check if username already exists
+  db.get('SELECT id FROM creators WHERE username = ?', [username], (err, result) => {
+    if (err) {
+      console.error('❌ Error checking username availability:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    
+    const available = !result;
+    console.log(`🔍 Username check: ${username} - ${available ? 'Available' : 'Taken'}`);
+    
+    res.json({ 
+      available,
+      message: available ? 'Username is available' : 'Username is already taken'
+    });
+  });
+});
+
 // Creator signup
 app.post('/creators/signup', (req, res) => {
   const { name, email, phone, zipCode, instagram, username, password, state } = req.body;
@@ -2075,18 +2305,26 @@ app.post('/creators/signup', (req, res) => {
     return res.status(400).json({ error: 'This username is not available' });
   }
 
-  // Check if email or username already exists
-  db.get(
-    `SELECT id FROM creators WHERE email = ? OR username = ?`,
-    [email, username],
-    (err, existingCreator) => {
+  // Check if email already exists
+  db.get('SELECT id FROM creators WHERE email = ?', [email], (err, emailResult) => {
+    if (err) {
+      console.error('❌ Error checking existing email:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (emailResult) {
+      return res.status(400).json({ error: 'Email already exists. Please use a different email address.' });
+    }
+
+    // Check if username already exists
+    db.get('SELECT id FROM creators WHERE username = ?', [username], (err, usernameResult) => {
       if (err) {
-        console.error('❌ Error checking existing creator:', err.message);
+        console.error('❌ Error checking existing username:', err.message);
         return res.status(500).json({ error: err.message });
       }
 
-      if (existingCreator) {
-        return res.status(400).json({ error: 'Email or username already exists' });
+      if (usernameResult) {
+        return res.status(400).json({ error: 'Username already exists. Please choose a different username.' });
       }
 
       // Hash password
@@ -2132,8 +2370,8 @@ app.post('/creators/signup', (req, res) => {
       };
       
       generateUniqueCode();
-    }
-  );
+    });
+  });
 });
 
 // Creator login
@@ -2608,24 +2846,27 @@ app.post('/salon/signup', (req, res) => {
 
   console.log('🏪 Salon signup attempt:', { salonName, email, influencerCode, state });
 
-  // First, verify the influencer code and state match
+  // First, verify the post code exists and get creator info
   db.get(
-    `SELECT id, state, username FROM creators WHERE influencerCode = ?`,
+    `SELECT p.id as postId, p.influencerName, c.state, c.username 
+     FROM posts p 
+     JOIN creators c ON p.influencerName = c.username 
+     WHERE p.code = ?`,
     [influencerCode],
-    (err, creator) => {
+    (err, result) => {
       if (err) {
-        console.error('❌ Error checking influencer code:', err.message);
+        console.error('❌ Error checking post code:', err.message);
         return res.status(500).json({ error: 'Database error' });
       }
 
-      if (!creator) {
-        return res.status(400).json({ error: 'Invalid influencer code. Please check the code and try again.' });
+      if (!result) {
+        return res.status(400).json({ error: 'Invalid post code. Please check the code and try again.' });
       }
 
       // Check if state matches
-      if (creator.state !== state) {
+      if (result.state !== state) {
         return res.status(400).json({ 
-          error: `Salon state (${state}) must match the influencer's state (${creator.state}). Please check your state selection.` 
+          error: `Salon state (${state}) must match the influencer's state (${result.state}). Please check your state selection.` 
         });
       }
 
@@ -2647,18 +2888,49 @@ app.post('/salon/signup', (req, res) => {
           const hashedPassword = hashPassword(password);
 
           // Create salon account
+          console.log('🔧 Attempting to create salon with data:', { salonName, ownerName, email, phone, address, city, state, zipCode, influencerCode });
           db.run(
-            `INSERT INTO salons (salonName, ownerName, email, phone, address, city, state, zipCode, influencerCode, password)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [salonName, ownerName, email, phone, address, city, state, zipCode, influencerCode, hashedPassword],
+            `INSERT INTO salons (salonName, ownerName, email, phone, address, city, state, zipCode, influencerCode, password, isVerified)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [salonName, ownerName, email, phone, address, city, state, zipCode, influencerCode, hashedPassword, false],
             async function (err) {
               if (err) {
                 console.error('❌ Error creating salon account:', err.message);
+                console.error('❌ Error details:', err);
                 return res.status(500).json({ error: 'Failed to create salon account' });
               }
 
               const salonId = this.lastID;
               console.log('✅ Salon account created:', { salonId, salonName, email });
+
+              // Create hybrid session for the newly created salon
+              const sessionToken = generateSessionToken(); // Short-term (24 hours)
+              const jwtToken = generateJWTToken({ // Long-term (90 days)
+                salonId: salonId,
+                salonName: salonName,
+                email: email
+              });
+              
+              sessions.set(sessionToken, {
+                salonId: salonId,
+                salonName: salonName,
+                email: email,
+                type: 'salon',
+                createdAt: Date.now()
+              });
+
+              console.log('✅ Hybrid session created for new salon:', { sessionToken, jwtToken: jwtToken.substring(0, 20) + '...', salonId, salonName });
+
+              // Temporarily skip Stripe integration for testing
+              res.json({ 
+                success: true, 
+                message: 'Salon account created successfully! Redirecting to dashboard...',
+                salonId: salonId,
+                salonName: salonName,
+                sessionToken: sessionToken, // Short-term token
+                jwtToken: jwtToken // Long-term token (90 days)
+              });
+              return;
 
               // Create Stripe customer for the salon
               try {
@@ -2743,15 +3015,35 @@ app.post('/salon/login', (req, res) => {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      // Create token
-      const token = Buffer.from(`${salon.id}_salon_${Date.now()}`).toString('base64');
+      // Create hybrid session for the salon
+      const sessionToken = generateSessionToken(); // Short-term (24 hours)
+      const jwtToken = generateJWTToken({ // Long-term (90 days)
+        salonId: salon.id,
+        salonName: salon.salonName,
+        email: salon.email
+      });
+      
+      sessions.set(sessionToken, {
+        salonId: salon.id,
+        salonName: salon.salonName,
+        email: salon.email,
+        type: 'salon',
+        createdAt: Date.now()
+      });
 
-      console.log('✅ Salon logged in:', { salonId: salon.id, salonName: salon.salonName, email });
+      console.log('✅ Salon logged in with hybrid session:', { 
+        salonId: salon.id, 
+        salonName: salon.salonName, 
+        email, 
+        sessionToken,
+        jwtToken: jwtToken.substring(0, 20) + '...'
+      });
 
       res.json({
         success: true,
         message: 'Login successful',
-        token,
+        sessionToken: sessionToken, // Short-term token
+        jwtToken: jwtToken, // Long-term token (90 days)
         salonId: salon.id,
         salonName: salon.salonName
       });
@@ -2759,18 +3051,57 @@ app.post('/salon/login', (req, res) => {
   );
 });
 
-// Salon dashboard endpoint
-app.get('/salon/dashboard', (req, res) => {
-  // For now, return mock data
-  // In a real implementation, this would fetch actual salon data
-  const mockData = {
-    activePartnerships: 0,
-    totalPartnerships: 0,
-    newBookings: 0,
-    revenue: 0
-  };
 
-  res.json(mockData);
+
+// Salon dashboard endpoint
+app.get('/salon/dashboard', validateSession, (req, res) => {
+  const { salonId } = req.session;
+  
+  // Fetch actual salon data from database
+  db.get(
+    `SELECT id, salonName, email, phone, address, city, state, zipCode, isVerified, createdAt 
+     FROM salons WHERE id = ?`,
+    [salonId],
+    (err, salon) => {
+      if (err) {
+        console.error('❌ Error fetching salon data:', err.message);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      
+      if (!salon) {
+        return res.status(404).json({ error: 'Salon not found' });
+      }
+      
+      // Get booking statistics
+      db.get(
+        `SELECT 
+          COUNT(*) as totalBookings,
+          COUNT(CASE WHEN bookingStatus = 'pending_confirmation' THEN 1 END) as pendingBookings,
+          COUNT(CASE WHEN bookingStatus = 'confirmed' THEN 1 END) as confirmedBookings,
+          SUM(CASE WHEN bookingStatus = 'confirmed' THEN serviceFee ELSE 0 END) as totalRevenue
+         FROM bookings WHERE salonId = ?`,
+        [salonId],
+        (err, stats) => {
+          if (err) {
+            console.error('❌ Error fetching booking stats:', err.message);
+            stats = { totalBookings: 0, pendingBookings: 0, confirmedBookings: 0, totalRevenue: 0 };
+          }
+          
+          const dashboardData = {
+            salon: salon,
+            stats: {
+              totalBookings: stats.totalBookings || 0,
+              pendingBookings: stats.pendingBookings || 0,
+              confirmedBookings: stats.confirmedBookings || 0,
+              totalRevenue: stats.totalRevenue || 0
+            }
+          };
+          
+          res.json(dashboardData);
+        }
+      );
+    }
+  );
 });
 
 // Route handlers for main pages
@@ -3621,7 +3952,7 @@ app.get('/influencer/earnings/:influencerId', (req, res) => {
   const { influencerId } = req.params;
 
   db.get(
-    `SELECT totalEarnings, commissionRate FROM influencers WHERE id = ?`,
+    `SELECT totalEarnings, commissionRate FROM creators WHERE id = ?`,
     [influencerId],
     (err, influencer) => {
       if (err) {
@@ -3648,6 +3979,97 @@ app.get('/influencer/earnings/:influencerId', (req, res) => {
             commissionRate: influencer.commissionRate,
             recentBookings: bookings
           });
+        }
+      );
+    }
+  );
+});
+
+// Get comprehensive dashboard data for influencer (service requests + earnings + bookings)
+app.get('/influencer/dashboard/:influencerHandle', (req, res) => {
+  const { influencerHandle } = req.params;
+  
+  console.log(`📋 Fetching dashboard data for influencer: ${influencerHandle}`);
+
+  // First get the influencer ID and basic info
+  db.get(
+    `SELECT id, totalEarnings, commissionRate, firstName, lastName FROM creators WHERE influencerName = ?`,
+    [influencerHandle],
+    (err, creator) => {
+      if (err) {
+        console.error('❌ Error fetching creator:', err.message);
+        return res.status(500).json({ error: 'Failed to fetch creator data' });
+      }
+
+      if (!creator) {
+        return res.status(404).json({ error: 'Creator not found' });
+      }
+
+      // Get service requests
+      db.all(
+        `SELECT sr.*, p.serviceName, p.fee, p.influencerName, p.coverPhoto 
+         FROM service_requests sr 
+         LEFT JOIN posts p ON sr.serviceCode = p.code 
+         WHERE p.influencerName = ? 
+         ORDER BY sr.createdAt DESC`,
+        [influencerHandle],
+        (err, serviceRequests) => {
+          if (err) {
+            console.error('❌ Error fetching service requests:', err.message);
+            return res.status(500).json({ error: 'Failed to fetch service requests' });
+          }
+
+          // Get confirmed bookings with commission data
+          db.all(
+            `SELECT b.*, s.salonName 
+             FROM bookings b 
+             LEFT JOIN salons s ON b.salonId = s.id 
+             WHERE b.influencerId = ? 
+             ORDER BY b.createdAt DESC LIMIT 20`,
+            [creator.id],
+            (err, bookings) => {
+              if (err) {
+                console.error('❌ Error fetching bookings:', err.message);
+                return res.status(500).json({ error: 'Failed to fetch bookings' });
+              }
+
+              // Calculate actual commission stats
+              const totalCommissions = bookings.reduce((sum, booking) => {
+                return sum + (parseFloat(booking.influencerCommission) || 0);
+              }, 0);
+
+              const pendingCommissions = bookings
+                .filter(b => b.bookingStatus === 'pending_confirmation')
+                .reduce((sum, booking) => {
+                  return sum + (parseFloat(booking.influencerCommission) || 0);
+                }, 0);
+
+              const confirmedCommissions = bookings
+                .filter(b => b.bookingStatus === 'confirmed')
+                .reduce((sum, booking) => {
+                  return sum + (parseFloat(booking.influencerCommission) || 0);
+                }, 0);
+
+              res.json({
+                creator: {
+                  id: creator.id,
+                  name: creator.firstName || creator.lastName || influencerHandle,
+                  totalEarnings: creator.totalEarnings || 0,
+                  commissionRate: creator.commissionRate || 0.15
+                },
+                serviceRequests: serviceRequests,
+                bookings: bookings,
+                commissionStats: {
+                  totalCommissions: totalCommissions,
+                  pendingCommissions: pendingCommissions,
+                  confirmedCommissions: confirmedCommissions,
+                  totalBookings: bookings.length,
+                  pendingBookings: bookings.filter(b => b.bookingStatus === 'pending_confirmation').length,
+                  confirmedBookings: bookings.filter(b => b.bookingStatus === 'confirmed').length
+                }
+              });
+            }
+          );
         }
       );
     }
@@ -4030,6 +4452,56 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
         );
       }
 
+      // Email to influencer/creator about the confirmed booking and commission
+      const creator = await new Promise((resolve, reject) => {
+        db.get(`SELECT email, firstName, lastName, influencerName FROM creators WHERE id = ?`, [bookingData.influencerId], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (creator) {
+        const creatorName = creator.firstName || creator.influencerName || 'Creator';
+        const commissionAmount = parseFloat(bookingData.influencerCommission).toFixed(2);
+        
+        const creatorEmailBody = `
+          <h2>🎉 New Booking Confirmed - Commission Earned!</h2>
+          <p>Great news ${creatorName}! A client has booked one of your recommended services and you've earned a commission:</p>
+          
+          <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+            <h3>💰 Commission Earned: $${commissionAmount}</h3>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Booking Details:</h3>
+            <ul>
+              <li><strong>Service:</strong> ${bookingData.serviceName}</li>
+              <li><strong>Client:</strong> ${bookingData.clientName}</li>
+              <li><strong>Date & Time:</strong> ${formattedDate} at ${formattedTime}</li>
+              <li><strong>Service Fee:</strong> $${bookingData.serviceFee}</li>
+              <li><strong>Your Commission:</strong> $${commissionAmount}</li>
+            </ul>
+          </div>
+          
+          <p><strong>What's Next:</strong> The salon is now reviewing the appointment details and will confirm within 24 hours. Once confirmed, your commission will be processed for payout.</p>
+          
+          <p style="font-size: 14px; color: #666;">
+            Keep promoting your services to earn more commissions! Your total earnings are being tracked in your dashboard.
+          </p>
+          
+          <div style="margin-top: 30px; text-align: center;">
+            <p style="color: #28a745; font-weight: 600;">Thanks for being part of the Hlfwrld community! 🌟</p>
+          </div>
+        `;
+        
+        await sendEmail(
+          creator.email,
+          '🎉 New Booking Confirmed - Commission Earned!',
+          creatorEmailBody,
+          bookingData.requestId
+        );
+      }
+
       console.log('✅ Booking confirmed and processed:', bookingData);
 
     } catch (error) {
@@ -4038,6 +4510,93 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
   }
 
   res.json({ received: true });
+});
+
+// Test email endpoint for debugging
+app.post('/test-email', async (req, res) => {
+  const { to, subject, body } = req.body;
+  
+  try {
+    console.log('🧪 Testing email functionality...');
+    console.log('To:', to);
+    console.log('Subject:', subject);
+    
+    await sendEmail(to, subject, body);
+    console.log('✅ Test email sent successfully');
+    res.json({ success: true, message: 'Test email sent' });
+  } catch (error) {
+    console.error('❌ Test email failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Test salon session endpoint
+app.get('/test/salon-session', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.query.sessionToken;
+  
+  if (!token) {
+    return res.json({ error: 'No token provided', hasToken: false });
+  }
+  
+  // Try JWT first
+  const jwtPayload = verifyJWTToken(token);
+  if (jwtPayload) {
+    return res.json({ 
+      success: true, 
+      tokenType: 'JWT', 
+      salonId: jwtPayload.salonId,
+      salonName: jwtPayload.salonName 
+    });
+  }
+  
+  // Try short-term session
+  const session = sessions.get(token);
+  if (session) {
+    return res.json({ 
+      success: true, 
+      tokenType: 'Session', 
+      salonId: session.salonId,
+      salonName: session.salonName 
+    });
+  }
+  
+  res.json({ error: 'Invalid token', hasToken: true, tokenType: 'Invalid' });
+});
+
+// Debug endpoint to check database content
+app.get('/debug/database', (req, res) => {
+  const queries = {
+    service_requests: 'SELECT COUNT(*) as count FROM service_requests',
+    posts: 'SELECT COUNT(*) as count FROM posts',  
+    salons: 'SELECT COUNT(*) as count FROM salons',
+    salon_17: 'SELECT * FROM salons WHERE id = 17',
+    posts_with_codes: 'SELECT code, influencerName, serviceName FROM posts LIMIT 5',
+    service_requests_sample: 'SELECT id, serviceCode, clientName, status FROM service_requests LIMIT 5',
+    salon_17_query: `SELECT sr.*, p.influencerName, p.serviceName, p.fee, p.city, p.state
+                     FROM service_requests sr
+                     JOIN posts p ON sr.serviceCode = p.code
+                     JOIN salons s ON p.code = s.influencerCode
+                     WHERE s.id = 17
+                     ORDER BY sr.timestamp DESC`
+  };
+  
+  const results = {};
+  let completed = 0;
+  const total = Object.keys(queries).length;
+  
+  Object.entries(queries).forEach(([key, query]) => {
+    db.all(query, (err, rows) => {
+      if (err) {
+        results[key] = { error: err.message };
+      } else {
+        results[key] = rows;
+      }
+      completed++;
+      if (completed === total) {
+        res.json(results);
+      }
+    });
+  });
 });
 
 app.listen(PORT, () => {

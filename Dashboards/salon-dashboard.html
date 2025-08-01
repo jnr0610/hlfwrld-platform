@@ -280,6 +280,11 @@
             color: #065f46;
         }
 
+        .status-reschedule_requested {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
 
 
         .request-details {
@@ -679,6 +684,42 @@
             font-weight: 500;
         }
 
+        .reschedule-option {
+            background: white;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .reschedule-option-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .reschedule-date {
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .reschedule-time {
+            font-size: 0.9rem;
+            color: #d97706;
+        }
+
+        .reschedule-badge {
+            background: #92400e;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
         .payment-section {
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
@@ -763,9 +804,9 @@
                     <h1 class="brand-title">Hlfwrld</h1>
       </div>
                 <div class="nav-section">
-                    <a href="http://localhost:3000/salon-dashboard" class="nav-link">Dashboard</a>
-                    <a href="http://localhost:3000/salon-account-settings" class="nav-link">Account</a>
-                    <a href="http://localhost:3000/contact-us" class="nav-link">Contact Us</a>
+                                    <a href="salon-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="salon-account-settings.html" class="nav-link">Account</a>
+                    <a href="../Communication/contact-us.html" class="nav-link">Contact Us</a>
                     <button onclick="logOut()" class="nav-link logout-btn">Log Out</button>
     </div>
             </div>
@@ -860,8 +901,9 @@
       </div>
 
     <script>
-        const API_BASE = 'http://localhost:3000';
-        const salonHandle = 'influencer_name'; // This would be dynamic based on logged-in salon
+        const API_BASE = 'http://127.0.0.1:3000';
+        let sessionToken = null;
+        let salonData = null;
         let allRequests = [];
         let services = {}; // Store service details
 
@@ -875,9 +917,119 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🏪 Salon Dashboard Initialized');
-            loadRequests();
+            initializeSession();
+            loadDashboardData();
             setupEventListeners();
         });
+
+        function initializeSession() {
+            // Get session token from URL parameters or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            sessionToken = urlParams.get('sessionToken') || localStorage.getItem('salonSessionToken');
+            
+            // If no short-term session token, try JWT token
+            if (!sessionToken) {
+                const jwtToken = localStorage.getItem('salonJWTToken');
+                if (jwtToken) {
+                    console.log('🔄 No short-term session found, using JWT token');
+                    sessionToken = jwtToken;
+                } else {
+                    console.error('❌ No session tokens found');
+                    alert('No session found. Please log in again.');
+                    window.location.href = '../User-Authentication/salon-login.html';
+                    return;
+                }
+            }
+            
+            // Get salon data from localStorage
+            const storedSalonData = localStorage.getItem('salonData');
+            if (storedSalonData) {
+                salonData = JSON.parse(storedSalonData);
+                console.log('✅ Salon data loaded:', salonData);
+            } else {
+                console.error('❌ No salon data found in localStorage');
+                console.log('Available localStorage keys:', Object.keys(localStorage));
+            }
+            
+            console.log('✅ Session initialized with token:', sessionToken.substring(0, 20) + '...');
+        }
+
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading salon dashboard data...');
+                
+                const response = await fetch(`${API_BASE}/salon/dashboard?sessionToken=${sessionToken}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const dashboardData = await response.json();
+                    console.log('✅ Dashboard data loaded:', dashboardData);
+                    
+                    // Update dashboard with salon info
+                    updateDashboardHeader(dashboardData.salon);
+                    updateDashboardStats(dashboardData.stats);
+                    
+                    // Load service requests
+                    loadRequests();
+                } else {
+                    const errorData = await response.json();
+                    console.error('❌ Failed to load dashboard data:', errorData);
+                    
+                    if (response.status === 401) {
+                        // Try JWT token as fallback
+                        const jwtToken = localStorage.getItem('salonJWTToken');
+                        if (jwtToken && sessionToken !== jwtToken) {
+                            console.log('🔄 Short-term session expired, trying JWT token...');
+                            sessionToken = jwtToken;
+                            return loadDashboardData(); // Retry with JWT token
+                        } else {
+                            alert('Session expired. Please log in again.');
+                            localStorage.removeItem('salonSessionToken');
+                            localStorage.removeItem('salonJWTToken');
+                            localStorage.removeItem('salonData');
+                            window.location.href = '../User-Authentication/salon-login.html';
+                            return;
+                        }
+                    }
+                    
+                    throw new Error(errorData.error || 'Failed to load dashboard data');
+                }
+            } catch (error) {
+                console.error('❌ Error loading dashboard data:', error);
+                document.getElementById('dashboardContent').innerHTML = `
+                    <div class="error-state">
+                        <h3>❌ Error Loading Dashboard</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadDashboardData()" class="retry-btn">🔄 Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateDashboardHeader(salon) {
+            const headerElement = document.querySelector('.brand-title');
+            if (headerElement && salon) {
+                headerElement.textContent = `${salon.salonName} Dashboard`;
+            }
+        }
+
+        function updateDashboardStats(stats) {
+            // Update stats display if elements exist
+            const statsElements = {
+                totalBookings: document.getElementById('totalBookings'),
+                pendingBookings: document.getElementById('pendingBookings'),
+                confirmedBookings: document.getElementById('confirmedBookings'),
+                totalRevenue: document.getElementById('totalRevenue')
+            };
+            
+            if (statsElements.totalBookings) statsElements.totalBookings.textContent = stats.totalBookings;
+            if (statsElements.pendingBookings) statsElements.pendingBookings.textContent = stats.pendingBookings;
+            if (statsElements.confirmedBookings) statsElements.confirmedBookings.textContent = stats.confirmedBookings;
+            if (statsElements.totalRevenue) statsElements.totalRevenue.textContent = `$${stats.totalRevenue.toFixed(2)}`;
+        }
 
         function setupEventListeners() {
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
@@ -889,15 +1041,22 @@
             try {
                 console.log('=== LOADING SALON REQUESTS ===');
                 console.log('API Base:', API_BASE);
-                console.log('Salon Handle:', salonHandle);
-                console.log('Full URL:', `${API_BASE}/service-requests/${salonHandle}`);
+                console.log('Salon Data:', salonData);
+                
+                if (!salonData || !salonData.salonId) {
+                    console.error('❌ No salon data available');
+                    return;
+                }
                 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000);
                 
-                const response = await fetch(`${API_BASE}/service-requests/${salonHandle}?t=${Date.now()}`, {
+                const response = await fetch(`${API_BASE}/service-requests/salon/${salonData.salonId}?sessionToken=${sessionToken}`, {
                     signal: controller.signal,
-                    cache: 'no-cache'
+                    cache: 'no-cache',
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
                 });
                 
                 clearTimeout(timeoutId);
@@ -937,7 +1096,7 @@
                     <div class="empty-state">
                         <h3>❌ Error Loading Requests</h3>
                         <p><strong>Error:</strong> ${errorMessage}</p>
-                        <p><strong>API URL:</strong> ${API_BASE}/service-requests/${salonHandle}</p>
+                        <p><strong>API URL:</strong> ${API_BASE}/service-requests/salon/${salonData?.salonId || 'unknown'}</p>
                         <p><strong>Error Type:</strong> ${error.name}</p>
                         <p>Check browser console (F12) for detailed logs.</p>
                         <div style="margin-top: 1rem;">
@@ -958,10 +1117,12 @@
             serviceFilter.innerHTML = '<option value="">All Services</option>';
             
             services.forEach(serviceCode => {
-                const service = serviceData[serviceCode];
+                // Find the first request with this service code to get the service name
+                const request = allRequests.find(req => req.serviceCode === serviceCode);
+                const serviceName = request ? request.serviceName : 'Unknown Service';
                 const option = document.createElement('option');
                 option.value = serviceCode;
-                option.textContent = service ? `${service.name} (${serviceCode})` : serviceCode;
+                option.textContent = `${serviceName} (${serviceCode})`;
                 serviceFilter.appendChild(option);
             });
         }
@@ -1009,15 +1170,17 @@
 
             requestsList.innerHTML = paginatedRequests.map(request => {
                 const dates = Array.isArray(request.selectedDates) ? request.selectedDates : [];
-                const service = serviceData[request.serviceCode] || { name: 'Unknown Service', fee: 0 };
+                // Use actual service data from API response instead of hardcoded serviceData
+                const serviceName = request.serviceName || 'Unknown Service';
+                const serviceFee = request.fee || 0;
                 
                 return `
                     <div class="request-card">
                         <div class="request-header">
                             <div class="request-id">#${request.id}</div>
                             <div class="service-info">
-                                <div class="service-name">${service.name}</div>
-                                <div class="service-fee">$${service.fee}</div>
+                                <div class="service-name">${serviceName}</div>
+                                <div class="service-fee">$${serviceFee}</div>
                             </div>
                             <div class="status-badge status-${request.status}">${request.status}</div>
       </div>
@@ -1053,16 +1216,38 @@
                                     📅 Requested Dates & Times
                                 </div>
                                 <div class="requested-dates">
-                                    ${dates.map(dateItem => `
-                                        <div class="date-item">
-                                            <span class="date-value">${new Date(dateItem.date).toLocaleDateString('en-US', { 
+                                    ${dates.map(dateObj => {
+                                        // Handle both object format {"date":"2025-07-30","time":"PM"} and string format
+                                        let dateString, timeString;
+                                        if (typeof dateObj === 'object' && dateObj.date) {
+                                            dateString = dateObj.date;
+                                            timeString = dateObj.time || 'No time specified';
+                                        } else {
+                                            dateString = dateObj;
+                                            timeString = request.preferredTime || 'No time specified';
+                                        }
+                                        
+                                        try {
+                                            const formattedDate = new Date(dateString).toLocaleDateString('en-US', { 
                                                 weekday: 'short', 
                                                 month: 'short', 
                                                 day: 'numeric' 
-                                            })}</span>
-                                            <span class="time-badge">${dateItem.time}</span>
-                                        </div>
-                                    `).join('')}
+                                            });
+                                            return `
+                                                <div class="date-item">
+                                                    <span class="date-value">${formattedDate}</span>
+                                                    <span class="time-badge">${timeString}</span>
+                                                </div>
+                                            `;
+                                        } catch (error) {
+                                            return `
+                                                <div class="date-item">
+                                                    <span class="date-value">Invalid Date</span>
+                                                    <span class="time-badge">${timeString}</span>
+                                                </div>
+                                            `;
+                                        }
+                                    }).join('')}
                                 </div>
                             </div>
 
@@ -1207,6 +1392,107 @@
                                     </button>
                                 </div>
                             </div>
+                        ` : request.status === 'reschedule_requested' ? `
+                            <div class="response-section" style="background: #fef3c7; border-color: #fbbf24;">
+                                <div class="response-title" style="color: #92400e;">
+                                    📅 Reschedule Request Received
+                                </div>
+                                <div class="notification-status" style="margin-bottom: 1rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #d97706; font-size: 0.9rem;">
+                                        <span>🔄</span>
+                                        <span>Client has requested to reschedule this appointment</span>
+                                    </div>
+                                </div>
+                                <div class="reschedule-info">
+                                    <div class="detail-title" style="margin-bottom: 0.75rem;">Client's Preferred Times:</div>
+                                    ${parseRescheduleRequest(request.notes)}
+                                </div>
+                                <div class="time-slots-grid">
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 1:</span>
+                                        <input type="date" class="slot-input" id="date1-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 1)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time1-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 2:</span>
+                                        <input type="date" class="slot-input" id="date2-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 2)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time2-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <span class="slot-label">Option 3:</span>
+                                        <input type="date" class="slot-input" id="date3-${request.id}" min="${new Date().toISOString().split('T')[0]}" onchange="updateTimeOptionsForDate(${request.id}, 3)">
+                                        <div class="slot-time">
+                                            <select class="time-select" id="time3-${request.id}">
+                                                <option value="">Time</option>
+                                                <option value="09:00">9:00 AM</option>
+                                                <option value="09:30">9:30 AM</option>
+                                                <option value="10:00">10:00 AM</option>
+                                                <option value="10:30">10:30 AM</option>
+                                                <option value="11:00">11:00 AM</option>
+                                                <option value="11:30">11:30 AM</option>
+                                                <option value="12:00">12:00 PM</option>
+                                                <option value="12:30">12:30 PM</option>
+                                                <option value="13:00">1:00 PM</option>
+                                                <option value="13:30">1:30 PM</option>
+                                                <option value="14:00">2:00 PM</option>
+                                                <option value="14:30">2:30 PM</option>
+                                                <option value="15:00">3:00 PM</option>
+                                                <option value="15:30">3:30 PM</option>
+                                                <option value="16:00">4:00 PM</option>
+                                                <option value="16:30">4:30 PM</option>
+                                                <option value="17:00">5:00 PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary" onclick="sendTimeOptions(${request.id})">
+                                        ✅ Send New Time Options
+                                    </button>
+                                </div>
+                            </div>
                         ` : ''}
                     </div>
                 `;
@@ -1285,6 +1571,50 @@
             const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
             const displayHour = hour12 === 0 ? 12 : hour12;
             return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        function parseRescheduleRequest(notes) {
+            if (!notes || !notes.includes('Reschedule requested:')) {
+                return '<p style="color: #6b7280; font-style: italic;">No reschedule information found</p>';
+            }
+
+            try {
+                // Extract JSON from notes
+                const rescheduleStart = notes.indexOf('Reschedule requested:') + 'Reschedule requested:'.length;
+                const rescheduleText = notes.substring(rescheduleStart).trim();
+                
+                // Try to parse as JSON
+                let preferredDates;
+                if (rescheduleText.startsWith('[')) {
+                    const jsonEnd = rescheduleText.indexOf(']') + 1;
+                    preferredDates = JSON.parse(rescheduleText.substring(0, jsonEnd));
+                } else {
+                    // Fallback parsing if not JSON format
+                    return '<p style="color: #6b7280; font-style: italic;">Reschedule request format not recognized</p>';
+                }
+
+                return preferredDates.map((dateObj, index) => {
+                    const date = new Date(dateObj.date);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+
+                    return `
+                        <div class="reschedule-option">
+                            <div class="reschedule-option-info">
+                                <div class="reschedule-date">${formattedDate}</div>
+                                <div class="reschedule-time">${dateObj.timePreference}</div>
+                            </div>
+                            <div class="reschedule-badge">Preferred ${index + 1}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error parsing reschedule request:', error);
+                return '<p style="color: #ef4444;">Error parsing reschedule request</p>';
+            }
         }
 
         function updateTimeOptions(requestId) {
@@ -1491,6 +1821,10 @@
 
         async function saveTimeOptions(requestId) {
             try {
+                console.log('🚀 Starting saveTimeOptions for request:', requestId);
+                console.log('Session Token:', sessionToken ? sessionToken.substring(0, 20) + '...' : 'MISSING');
+                console.log('Salon Data:', salonData);
+                
                 // Collect time options from modal
                 const timeOptions = [];
                 for (let i = 1; i <= 3; i++) {
@@ -1522,30 +1856,43 @@
                     return;
                 }
 
-                console.log('Saving updated time options for request:', requestId, timeOptions);
+                console.log('📅 Time options collected:', timeOptions);
+                
+                const requestBody = {
+                    status: 'responded',
+                    timeOptions: timeOptions,
+                    salonHandle: salonData?.salonName || 'Salon'
+                };
+                
+                console.log('📤 Request body:', requestBody);
+                console.log('🌐 API URL:', `${API_BASE}/service-requests/${requestId}/respond`);
 
                 const response = await fetch(`${API_BASE}/service-requests/${requestId}/respond`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionToken}`
                     },
-                    body: JSON.stringify({
-                        status: 'responded',
-                        timeOptions: timeOptions,
-                        salonHandle: salonHandle
-                    }),
-        });
+                    body: JSON.stringify(requestBody)
+                });
 
-        if (response.ok) {
+                console.log('📥 Response status:', response.status);
+                console.log('📥 Response ok:', response.ok);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Success response:', result);
                     alert('✅ Time options updated successfully!');
                     closeTimeOptionsModal();
                     loadRequests(); // Reload to update the display
-        } else {
+                } else {
                     const errorText = await response.text();
+                    console.log('❌ Error response:', errorText);
                     throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-      } catch (error) {
-                console.error('Error saving time options:', error);
+                }
+            } catch (error) {
+                console.error('❌ Error in saveTimeOptions:', error);
+                console.error('❌ Error stack:', error.stack);
                 alert('❌ Error saving time options. Please try again.');
             }
         }
@@ -1608,6 +1955,11 @@
 
         async function sendTimeOptions(requestId) {
             try {
+                // Debug logging
+                console.log('🚀 Starting sendTimeOptions for request:', requestId);
+                console.log('Session Token:', sessionToken ? sessionToken.substring(0, 20) + '...' : 'MISSING');
+                console.log('Salon Data:', salonData);
+                
                 // Collect time options
                 const timeOptions = [];
                 const now = new Date();
@@ -1639,30 +1991,48 @@
                     return;
                 }
 
-                console.log('Sending time options for request:', requestId, timeOptions);
+                console.log('📅 Time options collected:', timeOptions);
+
+                const requestBody = {
+                    status: 'responded',
+                    timeOptions: timeOptions,
+                    salonHandle: salonData?.salonName || 'Salon'
+                };
+                
+                console.log('📤 Request body:', requestBody);
+                console.log('🌐 API URL:', `${API_BASE}/service-requests/${requestId}/respond`);
 
                 const response = await fetch(`${API_BASE}/service-requests/${requestId}/respond`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionToken}`
                     },
-                    body: JSON.stringify({
-                        status: 'responded',
-                        timeOptions: timeOptions,
-                        salonHandle: salonHandle
-                    }),
+                    body: JSON.stringify(requestBody),
                 });
 
+                console.log('📥 Response status:', response.status);
+                console.log('📥 Response ok:', response.ok);
+
                 if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Success response:', result);
                     alert('✅ Time options sent successfully!');
                     loadRequests(); // Reload to update the display
                 } else {
                     const errorText = await response.text();
+                    console.error('❌ Error response:', errorText);
                     throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
             } catch (error) {
-                console.error('Error sending time options:', error);
-                alert('❌ Error sending time options. Please try again.');
+                console.error('❌ Error sending time options:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    sessionToken: sessionToken ? 'Present' : 'Missing',
+                    salonData: salonData ? 'Present' : 'Missing'
+                });
+                alert('❌ Error sending time options. Please try again. Check console for details.');
             }
         }
 
@@ -1709,10 +2079,12 @@
             localStorage.removeItem('salonProfile');
             localStorage.removeItem('salonToken');
             localStorage.removeItem('salonData');
+            localStorage.removeItem('salonSessionToken');
+            localStorage.removeItem('salonJWTToken'); // Clear JWT token too
             
             // Redirect to salon login page
             console.log('Salon logged out, redirecting to salon login page');
-            window.location.href = 'http://localhost:3000/salon-login';
+            window.location.href = '../User-Authentication/salon-login.html';
         }
 
 

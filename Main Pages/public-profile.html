@@ -49,10 +49,43 @@
       color: #262626;
     }
 
-         .header-info {
-       color: #666;
-       font-size: 14px;
-     }
+             .header-info {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-tab {
+      background: #f2f2f2;
+      color: #262626;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab:hover {
+      background: #e0e0e0;
+      color: #000;
+      transform: translateY(-1px);
+    }
+
+    .login-tab {
+      background: #262626;
+      color: white;
+    }
+
+    .login-tab:hover {
+      background: #000;
+      color: white;
+    }
 
      /* AI Chat Bot Icon */
      .chat-bot-icon {
@@ -486,6 +519,11 @@
        margin-bottom: 24px;
      }
 
+    .profile-pic-container {
+      position: relative;
+      display: inline-block;
+    }
+
     .profile-pic {
       width: 120px;
       height: 120px;
@@ -493,7 +531,11 @@
       object-fit: cover;
       border: 3px solid #e1e5e9;
       background: #f0f0f0;
+      aspect-ratio: 1 / 1;
+      display: block;
     }
+
+
 
     .profile-info h1 {
       font-size: 32px;
@@ -501,6 +543,8 @@
       color: #262626;
       margin-bottom: 8px;
     }
+
+
 
     .profile-info p {
       font-size: 16px;
@@ -723,6 +767,51 @@
       right: 8px;
     }
 
+    /* Photo indicators */
+    .photo-indicators {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .photo-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .photo-indicator.active {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Smooth transitions for photos */
+    .post-photo {
+      transition: opacity 0.3s ease;
+    }
+
+    /* Footer */
+    .footer {
+      background: #fff;
+      border-top: 1px solid #e1e5e9;
+      padding: 24px 0;
+      margin-top: 48px;
+      text-align: center;
+    }
+
+    .copyright {
+      color: #666;
+      font-size: 14px;
+      font-weight: 300;
+      margin: 0;
+    }
+
          /* Request Service Button */
      .contact-btn {
        background: #b3d9ff;
@@ -769,6 +858,15 @@
            text-align: center;
          }
 
+         .header-nav {
+           gap: 12px;
+         }
+
+         .nav-tab {
+           padding: 6px 12px;
+           font-size: 13px;
+         }
+
          .profile-header {
            flex-direction: column;
            text-align: center;
@@ -802,14 +900,20 @@
   <div class="header">
     <div class="header-content">
       <div class="logo">hlfwrld</div>
-      <div class="header-info">Public Profile</div>
+      <div class="header-nav">
+        <a href="../User-Authentication/creator-landing.html" class="nav-tab">For Creators</a>
+        <a href="../User-Authentication/salon-landing.html" class="nav-tab">For Salons</a>
+        <a href="../Main-Pages/index.html" class="nav-tab login-tab">Log In</a>
+      </div>
     </div>
   </div>
 
     <!-- Profile Section -->
   <div class="profile-section">
     <div class="profile-header">
-      <img id="profilePic" class="profile-pic" src="" alt="Profile Picture">
+      <div class="profile-pic-container">
+        <img id="profilePic" class="profile-pic" src="https://via.placeholder.com/120x120/f0f0f0/999.png" alt="Profile Picture" style="width: 120px; height: 120px; border-radius: 50%;">
+      </div>
       <div class="profile-info">
         <h1 id="profileHandle">@influencer</h1>
         <p id="profileBio">Influencer bio will appear here</p>
@@ -879,7 +983,7 @@
        <div class="service-info">
          <div class="service-location" id="serviceLocation"></div>
          <div class="approval-notice">
-           Once salon approves your request, we will send you location details that you may view before deciding on whether to confirm the service booking.
+           Once the salon approves your request, we'll send you location details that you may view before deciding on whether to confirm the service booking.
          </div>
        </div>
       
@@ -994,7 +1098,7 @@
     
     // Get influencer handle from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const influencerHandle = urlParams.get('handle') || 'influencer_name';
+    const influencerHandle = urlParams.get('creator') || urlParams.get('handle') || 'influencer_name';
     
     let allPosts = [];
     let allSignupCounts = {};
@@ -1076,23 +1180,51 @@
     // Create HTML for a single post
     function createPostHTML(post) {
       const signupCount = allSignupCounts[post.id] || 0;
-      const photos = post.photos && post.photos.length > 0 ? post.photos : [];
-      const coverPhoto = post.coverPhoto || (photos.length > 0 ? photos[0] : null);
+      // Combine cover photo with additional photos for carousel
+      let allPhotos = [];
+      if (post.coverPhoto) {
+        allPhotos.push(post.coverPhoto);
+      }
+      if (post.photos && post.photos.length > 0) {
+        allPhotos = allPhotos.concat(post.photos);
+      }
       
-             const photoHTML = coverPhoto ? 
-         `<img class="post-photo" src="${coverPhoto}" alt="Post photo" data-post-id="${post.id}" data-photo-index="0">` :
-         `<div class="post-photo-placeholder">No photo available</div>`;
+      const coverPhoto = allPhotos.length > 0 ? allPhotos[0] : null;
       
-      const carouselNav = photos.length > 1 ? `
-        <button class="carousel-nav carousel-prev" data-post-id="${post.id}">◀</button>
+      // Debug logging
+      console.log('Post photos:', post.id, {
+        coverPhoto: !!post.coverPhoto,
+        photosLength: allPhotos.length,
+        allPhotos: allPhotos,
+        hasMultiplePhotos: allPhotos.length > 1
+      });
+      
+      const photoHTML = coverPhoto ? 
+        `<img class="post-photo" src="${coverPhoto}" alt="Post photo" data-post-id="${post.id}" data-photo-index="0">` :
+        `<div class="post-photo-placeholder">No photo available</div>`;
+      
+      const carouselNav = allPhotos.length > 1 ? `
+        <button class="carousel-nav carousel-prev" data-post-id="${post.id}" style="display: none;">◀</button>
         <button class="carousel-nav carousel-next" data-post-id="${post.id}">▶</button>
       ` : '';
 
+      const photoIndicators = allPhotos.length > 1 ? `
+        <div class="photo-indicators">
+          ${allPhotos.map((_, index) => `
+            <div class="photo-indicator ${index === 0 ? 'active' : ''}" data-post-id="${post.id}" data-index="${index}"></div>
+          `).join('')}
+        </div>
+      ` : '';
+
+      // Store the combined photos array in the post for navigation
+      post.allPhotos = allPhotos;
+      
       return `
         <div class="post-square" data-post-id="${post.id}">
           <div class="post-photo-container">
             ${photoHTML}
             ${carouselNav}
+            ${photoIndicators}
           </div>
           <div class="post-content">
             <div class="post-title">${escapeHtml(post.title || 'Untitled')}</div>
@@ -1124,12 +1256,54 @@
           navigateCarousel(btn.dataset.postId, 1);
         });
       });
+
+      // Add photo indicator click listeners
+      document.querySelectorAll('.photo-indicator').forEach(indicator => {
+        indicator.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const postId = indicator.dataset.postId;
+          const targetIndex = parseInt(indicator.dataset.index);
+          navigateToPhoto(postId, targetIndex);
+        });
+      });
+    }
+
+    // Navigate to specific photo
+    function navigateToPhoto(postId, targetIndex) {
+      const post = allPosts.find(p => p.id == postId);
+      if (!post || !post.allPhotos || post.allPhotos.length <= 1) return;
+
+      const img = document.querySelector(`img[data-post-id="${postId}"]`);
+      if (!img) return;
+
+      img.src = post.allPhotos[targetIndex];
+      img.dataset.photoIndex = targetIndex;
+
+      // Show/hide navigation buttons
+      const prevBtn = document.querySelector(`.carousel-prev[data-post-id="${postId}"]`);
+      const nextBtn = document.querySelector(`.carousel-next[data-post-id="${postId}"]`);
+      
+      if (prevBtn) prevBtn.style.display = targetIndex > 0 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = targetIndex < post.allPhotos.length - 1 ? 'flex' : 'none';
+
+      // Update photo indicators
+      const indicators = document.querySelectorAll(`.photo-indicator[data-post-id="${postId}"]`);
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === targetIndex);
+      });
+
+      // Add smooth transition effect
+      img.style.transition = 'opacity 0.3s ease';
+      img.style.opacity = '0.7';
+      setTimeout(() => {
+        img.style.opacity = '1';
+      }, 150);
     }
 
     // Navigate photo carousel
     function navigateCarousel(postId, direction) {
       const post = allPosts.find(p => p.id == postId);
-      if (!post || !post.photos || post.photos.length <= 1) return;
+      if (!post || !post.allPhotos || post.allPhotos.length <= 1) return;
 
       const img = document.querySelector(`img[data-post-id="${postId}"]`);
       if (!img) return;
@@ -1137,10 +1311,10 @@
       let currentIndex = parseInt(img.dataset.photoIndex) || 0;
       currentIndex += direction;
 
-      if (currentIndex < 0) currentIndex = post.photos.length - 1;
-      if (currentIndex >= post.photos.length) currentIndex = 0;
+      if (currentIndex < 0) currentIndex = post.allPhotos.length - 1;
+      if (currentIndex >= post.allPhotos.length) currentIndex = 0;
 
-      img.src = post.photos[currentIndex];
+      img.src = post.allPhotos[currentIndex];
       img.dataset.photoIndex = currentIndex;
 
       // Show/hide navigation buttons
@@ -1148,7 +1322,20 @@
       const nextBtn = document.querySelector(`.carousel-next[data-post-id="${postId}"]`);
       
       if (prevBtn) prevBtn.style.display = currentIndex > 0 ? 'flex' : 'none';
-      if (nextBtn) nextBtn.style.display = currentIndex < post.photos.length - 1 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = currentIndex < post.allPhotos.length - 1 ? 'flex' : 'none';
+
+      // Update photo indicators
+      const indicators = document.querySelectorAll(`.photo-indicator[data-post-id="${postId}"]`);
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentIndex);
+      });
+
+      // Add smooth transition effect
+      img.style.transition = 'opacity 0.3s ease';
+      img.style.opacity = '0.7';
+      setTimeout(() => {
+        img.style.opacity = '1';
+      }, 150);
     }
 
     // Filter and search posts
@@ -1736,5 +1923,9 @@
       checkAutoOpenModal();
     });
   </script>
+
+  <div class="footer">
+    <p class="copyright">© 2025 Hlfwrld. All rights reserved.</p>
+  </div>
 </body>
 </html> 

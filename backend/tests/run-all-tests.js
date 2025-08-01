@@ -22,6 +22,16 @@ const tests = {
     name: 'Stripe Payment Service',
     file: 'test-stripe.js',
     description: 'Test Stripe payment integration'
+  },
+  payment: {
+    name: 'Payment Workflow Test',
+    file: 'test-payment-workflow.js',
+    description: 'Test complete payment workflow with Stripe test cards'
+  },
+  e2e: {
+    name: 'End-to-End Workflow Test',
+    file: 'test-end-to-end-workflow.js',
+    description: 'Test complete user journey from signup to payment'
   }
 };
 
@@ -77,6 +87,8 @@ async function runAllTests() {
   console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? '✅ Set' : '❌ Missing');
   console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? '✅ Set' : '❌ Missing');
   console.log('STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? '✅ Set' : '❌ Missing');
+  console.log('BASE_URL:', process.env.BASE_URL || 'http://localhost:3000');
+  console.log('TEST_EMAIL:', process.env.TEST_EMAIL || 'test@example.com');
   
   try {
     if (testToRun === 'all') {
@@ -105,6 +117,8 @@ async function runAllTests() {
       console.log('  node run-all-tests.js resend   # Run only Resend test');
       console.log('  node run-all-tests.js ses      # Run only SES test');
       console.log('  node run-all-tests.js stripe   # Run only Stripe test');
+      console.log('  node run-all-tests.js payment  # Run only Payment workflow test');
+      console.log('  node run-all-tests.js e2e      # Run only End-to-End workflow test');
     }
     
   } catch (error) {
@@ -132,6 +146,8 @@ if (args.includes('--help') || args.includes('-h')) {
   console.log('  AWS_ACCESS_KEY_ID: Your AWS access key');
   console.log('  AWS_SECRET_ACCESS_KEY: Your AWS secret key');
   console.log('  STRIPE_SECRET_KEY: Your Stripe secret key');
+  console.log('  BASE_URL: Backend server URL (default: http://localhost:3000)');
+  console.log('  TEST_EMAIL: Test email address for workflow tests');
   process.exit(0);
 }
 

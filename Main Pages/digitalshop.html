@@ -185,6 +185,12 @@
       border: 1px solid #ccc;
       font-size: 1rem;
     }
+
+    .modal input[readonly] {
+      background-color: #f8f9fa;
+      color: #6c757d;
+      cursor: not-allowed;
+    }
     .modal .modal-actions {
       display: flex;
       justify-content: flex-end;
@@ -320,6 +326,88 @@
       min-width: 90px;
       max-width: 120px;
     }
+
+    /* Pagination Controls */
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .pagination-options {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pagination-options label {
+      font-size: 14px;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .pagination-select {
+      padding: 6px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .pagination-select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+
+    .pagination-navigation {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pagination-btn {
+      padding: 8px 16px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      background: #fff;
+      color: #495057;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: #667eea;
+      color: #fff;
+      border-color: #667eea;
+    }
+
+    .pagination-btn:disabled {
+      background: #f8f9fa;
+      color: #adb5bd;
+      cursor: not-allowed;
+      border-color: #e9ecef;
+    }
+
+    .page-info {
+      font-size: 14px;
+      color: #6c757d;
+      font-weight: 500;
+      min-width: 80px;
+      text-align: center;
+    }
     .profile-section {
       background: #fff;
       border-radius: 12px;
@@ -342,28 +430,52 @@
       border: 2px solid #dbdbdb;
       background: #f0f0f0;
       cursor: pointer;
+      aspect-ratio: 1 / 1;
+      display: block;
     }
-    .profile-pic-overlay {
+    .profile-pic-upload-overlay {
       position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 24px;
-      height: 24px;
-      background: #fff;
-      border: 1px solid #ccc;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 12px;
-      color: #666;
-      transition: background 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      opacity: 1;
+      transition: opacity 0.3s ease;
+      z-index: 10;
     }
-    .profile-pic-overlay:hover {
-      background: #f5f5f5;
-      color: #333;
+
+    .profile-pic-container:hover .profile-pic-upload-overlay {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .profile-pic-container.has-photo .profile-pic-upload-overlay {
+      opacity: 0;
+    }
+
+    .profile-pic-container.has-photo:hover .profile-pic-upload-overlay {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .upload-icon {
+      font-size: 60px;
+      font-weight: 200;
+      color: white;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      user-select: none;
     }
     .profile-pic-input {
       display: none;
@@ -459,6 +571,19 @@
       .modal {
         padding: 16px 6px 16px 6px;
       }
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .copyright {
+      color: #9ca3af;
+      font-size: 0.9rem;
+      font-weight: 300;
     }
 
     /* Account Tab Styles */
@@ -652,9 +777,9 @@
   <div class="container" id="digitalShopTab">
     <div class="profile-section" id="profileSection">
       <div class="profile-pic-container">
-        <img class="profile-pic" id="profilePic" src="https://via.placeholder.com/120x120/f0f0f0/999.png?text=📷" alt="Profile Picture">
-        <div class="profile-pic-overlay" id="profilePicOverlay" title="Change photo">
-          ↑
+        <img class="profile-pic" id="profilePic" src="https://via.placeholder.com/120x120/f0f0f0/999.png" alt="Profile Picture" style="width: 120px; height: 120px; border-radius: 50%;">
+        <div class="profile-pic-upload-overlay" id="profilePicOverlay" title="Change photo">
+          <div class="upload-icon">+</div>
         </div>
         <input type="file" id="quickProfilePhotoInput" class="profile-pic-input" accept="image/*">
       </div>
@@ -673,6 +798,28 @@
         <option value="price-low">Price: Low to High</option>
       </select>
     </div>
+    
+    <div class="pagination-controls">
+      <div class="pagination-info">
+        <span id="paginationInfo">Showing all posts</span>
+      </div>
+      <div class="pagination-options">
+        <label for="postsPerPage">Posts per page:</label>
+        <select id="postsPerPage" class="pagination-select">
+          <option value="all">All</option>
+          <option value="6">6</option>
+          <option value="12">12</option>
+          <option value="18">18</option>
+          <option value="24">24</option>
+        </select>
+      </div>
+      <div class="pagination-navigation">
+        <button id="prevPage" class="pagination-btn" onclick="window.previousPage()" disabled>← Previous</button>
+        <span id="pageInfo" class="page-info">Page 1 of 1</span>
+        <button id="nextPage" class="pagination-btn" onclick="window.nextPage()" disabled>Next →</button>
+      </div>
+    </div>
+    
     <div class="posts-grid" id="postsGrid">
       <!-- Post squares and add square will be rendered here -->
     </div>
@@ -763,7 +910,7 @@
         <input type="text" id="fee" required>
         <label>Service Name</label>
         <input type="text" id="serviceName" required>
-        <label>Salon Name (Private - not shown to public)</label>
+        <label>Salon Name</label>
         <input type="text" id="salonName" placeholder="Enter your salon/business name">
         <label>Notes</label>
         <textarea id="notes" rows="2"></textarea>
@@ -794,7 +941,7 @@
       <h2>Edit Profile</h2>
       <form id="profileForm">
         <label>Handle (e.g., @your_handle)</label>
-        <input type="text" id="profileHandleInput" required>
+        <input type="text" id="profileHandleInput" readonly>
         <label>Bio</label>
         <textarea id="profileBioInput" rows="3" placeholder="Tell people about yourself..."></textarea>
         <label>Profile Photo</label>
@@ -836,7 +983,7 @@
     let influencerName = 'your_handle'; // Will be updated from profile
     let profileData = {
       handle: '@your_handle',
-      bio: 'Your bio will appear here. Click edit to add your information.',
+      bio: 'Edit your bio to be shown here',
       photo: null
     };
     const postsGrid = document.getElementById('postsGrid');
@@ -909,7 +1056,6 @@
     newPostForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const post = {
-        influencerName,
         title: document.getElementById('title').value,
         city: document.getElementById('city').value,
         state: document.getElementById('state').value,
@@ -919,47 +1065,66 @@
         notes: document.getElementById('notes').value,
         frequency: document.getElementById('frequency').value,
         coverPhoto: coverPhotoBase64,
-        photos: photosBase64
+        photos: photosBase64,
+        influencerName: StateManager.getCurrentCreator()
       };
       console.log('Submitting post:', post);
       console.log('Editing post?', !!editingPost);
+      
       try {
-        let response;
         if (editingPost) {
-          console.log('Updating post ID:', editingPost.id);
-          response = await fetch(`${API_BASE}/posts/${editingPost.id}`, {
+          console.log('🔄 Updating post ID:', editingPost.id);
+          console.log('📝 Post data being sent:', post);
+          
+          const response = await fetch(`${API_BASE}/posts/${editingPost.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(post)
           });
+          
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('❌ Update failed:', response.status, errorText);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
           }
+          
           const result = await response.json();
-          console.log('Update response:', result);
+          console.log('✅ Update response:', result);
+          
+          if (result.updated === 0) {
+            console.warn('⚠️ No rows were updated - post might not exist');
+            throw new Error('Post not found or no changes made');
+          }
+          
+          // Update post in StateManager
+          const currentPosts = StateManager.getPosts();
+          console.log('📋 Current posts before update:', currentPosts.length);
+          
+          const updatedPosts = currentPosts.map(p => {
+            if (p.id === editingPost.id) {
+              const updatedPost = { ...p, ...post, id: editingPost.id };
+              console.log('🔄 Updated post:', updatedPost);
+              return updatedPost;
+            }
+            return p;
+          });
+          
+          StateManager.posts = updatedPosts;
+          console.log('📋 Posts after update:', StateManager.getPosts().length);
+          StateManager.updatePostsDisplay();
         } else {
           console.log('Creating new post');
-          response = await fetch(`${API_BASE}/posts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(post)
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          const success = await StateManager.addPost(post);
+          if (!success) {
+            throw new Error('Failed to add post via StateManager');
           }
-          const result = await response.json();
-          console.log('Create response:', result);
         }
+        
         hideModal();
-        console.log('Reloading posts...');
-        // Force reload all posts data
-        allLoadedPosts = [];
-        allLoadedSignupCounts = {};
-        await loadPosts();
-        console.log('Posts reloaded');
+        console.log('✅ Post saved successfully via StateManager');
       } catch (err) {
         console.error('Error saving post:', err);
-        alert('Error saving post.');
+        alert('Error saving post. Please try again.');
       } finally {
         editingPost = null;
         photosBase64 = [];
@@ -970,6 +1135,11 @@
 
     let allLoadedPosts = [];
     let allLoadedSignupCounts = {};
+    
+    // Pagination variables
+    let currentPage = 1;
+    let postsPerPage = 'all';
+    let filteredPosts = [];
 
     async function loadPosts() {
       console.log('🔄 Loading posts for influencer:', influencerName);
@@ -1156,8 +1326,14 @@
     };
 
     function updateCoverThumbnails() {
+      console.log('🔄 updateCoverThumbnails called');
+      console.log('📸 coverPhotoBase64:', coverPhotoBase64);
+      console.log('📸 photosBase64:', photosBase64);
+      
       // Only show if there are any photos
       const all = [coverPhotoBase64, ...photosBase64].filter(Boolean);
+      console.log('📸 All photos:', all);
+      
       if (all.length === 0) {
         coverSelectSection.style.display = 'none';
         coverThumbnails.innerHTML = '';
@@ -1168,11 +1344,19 @@
       all.forEach((imgSrc, idx) => {
         const img = document.createElement('img');
         img.src = imgSrc;
-        img.className = 'cover-thumb' + (imgSrc === coverPhotoBase64 ? ' selected' : '');
+        const isSelected = imgSrc === coverPhotoBase64;
+        img.className = 'cover-thumb' + (isSelected ? ' selected' : '');
         img.title = idx === 0 ? 'Current Cover' : 'Photo';
+        console.log('🖼️ Creating thumbnail', idx, 'src:', imgSrc, 'selected:', isSelected);
         img.onclick = () => {
+          console.log('🖼️ Cover photo clicked:', imgSrc);
+          console.log('🔄 Current coverPhotoBase64:', coverPhotoBase64);
+          console.log('📸 Current photosBase64:', photosBase64);
+          
           // Move selected photo to coverPhotoBase64, and the old cover to photosBase64
           if (imgSrc !== coverPhotoBase64) {
+            console.log('✅ Changing cover photo from', coverPhotoBase64, 'to', imgSrc);
+            
             // Remove from photosBase64 if present
             photosBase64 = photosBase64.filter(p => p !== imgSrc);
             // Add old cover to photosBase64 if not already present
@@ -1180,8 +1364,14 @@
               photosBase64.unshift(coverPhotoBase64);
             }
             coverPhotoBase64 = imgSrc;
+            
+            console.log('🔄 Updated coverPhotoBase64:', coverPhotoBase64);
+            console.log('📸 Updated photosBase64:', photosBase64);
+            
             updateCoverThumbnails();
             updatePhotosPreview();
+          } else {
+            console.log('⚠️ Same photo clicked - no change needed');
           }
         };
         coverThumbnails.appendChild(img);
@@ -1226,8 +1416,20 @@
         filtered = [...filtered].sort((a, b) => parseFloat(a.fee || 0) - parseFloat(b.fee || 0));
       }
       
-      console.log('Final filtered posts to render:', filtered.length);
-      for (const post of filtered) {
+      // Store filtered posts for pagination
+      filteredPosts = filtered;
+      
+      // Apply pagination
+      let postsToRender = filtered;
+      if (postsPerPage !== 'all') {
+        const postsPerPageNum = parseInt(postsPerPage);
+        const startIndex = (currentPage - 1) * postsPerPageNum;
+        const endIndex = startIndex + postsPerPageNum;
+        postsToRender = filtered.slice(startIndex, endIndex);
+      }
+      
+      console.log('Final filtered posts to render:', postsToRender.length);
+      for (const post of postsToRender) {
         const postElement = renderPostSquare(post, allLoadedSignupCounts[post.id] || 0);
         postsGrid.appendChild(postElement);
       }
@@ -1242,6 +1444,9 @@
         noResultsDiv.textContent = 'No posts match your search criteria.';
         postsGrid.appendChild(noResultsDiv);
       }
+      
+      // Update pagination controls
+      updatePaginationControls();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1250,37 +1455,38 @@
       const creatorParam = urlParams.get('creator');
       const tabParam = urlParams.get('tab');
       
-      if (creatorParam) {
-        console.log('🎯 Loading creator-specific digital shop for:', creatorParam);
-        // Set the influencer name to the creator's username
-        influencerName = creatorParam;
-        
-        // Update the profile data with the creator's username
-        profileData.handle = `@${creatorParam}`;
-        
-        // Update the profile handle display immediately
-        const profileHandleElement = document.getElementById('profileHandle');
-        if (profileHandleElement) {
-          profileHandleElement.textContent = `@${creatorParam}`;
-        }
-        
-        // Update the profile bio if we have creator data
+      // If no creator param in URL, try to get from localStorage (for authenticated users)
+      let creatorToLoad = creatorParam;
+      if (!creatorToLoad) {
         const creatorData = localStorage.getItem('creatorData');
         if (creatorData) {
-          const creator = JSON.parse(creatorData);
-          if (creator.username === creatorParam) {
-            console.log('✅ Authenticated creator accessing their digital shop');
-            // Update profile bio with creator's name
-            const profileBioElement = document.getElementById('profileBio');
-            if (profileBioElement) {
-              profileBioElement.textContent = `Welcome to ${creator.name}'s digital shop!`;
-            }
-          } else {
-            console.log('⚠️ Different creator accessing this shop');
+          try {
+            const creator = JSON.parse(creatorData);
+            creatorToLoad = creator.username;
+            console.log('🔍 No creator param in URL, using authenticated creator:', creatorToLoad);
+          } catch (error) {
+            console.error('❌ Error parsing creator data:', error);
           }
-        } else {
-          console.log('⚠️ No authentication found');
         }
+      }
+      
+      if (creatorToLoad) {
+        console.log('🎯 Loading creator-specific digital shop for:', creatorToLoad);
+        
+        // Initialize StateManager with the creator
+        StateManager.initialize(creatorToLoad);
+        
+        // Set the influencer name for backward compatibility
+        influencerName = creatorToLoad;
+        
+        // Update URL to include creator parameter for consistency
+        if (!creatorParam) {
+          const newUrl = new URL(window.location);
+          newUrl.searchParams.set('creator', creatorToLoad);
+          window.history.replaceState({}, '', newUrl);
+        }
+      } else {
+        console.log('⚠️ No creator found - this should not happen for authenticated users');
       }
       
       // Check for tab parameter in URL and show appropriate tab
@@ -1329,21 +1535,8 @@
         });
       }
       
-      // CRITICAL: Load posts when page loads - DO NOT REMOVE THIS!
-      console.log('🚨 CRITICAL: Loading posts on page load...');
-      loadPosts().then(() => {
-        console.log('✅ Posts loaded successfully on page load');
-      }).catch(err => {
-        console.error('❌ Failed to load posts on page load:', err);
-        // Try again after a short delay
-        setTimeout(() => {
-          console.log('🔄 Retrying post load...');
-          loadPosts();
-        }, 1000);
-      });
-      
-      // Load profile data from database
-      loadProfileFromDatabase();
+      // Data loading is now handled by StateManager
+      console.log('✅ StateManager will handle all data loading automatically');
     });
 
     // BACKUP SYSTEM: Multiple ways to ensure posts load
@@ -1391,28 +1584,35 @@
     // Profile form submit
     profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      profileData = {
-        handle: document.getElementById('profileHandleInput').value,
+      const currentProfileData = StateManager.getProfileData();
+      const updatedProfileData = {
+        handle: currentProfileData.handle, // Keep existing handle, don't change it
         bio: document.getElementById('profileBioInput').value,
-        photo: profilePhotoBase64 || profileData.photo
+        photo: profilePhotoBase64 || currentProfileData.photo
       };
       
-      // Update influencer name from handle (remove @ if present)
-      influencerName = profileData.handle.replace('@', '');
+      // Save to StateManager (which saves to database)
+      const success = await StateManager.saveProfileData(updatedProfileData);
       
-      // Save to database
-      await saveProfileToDatabase();
-      
-      updateProfileDisplay();
-      hideProfileModal();
-      loadPosts(); // Reload posts with new influencer name
+      if (success) {
+        // Update UI
+        StateManager.updateProfileDisplay();
+        hideProfileModal();
+      } else {
+        alert('Failed to save profile. Please try again.');
+      }
     });
 
     function updateProfileDisplay() {
       document.getElementById('profileHandle').textContent = profileData.handle;
       document.getElementById('profileBio').textContent = profileData.bio;
+      const profilePicContainer = document.querySelector('.profile-pic-container');
+      
       if (profileData.photo) {
         document.getElementById('profilePic').src = profileData.photo;
+        profilePicContainer.classList.add('has-photo');
+      } else {
+        profilePicContainer.classList.remove('has-photo');
       }
     }
 
@@ -1434,43 +1634,38 @@
     quickProfilePhotoInput.addEventListener('change', async (e) => {
       if (e.target.files[0]) {
         const newPhotoBase64 = await fileToBase64(e.target.files[0]);
-        profileData.photo = newPhotoBase64;
-        document.getElementById('profilePic').src = newPhotoBase64;
+        const currentProfileData = StateManager.getProfileData();
         
-        // Save to database
-        await saveProfileToDatabase();
+        if (currentProfileData) {
+          const updatedProfileData = {
+            ...currentProfileData,
+            photo: newPhotoBase64
+          };
+          
+          // Update UI immediately
+          document.getElementById('profilePic').src = newPhotoBase64;
+          const profilePicContainer = document.querySelector('.profile-pic-container');
+          profilePicContainer.classList.add('has-photo');
+          
+          // Save to StateManager (which saves to database)
+          await StateManager.saveProfileData(updatedProfileData);
+        }
       }
     });
 
-    // Save profile to database
+    // Save profile to database using StateManager
     async function saveProfileToDatabase() {
-      try {
-        console.log('💾 Saving profile to database...', profileData);
-        const response = await fetch(`${API_BASE}/profile/${influencerName}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            profilePhoto: profileData.photo,
-            handle: profileData.handle,
-            bio: profileData.bio
-          })
-        });
-        
-        if (response.ok) {
-          console.log('✅ Profile saved to database successfully');
-          // Also keep in localStorage as backup
-          localStorage.setItem('influencerProfile', JSON.stringify(profileData));
-        } else {
-          console.error('❌ Failed to save profile to database');
-          // Fall back to localStorage
-          localStorage.setItem('influencerProfile', JSON.stringify(profileData));
-        }
-      } catch (error) {
-        console.error('❌ Error saving profile to database:', error);
-        // Fall back to localStorage
-        localStorage.setItem('influencerProfile', JSON.stringify(profileData));
+      const currentProfileData = StateManager.getProfileData();
+      if (!currentProfileData) {
+        console.log('⚠️ Cannot save profile - no profile data available');
+        return;
+      }
+      
+      const success = await StateManager.saveProfileData(currentProfileData);
+      if (success) {
+        console.log('✅ Profile saved successfully via StateManager');
+      } else {
+        console.log('❌ Failed to save profile via StateManager');
       }
     }
 
@@ -1509,14 +1704,18 @@
       const saved = localStorage.getItem('influencerProfile');
       if (saved) {
         const savedProfile = JSON.parse(saved);
-        // Preserve the creator's handle if it was set from URL parameter
+        // Only load saved profile if it matches the current creator
         const currentHandle = profileData.handle;
-        profileData = {
-          ...savedProfile,
-          handle: currentHandle || savedProfile.handle
-        };
-        influencerName = profileData.handle.replace('@', '');
-        updateProfileDisplay();
+        if (savedProfile.handle === currentHandle) {
+          profileData = {
+            ...savedProfile,
+            handle: currentHandle || savedProfile.handle
+          };
+          influencerName = profileData.handle.replace('@', '');
+          updateProfileDisplay();
+        } else {
+          console.log('🔄 Saved profile is for different creator, using defaults');
+        }
       }
     }
 
@@ -1533,16 +1732,208 @@
       document.getElementById(tabId).style.display = 'block';
     }
 
-    // Navigation functions
+    // Centralized State Management System
+    const StateManager = {
+      // Current state
+      currentCreator: null,
+      profileData: null,
+      posts: [],
+      accountData: null,
+      
+      // Initialize state for a creator
+      initialize(creatorParam) {
+        // Don't reinitialize if it's the same creator
+        if (this.currentCreator === creatorParam) {
+          console.log('🔄 Same creator, skipping re-initialization');
+          return;
+        }
+        
+        console.log('🔄 Initializing StateManager for creator:', creatorParam);
+        this.currentCreator = creatorParam;
+        this.profileData = {
+          handle: `@${creatorParam}`,
+          bio: 'Edit your bio to be shown here',
+          photo: null
+        };
+        
+        // Load all data for this creator
+        this.loadAllData();
+      },
+      
+      // Load all data for current creator
+      async loadAllData() {
+        console.log('🔄 Loading all data for creator:', this.currentCreator);
+        
+        // Load profile data
+        await this.loadProfileData();
+        
+        // Load posts
+        await this.loadPostsData();
+        
+        // Load account data
+        await this.loadAccountData();
+        
+        console.log('✅ All data loaded for creator:', this.currentCreator);
+      },
+      
+      // Load profile data
+      async loadProfileData() {
+        try {
+          const response = await fetch(`${API_BASE}/profile/${this.currentCreator}`);
+          if (response.ok) {
+            const dbProfile = await response.json();
+            if (dbProfile.profilePhoto || dbProfile.handle || dbProfile.bio) {
+              this.profileData = {
+                photo: dbProfile.profilePhoto,
+                handle: `@${this.currentCreator}`,
+                bio: dbProfile.bio || this.profileData.bio
+              };
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading profile data:', error);
+        }
+        
+        // Update UI
+        this.updateProfileDisplay();
+      },
+      
+      // Load posts data
+      async loadPostsData() {
+        try {
+          const response = await fetch(`${API_BASE}/posts/${this.currentCreator}`);
+          if (response.ok) {
+            this.posts = await response.json();
+            console.log('✅ Loaded', this.posts.length, 'posts');
+          }
+        } catch (error) {
+          console.error('❌ Error loading posts:', error);
+          this.posts = [];
+        }
+        
+        // Update UI
+        this.updatePostsDisplay();
+      },
+      
+      // Load account data
+      async loadAccountData() {
+        try {
+          const creatorData = JSON.parse(localStorage.getItem('creatorData') || '{}');
+          if (creatorData.username === this.currentCreator) {
+            this.accountData = creatorData;
+          }
+        } catch (error) {
+          console.error('❌ Error loading account data:', error);
+        }
+      },
+      
+      // Save profile data
+      async saveProfileData(newProfileData) {
+        try {
+          const response = await fetch(`${API_BASE}/profile/${this.currentCreator}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              profilePhoto: newProfileData.photo,
+              handle: newProfileData.handle,
+              bio: newProfileData.bio
+            })
+          });
+          
+          if (response.ok) {
+            this.profileData = { ...newProfileData };
+            console.log('✅ Profile data saved successfully');
+            return true;
+          }
+        } catch (error) {
+          console.error('❌ Error saving profile data:', error);
+        }
+        return false;
+      },
+      
+      // Add new post
+      async addPost(postData) {
+        try {
+          const response = await fetch(`${API_BASE}/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...postData,
+              influencerName: this.currentCreator
+            })
+          });
+          
+          if (response.ok) {
+            const newPost = await response.json();
+            this.posts.push(newPost);
+            console.log('✅ Post added successfully');
+            this.updatePostsDisplay();
+            return true;
+          }
+        } catch (error) {
+          console.error('❌ Error adding post:', error);
+        }
+        return false;
+      },
+      
+      // Update UI displays
+      updateProfileDisplay() {
+        if (this.profileData) {
+          const handleElement = document.getElementById('profileHandle');
+          const bioElement = document.getElementById('profileBio');
+          const photoElement = document.getElementById('profilePic');
+          
+          if (handleElement) handleElement.textContent = this.profileData.handle;
+          if (bioElement) bioElement.textContent = this.profileData.bio;
+          if (photoElement && this.profileData.photo) {
+            photoElement.src = this.profileData.photo;
+            document.querySelector('.profile-pic-container')?.classList.add('has-photo');
+          }
+        }
+      },
+      
+      updatePostsDisplay() {
+        if (this.posts && this.posts.length >= 0) {
+          // Use existing renderFilteredPosts function
+          allLoadedPosts = this.posts;
+          renderFilteredPosts();
+        }
+      },
+      
+      // Get current data
+      getProfileData() { return this.profileData; },
+      getPosts() { return this.posts; },
+      getAccountData() { return this.accountData; },
+      getCurrentCreator() { return this.currentCreator; },
+      
+      // Refresh data if needed
+      async refreshData() {
+        if (this.currentCreator) {
+          console.log('🔄 Refreshing data for creator:', this.currentCreator);
+          await this.loadAllData();
+        }
+      }
+    };
+
+    // Navigation functions with state management
     window.goToAccount = () => {
       // Update active button
       document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
       console.log('Navigate to Account page');
       
-      // Show account tab and load account data
+      // Show account tab - data is already loaded in state
       showTab('accountTab');
-      loadAccountData();
+      
+      // Update account display with current state
+      const accountData = StateManager.getAccountData();
+      if (accountData) {
+        document.getElementById('accountName').textContent = accountData.name || 'Not set';
+        document.getElementById('accountEmail').textContent = accountData.email || 'Not set';
+        document.getElementById('accountPhone').textContent = accountData.phone || 'Not set';
+        document.getElementById('accountZipCode').textContent = accountData.zipCode || 'Not set';
+        document.getElementById('accountInstagram').textContent = accountData.instagram || 'Not set';
+      }
     };
 
     window.goToDigitalShop = () => {
@@ -1551,8 +1942,15 @@
       event.target.classList.add('active');
       console.log('Navigate to Digital Shop page');
       
-      // Show digital shop tab
+      // Show digital shop tab - data is already loaded in state
       showTab('digitalShopTab');
+      
+      // Refresh data to ensure we have the latest
+      StateManager.refreshData().then(() => {
+        // Update displays with current state
+        StateManager.updateProfileDisplay();
+        StateManager.updatePostsDisplay();
+      });
     };
 
     window.goToInfluencerDashboard = () => {
@@ -1562,7 +1960,7 @@
       console.log('Navigate to Influencer Dashboard page');
       
       // Navigate to influencer dashboard page
-      window.location.href = 'http://localhost:3000/influencer-dashboard';
+      window.location.href = '../Dashboards/influencer-dashboard.html';
     };
 
     window.goToContact = () => {
@@ -1572,7 +1970,7 @@
       console.log('Navigate to Contact page');
       
       // Navigate to contact page
-              window.location.href = 'http://localhost:3000/contact-us';
+      window.location.href = '../Communication/contact-us.html';
     };
 
     window.goToSalonLanding = () => {
@@ -1582,7 +1980,7 @@
       console.log('Navigate to Salon Landing page');
       
       // Navigate to salon landing page
-              window.location.href = 'http://localhost:3000/salon-landing';
+              window.location.href = '../User-Authentication/salon-landing.html';
     };
 
     // Account functions
@@ -1717,7 +2115,7 @@
 
     window.deleteAccount = () => {
       // Redirect to the influencer account cancellation page
-      window.location.href = 'http://localhost:3000/influencer-account-cancellation';
+      window.location.href = '../Dashboards/influencer-account-cancellation.html';
     };
 
     // Account edit modal functions
@@ -1904,11 +2302,13 @@
     window.sharePublicProfile = () => {
       // Get the current influencer handle
       const handle = influencerName || 'influencer_name';
-      const publicUrl = `http://localhost:8000/public-profile.html?handle=${handle}`;
+      
+      // Use production URL structure
+      const publicUrl = `https://www.hlfwrld.com/${handle}`;
       
       // Copy to clipboard
       navigator.clipboard.writeText(publicUrl).then(() => {
-        alert(`Public profile link copied to clipboard!\n\n${publicUrl}\n\nShare this link so others can view your posts.`);
+        alert(`Public profile link copied to clipboard!\n\n${publicUrl}\n\nShare this link so others can view your posts and request services.`);
       }).catch(() => {
         // Fallback if clipboard API not available
         prompt('Copy this public profile link:', publicUrl);
@@ -1923,8 +2323,68 @@
       
       // Redirect to creator login page
       console.log('User logged out, redirecting to creator login page');
-      window.location.href = 'http://localhost:3000/creator-auth';
+              window.location.href = '../User-Authentication/creator-auth.html';
     };
+
+    // Pagination Functions
+    window.previousPage = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderFilteredPosts();
+        updatePaginationControls();
+      }
+    };
+
+    window.nextPage = () => {
+      const totalPages = Math.ceil(filteredPosts.length / parseInt(postsPerPage));
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderFilteredPosts();
+        updatePaginationControls();
+      }
+    };
+
+    function updatePaginationControls() {
+      const postsPerPageSelect = document.getElementById('postsPerPage');
+      const paginationInfo = document.getElementById('paginationInfo');
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+
+      if (postsPerPage === 'all') {
+        paginationInfo.textContent = `Showing all ${filteredPosts.length} posts`;
+        pageInfo.textContent = 'Page 1 of 1';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+      } else {
+        const postsPerPageNum = parseInt(postsPerPage);
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPageNum);
+        const startIndex = (currentPage - 1) * postsPerPageNum;
+        const endIndex = Math.min(startIndex + postsPerPageNum, filteredPosts.length);
+        
+        paginationInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${filteredPosts.length} posts`;
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+      }
+    }
+
+    // Add event listener for posts per page selection
+    document.addEventListener('DOMContentLoaded', function() {
+      const postsPerPageSelect = document.getElementById('postsPerPage');
+      if (postsPerPageSelect) {
+        postsPerPageSelect.addEventListener('change', function() {
+          postsPerPage = this.value;
+          currentPage = 1; // Reset to first page
+          renderFilteredPosts();
+          updatePaginationControls();
+        });
+      }
+    });
   </script>
+
+  <div class="footer">
+    <p class="copyright">© 2025 Hlfwrld. All rights reserved.</p>
+  </div>
 </body>
 </html> 
