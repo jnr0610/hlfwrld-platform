@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Database Reset - HLFWRLD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .warning {
+            background: #fee;
+            border: 2px solid #f00;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            color: #d00;
+        }
+        .btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #cc0000;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            background: #efe;
+            border: 2px solid #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            color: #060;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Force Database Reset</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Emergency Database Fix</strong><br>
+            This will forcefully recreate the database connection and tables.<br>
+            Use this if the signup is hanging due to database issues.
+        </div>
+
+        <button id="resetBtn" class="btn" onclick="forceReset()">
+            🔄 FORCE DATABASE RESET
+        </button>
+
+        <div id="status"></div>
+        
+        <p><strong>What this does:</strong></p>
+        <ul style="text-align: left;">
+            <li>Closes current database connection</li>
+            <li>Deletes corrupted database file</li>
+            <li>Creates fresh database with proper structure</li>
+            <li>Should fix signup hanging issues</li>
+        </ul>
+    </div>
+
+    <script>
+        async function forceReset() {
+            const btn = document.getElementById('resetBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 Resetting...';
+            
+            status.innerHTML = '<div class="status" style="background: #fff3cd; border: 1px solid #ffeaa7;">Forcing database reset...</div>';
+            
+            try {
+                const response = await fetch('/force-db-reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    status.innerHTML = `<div class="success">✅ ${data.message}<br><br><strong>Try creator signup now!</strong></div>`;
+                } else {
+                    status.innerHTML = `<div class="warning">❌ Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="warning">❌ Network error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 FORCE DATABASE RESET';
+            }
+        }
+    </script>
+</body>
+</html> 

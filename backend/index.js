@@ -78,6 +78,11 @@ app.get('/reset-database.html', (req, res) => {
   res.sendFile(path.join(__dirname, '../reset-database.html'));
 });
 
+// Serve force database reset page
+app.get('/force-db-reset.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../force-db-reset.html'));
+});
+
 // Function to initialize database tables
 function initializeTables(database) {
   database.serialize(() => {
@@ -255,14 +260,65 @@ function initializeTables(database) {
   });
 }
 
-// Initialize SQLite DB
-let db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlite'), (err) => {
-  if (err) return console.error('DB open error:', err.message);
-  console.log('Connected to SQLite database.');
-});
+// Initialize SQLite DB with reconnection handling
+let db;
 
-// Initialize tables
-initializeTables(db);
+function initializeDatabase() {
+  const dbPath = path.join(__dirname, 'Database', 'database.sqlite');
+  
+  // Close existing connection if any
+  if (db) {
+    try {
+      db.close();
+    } catch (e) {
+      console.log('Previous DB connection closed');
+    }
+  }
+  
+  console.log('🔄 Initializing database connection...');
+  
+  db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error('❌ DB open error:', err.message);
+      console.log('🔄 Attempting to recreate database...');
+      
+      // Try to delete and recreate the database file
+      const fs = require('fs');
+      try {
+        if (fs.existsSync(dbPath)) {
+          fs.unlinkSync(dbPath);
+          console.log('🗑️ Removed corrupted database file');
+        }
+      } catch (deleteErr) {
+        console.error('❌ Could not delete database file:', deleteErr.message);
+      }
+      
+      // Create fresh database
+      db = new sqlite3.Database(dbPath, (retryErr) => {
+        if (retryErr) {
+          console.error('❌ Failed to create fresh database:', retryErr.message);
+          return;
+        }
+        console.log('✅ Fresh database created successfully');
+        initializeTables(db);
+      });
+      return;
+    }
+    
+    console.log('✅ Connected to SQLite database');
+    initializeTables(db);
+  });
+  
+  // Handle database errors
+  db.on('error', (err) => {
+    console.error('❌ Database error:', err.message);
+    console.log('🔄 Attempting database reconnection...');
+    setTimeout(() => initializeDatabase(), 1000);
+  });
+}
+
+// Initialize database
+initializeDatabase();
 
 // Hybrid session validation middleware
 const validateSession = (req, res, next) => {
@@ -2103,7 +2159,23 @@ app.get('/test', (req, res) => {
 app.get('/test-db', (req, res) => {
   console.log('🔧 Testing database connection...');
   
+  if (!db) {
+    return res.status(500).json({ 
+      error: 'Database not initialized', 
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  const timeout = setTimeout(() => {
+    res.status(500).json({ 
+      error: 'Database query timeout', 
+      timestamp: new Date().toISOString()
+    });
+  }, 5000);
+  
   db.get('SELECT COUNT(*) as count FROM creators', (err, result) => {
+    clearTimeout(timeout);
+    
     if (err) {
       console.error('❌ Database test failed:', err.message);
       return res.status(500).json({ 
@@ -2120,6 +2192,30 @@ app.get('/test-db', (req, res) => {
       timestamp: new Date().toISOString()
     });
   });
+});
+
+// Force database recreation
+app.post('/force-db-reset', (req, res) => {
+  console.log('🔄 Force database reset requested...');
+  
+  try {
+    initializeDatabase();
+    
+    setTimeout(() => {
+      res.json({ 
+        message: 'Database forcefully reset and recreated', 
+        timestamp: new Date().toISOString()
+      });
+    }, 2000);
+    
+  } catch (error) {
+    console.error('❌ Force reset failed:', error.message);
+    res.status(500).json({ 
+      error: 'Force reset failed', 
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Creator signup
