@@ -2094,8 +2094,39 @@ app.get('/creator/check-username', (req, res) => {
   });
 });
 
+// Test endpoint to check if API is working
+app.get('/test', (req, res) => {
+  res.json({ message: 'API is working!', timestamp: new Date().toISOString() });
+});
+
+// Test database connection
+app.get('/test-db', (req, res) => {
+  console.log('🔧 Testing database connection...');
+  
+  db.get('SELECT COUNT(*) as count FROM creators', (err, result) => {
+    if (err) {
+      console.error('❌ Database test failed:', err.message);
+      return res.status(500).json({ 
+        error: 'Database connection failed', 
+        details: err.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    console.log('✅ Database test successful:', result);
+    res.json({ 
+      message: 'Database connection working!', 
+      creatorCount: result.count,
+      timestamp: new Date().toISOString()
+    });
+  });
+});
+
 // Creator signup
 app.post('/creators/signup', (req, res) => {
+  console.log('🚀 Creator signup request received:', { username: req.body.username, email: req.body.email });
+  console.log('📋 Full request body:', req.body);
+  
   const { name, email, phone, zipCode, instagram, username, password, state } = req.body;
 
   // Validation
@@ -2120,12 +2151,16 @@ app.post('/creators/signup', (req, res) => {
     return res.status(400).json({ error: 'This username is not available' });
   }
 
+  console.log('🔍 Checking if email exists:', email);
+  
   // Check if email already exists
   db.get('SELECT id FROM creators WHERE email = ?', [email], (err, emailResult) => {
     if (err) {
       console.error('❌ Error checking existing email:', err.message);
       return res.status(500).json({ error: err.message });
     }
+    
+    console.log('✅ Email check completed. Existing:', !!emailResult);
 
     if (emailResult) {
       return res.status(400).json({ error: 'Email already exists. Please use a different email address.' });
