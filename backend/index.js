@@ -73,6 +73,11 @@ app.use('/Development', express.static(path.join(__dirname, '../Development')));
 app.use('/Documentation', express.static(path.join(__dirname, '../Documentation')));
 app.use('/Configuration', express.static(path.join(__dirname, '../Configuration')));
 
+// Serve reset database page
+app.get('/reset-database.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../reset-database.html'));
+});
+
 // Initialize SQLite DB
 const db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlite'), (err) => {
   if (err) return console.error('DB open error:', err.message);
