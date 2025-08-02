@@ -260,61 +260,80 @@ function initializeTables(database) {
   });
 }
 
-// Initialize SQLite DB with reconnection handling
+// Initialize SQLite DB with aggressive cleanup
 let db;
 
 function initializeDatabase() {
-  const dbPath = path.join(__dirname, 'Database', 'database.sqlite');
+  const fs = require('fs');
+  const dbDir = path.join(__dirname, 'Database');
+  const dbPath = path.join(dbDir, 'database.sqlite');
   
-  // Close existing connection if any
+  console.log('🔄 Starting aggressive database cleanup...');
+  
+  // Close any existing connection
   if (db) {
     try {
       db.close();
     } catch (e) {
       console.log('Previous DB connection closed');
     }
+    db = null;
   }
   
-  console.log('🔄 Initializing database connection...');
-  
-  db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-      console.error('❌ DB open error:', err.message);
-      console.log('🔄 Attempting to recreate database...');
-      
-      // Try to delete and recreate the database file
-      const fs = require('fs');
-      try {
-        if (fs.existsSync(dbPath)) {
-          fs.unlinkSync(dbPath);
-          console.log('🗑️ Removed corrupted database file');
-        }
-      } catch (deleteErr) {
-        console.error('❌ Could not delete database file:', deleteErr.message);
-      }
-      
-      // Create fresh database
-      db = new sqlite3.Database(dbPath, (retryErr) => {
-        if (retryErr) {
-          console.error('❌ Failed to create fresh database:', retryErr.message);
-          return;
-        }
-        console.log('✅ Fresh database created successfully');
-        initializeTables(db);
-      });
-      return;
+  try {
+    // Ensure Database directory exists
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+      console.log('📁 Created Database directory');
     }
     
-    console.log('✅ Connected to SQLite database');
-    initializeTables(db);
-  });
+    // Remove all database-related files
+    const filesToRemove = [
+      dbPath,
+      dbPath + '-wal',
+      dbPath + '-shm',
+      dbPath + '-journal'
+    ];
+    
+    filesToRemove.forEach(file => {
+      try {
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file);
+          console.log(`🗑️ Removed: ${path.basename(file)}`);
+        }
+      } catch (err) {
+        console.log(`⚠️ Could not remove ${file}: ${err.message}`);
+      }
+    });
+    
+    console.log('✅ Database cleanup complete');
+    
+  } catch (cleanupErr) {
+    console.error('❌ Cleanup error:', cleanupErr.message);
+  }
   
-  // Handle database errors
-  db.on('error', (err) => {
-    console.error('❌ Database error:', err.message);
-    console.log('🔄 Attempting database reconnection...');
-    setTimeout(() => initializeDatabase(), 1000);
-  });
+  // Wait a moment then create fresh database
+  setTimeout(() => {
+    console.log('🔄 Creating fresh database connection...');
+    
+    db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+      if (err) {
+        console.error('❌ Failed to create database:', err.message);
+        return;
+      }
+      
+      console.log('✅ Fresh database created successfully');
+      
+      // Set immediate mode for faster operations
+      db.run('PRAGMA journal_mode = DELETE;');
+      db.run('PRAGMA synchronous = NORMAL;');
+      db.run('PRAGMA cache_size = 10000;');
+      db.run('PRAGMA temp_store = MEMORY;');
+      
+      initializeTables(db);
+    });
+    
+  }, 1000);
 }
 
 // Initialize database
@@ -2203,10 +2222,10 @@ app.post('/force-db-reset', (req, res) => {
     
     setTimeout(() => {
       res.json({ 
-        message: 'Database forcefully reset and recreated', 
+        message: 'Database forcefully reset and recreated with aggressive cleanup', 
         timestamp: new Date().toISOString()
       });
-    }, 2000);
+    }, 3000); // Give it more time for the aggressive cleanup
     
   } catch (error) {
     console.error('❌ Force reset failed:', error.message);
@@ -2216,6 +2235,30 @@ app.post('/force-db-reset', (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// Emergency database status check
+app.get('/db-status', (req, res) => {
+  const fs = require('fs');
+  const dbPath = path.join(__dirname, 'Database', 'database.sqlite');
+  
+  const status = {
+    dbExists: fs.existsSync(dbPath),
+    dbConnected: !!db,
+    timestamp: new Date().toISOString()
+  };
+  
+  if (status.dbExists) {
+    try {
+      const stats = fs.statSync(dbPath);
+      status.dbSize = stats.size;
+      status.dbModified = stats.mtime;
+    } catch (err) {
+      status.dbError = err.message;
+    }
+  }
+  
+  res.json(status);
 });
 
 // Creator signup
