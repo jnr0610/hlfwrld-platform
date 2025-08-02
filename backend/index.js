@@ -4452,6 +4452,45 @@ app.get('/debug/database', (req, res) => {
   });
 });
 
+// Database reset endpoint (for testing purposes)
+app.post('/reset-database', (req, res) => {
+  const { confirmReset } = req.body;
+  
+  if (confirmReset !== 'YES_DELETE_ALL_DATA') {
+    return res.status(400).json({ error: 'Reset confirmation required' });
+  }
+  
+  // List of all tables to clear
+  const tables = [
+    'posts', 'salons', 'creators', 'service_requests', 'payments', 
+    'reservations', 'bookings', 'time_slots', 'reviews', 'conversations', 
+    'messages', 'notifications'
+  ];
+  
+  let clearedTables = 0;
+  const totalTables = tables.length;
+  
+  tables.forEach(table => {
+    db.run(`DELETE FROM ${table}`, (err) => {
+      if (err && !err.message.includes('no such table')) {
+        console.log(`❌ Error clearing ${table}:`, err.message);
+      } else {
+        console.log(`✅ Cleared table: ${table}`);
+      }
+      
+      clearedTables++;
+      if (clearedTables === totalTables) {
+        console.log('🗑️ Database completely reset - all data cleared');
+        res.json({ 
+          success: true, 
+          message: 'Database reset complete - all usernames, passwords, and data cleared',
+          tablesCleared: tables 
+        });
+      }
+    });
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 }); 
