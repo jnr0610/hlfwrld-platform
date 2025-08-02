@@ -80,7 +80,7 @@ const db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlit
 });
 
 db.serialize(() => {
-  // Create creators table
+  // Create creators table with all required columns
   db.run(`CREATE TABLE IF NOT EXISTS creators (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -90,6 +90,10 @@ db.serialize(() => {
     instagram TEXT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    state TEXT,
+    influencerCode TEXT,
+    stripeAccountId TEXT,
+    totalEarnings REAL DEFAULT 0,
     isVerified BOOLEAN DEFAULT 0,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -124,19 +128,7 @@ db.serialize(() => {
     }
   });
 
-  // Add stripeAccountId column to creators table if it doesn't exist
-  db.run(`ALTER TABLE creators ADD COLUMN stripeAccountId TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add stripeAccountId column:', err.message);
-    }
-  });
-
-  // Add state column to creators table if it doesn't exist
-  db.run(`ALTER TABLE creators ADD COLUMN state TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add state column:', err.message);
-    }
-  });
+  // Columns now included in table creation above
 
   // Add Stripe fields to salons table if they don't exist
   db.run(`ALTER TABLE salons ADD COLUMN stripeCustomerId TEXT`, (err) => {
@@ -157,12 +149,7 @@ db.serialize(() => {
     }
   });
 
-  // Add influencerCode column to creators table if it doesn't exist
-  db.run(`ALTER TABLE creators ADD COLUMN influencerCode TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add influencerCode column:', err.message);
-    }
-  });
+  // influencerCode now included in table creation above
   
   db.run(`CREATE TABLE IF NOT EXISTS signups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
