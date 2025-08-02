@@ -260,84 +260,48 @@ function initializeTables(database) {
   });
 }
 
-// Initialize SQLite DB with aggressive cleanup
+// Simple, safe SQLite DB initialization
 let db;
 
-function initializeDatabase() {
+try {
   const fs = require('fs');
   const dbDir = path.join(__dirname, 'Database');
+  
+  // Ensure Database directory exists
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+    console.log('📁 Created Database directory');
+  }
+  
   const dbPath = path.join(dbDir, 'database.sqlite');
+  console.log('🔄 Initializing database connection...');
   
-  console.log('🔄 Starting aggressive database cleanup...');
-  
-  // Close any existing connection
-  if (db) {
-    try {
-      db.close();
-    } catch (e) {
-      console.log('Previous DB connection closed');
-    }
-    db = null;
-  }
-  
-  try {
-    // Ensure Database directory exists
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-      console.log('📁 Created Database directory');
-    }
-    
-    // Remove all database-related files
-    const filesToRemove = [
-      dbPath,
-      dbPath + '-wal',
-      dbPath + '-shm',
-      dbPath + '-journal'
-    ];
-    
-    filesToRemove.forEach(file => {
-      try {
-        if (fs.existsSync(file)) {
-          fs.unlinkSync(file);
-          console.log(`🗑️ Removed: ${path.basename(file)}`);
+  db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error('❌ DB open error:', err.message);
+      // Create in-memory fallback database to prevent crash
+      db = new sqlite3.Database(':memory:', (memErr) => {
+        if (memErr) {
+          console.error('❌ Memory DB failed:', memErr.message);
+        } else {
+          console.log('⚠️ Using in-memory database as fallback');
+          initializeTables(db);
         }
-      } catch (err) {
-        console.log(`⚠️ Could not remove ${file}: ${err.message}`);
-      }
-    });
+      });
+      return;
+    }
     
-    console.log('✅ Database cleanup complete');
-    
-  } catch (cleanupErr) {
-    console.error('❌ Cleanup error:', cleanupErr.message);
-  }
+    console.log('✅ Connected to SQLite database');
+    initializeTables(db);
+  });
   
-  // Wait a moment then create fresh database
-  setTimeout(() => {
-    console.log('🔄 Creating fresh database connection...');
-    
-    db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-      if (err) {
-        console.error('❌ Failed to create database:', err.message);
-        return;
-      }
-      
-      console.log('✅ Fresh database created successfully');
-      
-      // Set immediate mode for faster operations
-      db.run('PRAGMA journal_mode = DELETE;');
-      db.run('PRAGMA synchronous = NORMAL;');
-      db.run('PRAGMA cache_size = 10000;');
-      db.run('PRAGMA temp_store = MEMORY;');
-      
-      initializeTables(db);
-    });
-    
-  }, 1000);
+} catch (initError) {
+  console.error('❌ Database initialization failed:', initError.message);
+  // Ultimate fallback - in-memory database
+  db = new sqlite3.Database(':memory:');
+  console.log('🔄 Using in-memory database as emergency fallback');
+  initializeTables(db);
 }
-
-// Initialize database
-initializeDatabase();
 
 // Hybrid session validation middleware
 const validateSession = (req, res, next) => {
@@ -2218,14 +2182,34 @@ app.post('/force-db-reset', (req, res) => {
   console.log('🔄 Force database reset requested...');
   
   try {
-    initializeDatabase();
+    // Simple reset - recreate in-memory database
+    if (db) {
+      try {
+        db.close();
+      } catch (e) {
+        console.log('Closed existing connection');
+      }
+    }
     
-    setTimeout(() => {
+    // Create fresh in-memory database for immediate functionality
+    db = new sqlite3.Database(':memory:', (err) => {
+      if (err) {
+        console.error('❌ Memory DB creation failed:', err.message);
+        return res.status(500).json({ 
+          error: 'Failed to create fresh database', 
+          details: err.message,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      console.log('✅ Fresh in-memory database created');
+      initializeTables(db);
+      
       res.json({ 
-        message: 'Database forcefully reset and recreated with aggressive cleanup', 
+        message: 'Database reset complete - using fresh in-memory database', 
         timestamp: new Date().toISOString()
       });
-    }, 3000); // Give it more time for the aggressive cleanup
+    });
     
   } catch (error) {
     console.error('❌ Force reset failed:', error.message);
