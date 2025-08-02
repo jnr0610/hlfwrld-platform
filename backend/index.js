@@ -2145,18 +2145,33 @@ app.post('/creators/signup', (req, res) => {
       // Hash password
       const hashedPassword = hashPassword(password);
 
-      // Generate unique influencer code
-      const generateUniqueCode = () => {
+      // Generate unique influencer code with timeout protection
+      const generateUniqueCode = (attempts = 0) => {
+        if (attempts > 5) {
+          // Fallback: create account without influencer code to avoid hanging
+          console.log('⚠️ Max attempts reached, creating account without influencer code');
+          return createAccountFallback();
+        }
+
         const code = generateInfluencerCode();
+        
+        // Add timeout to prevent hanging
+        const timeout = setTimeout(() => {
+          console.log('⚠️ Code check timeout, using fallback');
+          createAccountFallback();
+        }, 3000);
+        
         isUniqueInfluencerCode(code, (err, isUnique) => {
+          clearTimeout(timeout);
+          
           if (err) {
             console.error('❌ Error checking code uniqueness:', err.message);
-            return res.status(500).json({ error: 'Failed to generate unique code' });
+            return createAccountFallback();
           }
           
           if (!isUnique) {
             // Try again with a different code
-            generateUniqueCode();
+            generateUniqueCode(attempts + 1);
             return;
           }
           
@@ -2167,8 +2182,8 @@ app.post('/creators/signup', (req, res) => {
             [name, email, phone, zipCode, instagram || null, username, hashedPassword, state, code, true], // Auto-verify for demo
             function (err) {
               if (err) {
-                console.error('❌ Error creating creator account:', err.message);
-                return res.status(500).json({ error: err.message });
+                console.error('❌ Error creating creator account with code:', err.message);
+                return createAccountFallback();
               }
 
               console.log(`✅ Creator account created: ${username} (${email}) with code: ${code}`);
@@ -2182,6 +2197,30 @@ app.post('/creators/signup', (req, res) => {
             }
           );
         });
+      };
+      
+      // Fallback function to create account without influencer code
+      const createAccountFallback = () => {
+        console.log('🔄 Creating account without influencer code as fallback');
+        db.run(
+          `INSERT INTO creators (name, email, phone, zipCode, instagram, username, password, state, isVerified)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [name, email, phone, zipCode, instagram || null, username, hashedPassword, state, true],
+          function (err) {
+            if (err) {
+              console.error('❌ Error creating creator account (fallback):', err.message);
+              return res.status(500).json({ error: err.message });
+            }
+
+            console.log(`✅ Creator account created (fallback): ${username} (${email})`);
+
+            res.json({
+              success: true,
+              message: 'Creator account created successfully',
+              creatorId: this.lastID
+            });
+          }
+        );
       };
       
       generateUniqueCode();
