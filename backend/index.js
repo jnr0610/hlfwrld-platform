@@ -78,33 +78,29 @@ app.get('/reset-database.html', (req, res) => {
   res.sendFile(path.join(__dirname, '../reset-database.html'));
 });
 
-// Initialize SQLite DB
-const db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlite'), (err) => {
-  if (err) return console.error('DB open error:', err.message);
-  console.log('Connected to SQLite database.');
-});
+// Function to initialize database tables
+function initializeTables(database) {
+  database.serialize(() => {
+    // Create creators table with all required columns
+    database.run(`CREATE TABLE IF NOT EXISTS creators (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      phone TEXT NOT NULL,
+      zipCode TEXT NOT NULL,
+      instagram TEXT,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      state TEXT,
+      influencerCode TEXT,
+      stripeAccountId TEXT,
+      totalEarnings REAL DEFAULT 0,
+      isVerified BOOLEAN DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
 
-db.serialize(() => {
-  // Create creators table with all required columns
-  db.run(`CREATE TABLE IF NOT EXISTS creators (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    phone TEXT NOT NULL,
-    zipCode TEXT NOT NULL,
-    instagram TEXT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    state TEXT,
-    influencerCode TEXT,
-    stripeAccountId TEXT,
-    totalEarnings REAL DEFAULT 0,
-    isVerified BOOLEAN DEFAULT 0,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS posts (
+  database.run(`CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     influencerName TEXT,
     title TEXT,
@@ -116,53 +112,21 @@ db.serialize(() => {
     frequency TEXT,
     coverPhoto TEXT,
     photos TEXT,
-    code TEXT UNIQUE
+    code TEXT UNIQUE,
+    salonName TEXT
   )`);
   
-  // Add frequency column if it doesn't exist (for existing databases)
-  db.run(`ALTER TABLE posts ADD COLUMN frequency TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add frequency column:', err.message);
-    }
-  });
-
-  // Add salon name column if it doesn't exist
-  db.run(`ALTER TABLE posts ADD COLUMN salonName TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add salonName column:', err.message);
-    }
-  });
-
   // Columns now included in table creation above
-
-  // Add Stripe fields to salons table if they don't exist
-  db.run(`ALTER TABLE salons ADD COLUMN stripeCustomerId TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add stripeCustomerId column:', err.message);
-    }
-  });
-
-  db.run(`ALTER TABLE salons ADD COLUMN stripeSubscriptionId TEXT`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add stripeSubscriptionId column:', err.message);
-    }
-  });
-
-  db.run(`ALTER TABLE salons ADD COLUMN subscriptionPlan TEXT DEFAULT 'professional'`, (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.log('Could not add subscriptionPlan column:', err.message);
-    }
-  });
 
   // influencerCode now included in table creation above
   
-  db.run(`CREATE TABLE IF NOT EXISTS signups (
+  database.run(`CREATE TABLE IF NOT EXISTS signups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     postCode TEXT
   )`);
   
   // Create profiles table for influencer profile data
-  db.run(`CREATE TABLE IF NOT EXISTS profiles (
+  database.run(`CREATE TABLE IF NOT EXISTS profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     influencerName TEXT UNIQUE,
     profilePhoto TEXT,
@@ -173,7 +137,7 @@ db.serialize(() => {
   )`);
   
   // Create messages table for influencer inbox system
-  db.run(`CREATE TABLE IF NOT EXISTS messages (
+  database.run(`CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     toInfluencer TEXT,
     postCode TEXT,
@@ -187,7 +151,7 @@ db.serialize(() => {
   )`);
   
   // Create contact_submissions table for contact form
-  db.run(`CREATE TABLE IF NOT EXISTS contact_submissions (
+  database.run(`CREATE TABLE IF NOT EXISTS contact_submissions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -198,7 +162,7 @@ db.serialize(() => {
   )`);
   
   // Create salons table for salon accounts
-  db.run(`CREATE TABLE IF NOT EXISTS salons (
+  database.run(`CREATE TABLE IF NOT EXISTS salons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     salonName TEXT NOT NULL,
     ownerName TEXT NOT NULL,
@@ -219,7 +183,7 @@ db.serialize(() => {
   )`);
   
   // Create service requests table for detailed booking requests
-  db.run(`CREATE TABLE IF NOT EXISTS service_requests (
+  database.run(`CREATE TABLE IF NOT EXISTS service_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     serviceCode TEXT,
     influencerHandle TEXT,
@@ -235,7 +199,7 @@ db.serialize(() => {
   )`);
   
   // Create email logs table for tracking sent emails
-  db.run(`CREATE TABLE IF NOT EXISTS email_logs (
+  database.run(`CREATE TABLE IF NOT EXISTS email_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     requestId INTEGER,
     recipientEmail TEXT,
@@ -247,7 +211,7 @@ db.serialize(() => {
   )`);
 
   // Create influencers table for Stripe Connect accounts
-  db.run(`CREATE TABLE IF NOT EXISTS influencers (
+  database.run(`CREATE TABLE IF NOT EXISTS influencers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -265,7 +229,7 @@ db.serialize(() => {
   )`);
 
   // Create bookings table for commission tracking
-  db.run(`CREATE TABLE IF NOT EXISTS bookings (
+  database.run(`CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     requestId INTEGER NOT NULL,
     influencerId INTEGER NOT NULL,
@@ -288,11 +252,17 @@ db.serialize(() => {
     FOREIGN KEY (influencerId) REFERENCES influencers (id),
     FOREIGN KEY (salonId) REFERENCES salons (id)
   )`);
+  });
+}
 
-  // Add missing columns to bookings table if they don't exist
-  db.run(`ALTER TABLE bookings ADD COLUMN stripeSessionId TEXT`, (err) => { /* ... */ });
-  db.run(`ALTER TABLE bookings ADD COLUMN refundReason TEXT`, (err) => { /* ... */ });
+// Initialize SQLite DB
+let db = new sqlite3.Database(path.join(__dirname, 'Database', 'database.sqlite'), (err) => {
+  if (err) return console.error('DB open error:', err.message);
+  console.log('Connected to SQLite database.');
 });
+
+// Initialize tables
+initializeTables(db);
 
 // Hybrid session validation middleware
 const validateSession = (req, res, next) => {
@@ -4452,34 +4422,51 @@ app.post('/reset-database', (req, res) => {
     return res.status(400).json({ error: 'Reset confirmation required' });
   }
   
-  // List of all tables to clear
-  const tables = [
-    'posts', 'salons', 'creators', 'service_requests', 'payments', 
-    'reservations', 'bookings', 'time_slots', 'reviews', 'conversations', 
-    'messages', 'notifications'
-  ];
+  console.log('🔄 Starting database reset...');
   
-  let clearedTables = 0;
-  const totalTables = tables.length;
-  
-  tables.forEach(table => {
-    db.run(`DELETE FROM ${table}`, (err) => {
-      if (err && !err.message.includes('no such table')) {
-        console.log(`❌ Error clearing ${table}:`, err.message);
-      } else {
-        console.log(`✅ Cleared table: ${table}`);
+  // Close current database connection
+  db.close((err) => {
+    if (err) {
+      console.error('Error closing database:', err.message);
+    }
+    
+    // Delete the database file completely
+    const fs = require('fs');
+    const dbPath = path.join(__dirname, 'Database', 'database.sqlite');
+    
+    try {
+      if (fs.existsSync(dbPath)) {
+        fs.unlinkSync(dbPath);
+        console.log('✅ Database file deleted');
       }
-      
-      clearedTables++;
-      if (clearedTables === totalTables) {
-        console.log('🗑️ Database completely reset - all data cleared');
-        res.json({ 
-          success: true, 
-          message: 'Database reset complete - all usernames, passwords, and data cleared',
-          tablesCleared: tables 
-        });
-      }
-    });
+    } catch (error) {
+      console.error('❌ Error deleting database file:', error.message);
+    }
+    
+         // Create new database connection and recreate tables
+     const newDb = new sqlite3.Database(dbPath, (err) => {
+       if (err) {
+         console.error('❌ Error creating new database:', err.message);
+         return res.status(500).json({ error: 'Failed to reset database' });
+       }
+       
+       console.log('✅ New database created');
+       
+       // Initialize all tables with proper structure
+       initializeTables(newDb);
+       
+       // Replace global db reference
+       db = newDb;
+       
+       setTimeout(() => {
+         console.log('🗑️ Database completely reset - all data cleared');
+         res.json({ 
+           success: true, 
+           message: 'Database reset complete - all usernames, passwords, and data cleared. New tables created with proper structure.',
+           resetType: 'complete'
+         });
+       }, 1000);
+     });
   });
 });
 
